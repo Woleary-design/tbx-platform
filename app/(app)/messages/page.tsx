@@ -4,8 +4,8 @@ export default function MessagesPage() {
   return (
     <AppRoutePlaceholder
       title="Messages"
-      description="A future communication center for transaction-safe buyer and seller conversations."
-      items={["Priority inbox", "Order threads", "System notices"]}
+      description="A quieter way to negotiate serious collectibles, with order context, seller reputation and protected-trade prompts always within reach."
+      items={["Seller reputation context", "Offer and provenance threads", "Protected handover reminders"]}
     />
   );
 }
