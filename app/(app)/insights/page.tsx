@@ -4,8 +4,8 @@ export default function InsightsPage() {
   return (
     <AppRoutePlaceholder
       title="Insights"
-      description="Portfolio intelligence, watchlist opportunities, and marketplace movement will live here."
-      items={["Portfolio trend", "Category allocation", "Opportunity alerts"]}
+      description="Market intelligence for the collection you actually own, highlighting value movement, rarity pressure and opportunities worth a closer look."
+      items={["Vault value movement", "Rarity and demand signals", "Watchlist price gaps"]}
     />
   );
 }
