@@ -7,6 +7,7 @@ import {
   Archive,
   Bell,
   ChevronDown,
+  Gem,
   Home,
   Inbox,
   LayoutGrid,
@@ -14,7 +15,6 @@ import {
   Settings,
   ShieldCheck,
   Sparkles,
-  Vault,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +24,7 @@ const navigation = [
   { href: "/dashboard", label: "Home", icon: Home },
   { href: "/marketplace", label: "Marketplace", icon: LayoutGrid },
   { href: "/insights", label: "Collection", icon: Archive },
-  { href: "/vault", label: "Vault", icon: Vault },
+  { href: "/vault", label: "Vault", icon: Gem },
   { href: "/messages", label: "Messages", icon: Inbox },
   { href: "/settings", label: "Account", icon: Settings },
 ];
@@ -38,7 +38,7 @@ export function AppShell({ children }: AppShellProps) {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 border-r bg-white/82 backdrop-blur-xl lg:block">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 border-r bg-white/80 backdrop-blur-xl lg:block">
         <div className="flex h-full flex-col">
           <div className="border-b px-6 py-7">
             <Link href="/dashboard" className="flex items-center gap-3">
@@ -88,7 +88,7 @@ export function AppShell({ children }: AppShellProps) {
       </aside>
 
       <div className="lg:pl-72">
-        <header className="sticky top-0 z-20 border-b bg-white/82 backdrop-blur-xl">
+        <header className="sticky top-0 z-20 border-b bg-white/80 backdrop-blur-xl">
           <div className="flex min-h-16 flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between lg:px-8">
             <div className="flex items-center justify-between gap-3">
               <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-slate-950 lg:hidden">
