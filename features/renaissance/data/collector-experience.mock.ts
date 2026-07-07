@@ -3,8 +3,9 @@ export const homeHero = {
   title: "Own with confidence. Trade with trust.",
   description:
     "A quiet command centre for exceptional collectibles, verified reputation and TBX Secure transactions.",
-  imageLabel: "Vaulted LEGO architecture collection",
+  imageLabel: "Vaulted architecture collection",
   imageDetail: "Sealed icons, provenance notes and protected-trade readiness in one view.",
+  imageSrc: "/images/hero-collector-cabinet.svg",
   primarySignal: "TBX Secure active",
   secondarySignal: "Trust 96",
 };
@@ -72,8 +73,7 @@ export const recommendedAcquisitions = [
     seller: "Maya Chen",
     trustScore: 94,
     secure: true,
-    imageTone: "from-stone-100 via-emerald-50 to-stone-300",
-    imageLabel: "10255",
+    imageSrc: "/images/listing-assembly-square.svg",
   },
   {
     id: "titanic",
@@ -84,8 +84,7 @@ export const recommendedAcquisitions = [
     seller: "Andre Singh",
     trustScore: 91,
     secure: true,
-    imageTone: "from-slate-100 via-sky-50 to-stone-300",
-    imageLabel: "10294",
+    imageSrc: "/images/listing-titanic.svg",
   },
   {
     id: "lion-knights-castle",
@@ -96,8 +95,7 @@ export const recommendedAcquisitions = [
     seller: "Warren O'Leary",
     trustScore: 96,
     secure: true,
-    imageTone: "from-lime-100 via-stone-50 to-zinc-300",
-    imageLabel: "10305",
+    imageSrc: "/images/listing-castle.svg",
   },
 ];
 
@@ -112,8 +110,7 @@ export const marketplaceListings = [
     seller: "Elliot Venter",
     trustScore: 97,
     secure: true,
-    imageTone: "from-red-100 via-orange-50 to-stone-200",
-    imageLabel: "10182",
+    imageSrc: "/images/listing-cafe-corner.svg",
   },
   {
     id: "boutique-hotel",
@@ -124,8 +121,7 @@ export const marketplaceListings = [
     seller: "Nadia Jacobs",
     trustScore: 89,
     secure: true,
-    imageTone: "from-teal-100 via-rose-50 to-stone-200",
-    imageLabel: "10297",
+    imageSrc: "/images/listing-boutique-hotel.svg",
   },
   {
     id: "millennium-falcon",
@@ -136,7 +132,6 @@ export const marketplaceListings = [
     seller: "Maya Chen",
     trustScore: 94,
     secure: true,
-    imageTone: "from-zinc-100 via-stone-100 to-neutral-300",
-    imageLabel: "75192",
+    imageSrc: "/images/listing-falcon.svg",
   },
 ];
