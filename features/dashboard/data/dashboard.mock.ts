@@ -1,72 +1,72 @@
 export const dashboardMetrics = [
   {
-    label: "TBX Trust",
-    value: "87.4",
-    detail: "Trusted Collector",
-    trend: "+4.2 this quarter",
+    label: "Collector Trust",
+    value: "96",
+    detail: "Premier Collector status maintained",
+    trend: "Identity, address and payout checks current",
   },
   {
-    label: "Collection Value",
-    value: "$42,860",
-    detail: "Across 128 catalogued items",
-    trend: "+8.6% estimated growth",
+    label: "Vault Value",
+    value: "$128,400",
+    detail: "Across 47 documented collectibles",
+    trend: "Insured value reviewed 6 days ago",
   },
   {
-    label: "Active Orders",
-    value: "3",
-    detail: "2 awaiting dispatch review",
-    trend: "1 delivery due today",
+    label: "Protected Trades",
+    value: "4",
+    detail: "2 awaiting seller dispatch, 1 in inspection",
+    trend: "All covered by TBX Secure",
   },
   {
-    label: "Watchlist Opportunity",
-    value: "$1,240",
-    detail: "Estimated value gap",
-    trend: "4 listings below benchmark",
+    label: "Watchlist Signal",
+    value: "$3,180",
+    detail: "Potential value gap across tracked sets",
+    trend: "Cafe Corner dropped below benchmark",
   },
 ];
 
 export const recentActivity = [
-  "Identity verification refreshed",
-  "Vault item graded: 1999 Charizard Holo",
-  "Watchlist alert: sealed comic dropped 12%",
-  "Order TBX-1048 moved to inspection",
+  "Titanic 10294 moved to buyer inspection with courier photo proof attached.",
+  "Cafe Corner 10182 watchlist alert triggered after a verified seller price reduction.",
+  "UCS Millennium Falcon provenance note added to the vault record.",
+  "Boutique Hotel 10297 seller passed dispatch quality review in 1.4 days.",
 ];
 
 export const recommendedListings = [
   {
-    title: "Sealed First Edition Booster Box",
-    price: "$8,900",
+    title: "Cafe Corner 10182, complete with instructions",
+    price: "$2,850",
+    condition: "Used complete",
+    trust: "Premier seller, 184 trades",
+  },
+  {
+    title: "Titanic 10294 sealed first owner set",
+    price: "$940",
     condition: "Factory sealed",
-    trust: "Premier seller",
+    trust: "Verified seller, ID checked",
   },
   {
-    title: "Signed Variant Comic #1",
-    price: "$640",
-    condition: "Near mint",
-    trust: "Trusted seller",
-  },
-  {
-    title: "Designer Toy Artist Proof",
-    price: "$1,150",
-    condition: "Mint in box",
-    trust: "Verified seller",
+    title: "Lion Knights Castle 10305 with shipper",
+    price: "$470",
+    condition: "New open box",
+    trust: "Trusted seller, fast dispatch",
   },
 ];
 
 export const vaultPreview = [
   {
-    name: "Graded Cards",
-    count: 42,
-    value: "$18,420",
-  },
-  {
-    name: "Comics",
-    count: 31,
-    value: "$9,780",
-  },
-  {
-    name: "Designer Toys",
+    name: "Retired LEGO Icons",
     count: 18,
-    value: "$6,310",
+    value: "$74,200",
+  },
+  {
+    name: "Graded Trading Cards",
+    count: 21,
+    value: "$39,600",
+  },
+  {
+    name: "Vintage Comics",
+    count: 8,
+    value: "$14,600",
   },
 ];
