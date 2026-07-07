@@ -4,8 +4,8 @@ export default function VaultPage() {
   return (
     <AppRoutePlaceholder
       title="Vault"
-      description="A secure collection workspace for catalogued assets, provenance, grading, and portfolio views."
-      items={["Collection inventory", "Valuation snapshot", "Provenance records"]}
+      description="Your private record of high-value pieces, from sealed LEGO icons to graded cards, with provenance, storage notes and insured values kept close."
+      items={["Provenance timeline", "Condition and storage notes", "Insured value register"]}
     />
   );
 }
