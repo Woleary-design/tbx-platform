@@ -56,17 +56,17 @@ export function HeroShowcase({
           aria-label={imageLabel}
         >
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.16),transparent_26rem)]" />
-          <div className="absolute inset-x-8 top-8 bottom-10 grid grid-cols-2 gap-5">
+          <div className="absolute inset-x-8 bottom-10 top-8 grid grid-cols-2 gap-5">
             {["Eiffel", "Taj", "Pyramid", "Colosseum", "Modular", "Diner", "Station", "Gallery"].map((piece) => (
-              <div key={piece} className="rounded-xl border border-white/10 bg-white/8 p-4 shadow-inner">
+              <div key={piece} className="rounded-xl border border-white/10 bg-white/10 p-4 shadow-inner">
                 <div className="h-full rounded-lg bg-gradient-to-br from-stone-100/90 via-stone-200/70 to-slate-500/70" />
               </div>
             ))}
           </div>
-          <div className="absolute inset-x-0 top-1/2 h-px bg-white/12" />
-          <div className="absolute left-8 right-8 top-[27%] h-px bg-white/12" />
-          <div className="absolute left-8 right-8 top-[73%] h-px bg-white/12" />
-          <div className="absolute bottom-7 left-7 right-7 rounded-2xl border border-white/10 bg-white/92 p-5 text-slate-950 shadow-[0_20px_70px_rgba(0,0,0,0.22)] backdrop-blur">
+          <div className="absolute inset-x-0 top-1/2 h-px bg-white/10" />
+          <div className="absolute left-8 right-8 top-[27%] h-px bg-white/10" />
+          <div className="absolute left-8 right-8 top-[73%] h-px bg-white/10" />
+          <div className="absolute bottom-7 left-7 right-7 rounded-2xl border border-white/10 bg-white/90 p-5 text-slate-950 shadow-[0_20px_70px_rgba(0,0,0,0.22)] backdrop-blur">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-medium text-slate-500">{imageLabel}</p>
