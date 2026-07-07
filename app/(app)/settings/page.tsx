@@ -4,8 +4,8 @@ export default function SettingsPage() {
   return (
     <AppRoutePlaceholder
       title="Settings"
-      description="Account, verification, notification, privacy, and seller preference settings."
-      items={["Account profile", "Verification", "Notifications"]}
+      description="Fine-tune the identity, privacy and notification preferences that shape how other collectors experience your reputation on TBX."
+      items={["Identity and verification", "Trade notification cadence", "Privacy and seller controls"]}
     />
   );
 }
