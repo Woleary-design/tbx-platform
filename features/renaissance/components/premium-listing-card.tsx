@@ -1,6 +1,5 @@
 import { Heart, ShieldCheck } from "lucide-react";
 import { TrustBadge } from "@/features/renaissance/components/trust-badge";
-import { cn } from "@/lib/utils";
 
 type PremiumListingCardProps = {
   title: string;
@@ -10,8 +9,7 @@ type PremiumListingCardProps = {
   seller: string;
   trustScore: number;
   secure: boolean;
-  imageTone: string;
-  imageLabel: string;
+  imageSrc: string;
 };
 
 export function PremiumListingCard({
@@ -22,17 +20,12 @@ export function PremiumListingCard({
   seller,
   trustScore,
   secure,
-  imageTone,
-  imageLabel,
+  imageSrc,
 }: PremiumListingCardProps) {
   return (
     <article className="group overflow-hidden rounded-[1.4rem] border border-slate-200 bg-white shadow-[0_20px_70px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_28px_90px_rgba(15,23,42,0.14)]">
-      <div className={cn("relative aspect-[4/3] bg-gradient-to-br", imageTone)} role="img" aria-label={title}>
-        <div className="absolute inset-5 rounded-2xl border border-white/60 bg-white/20 shadow-inner backdrop-blur-sm" />
-        <div className="absolute inset-x-8 bottom-8 rounded-2xl border border-white/70 bg-white/80 p-4 backdrop-blur">
-          <p className="text-xs font-medium text-slate-500">Collector reference</p>
-          <p className="mt-1 text-3xl font-semibold text-slate-950">{imageLabel}</p>
-        </div>
+      <div className="relative aspect-[4/3] bg-slate-100">
+        <img src={imageSrc} alt={title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
         <button className="absolute right-4 top-4 rounded-full border border-white/70 bg-white/90 p-2 text-slate-700 shadow-sm transition-colors hover:text-slate-950" aria-label="Add to watchlist">
           <Heart className="h-4 w-4" />
         </button>
