@@ -75,12 +75,12 @@ export default function HomePage() {
 
           <div className="relative min-h-[620px]">
             <div className="absolute left-0 top-8 h-[500px] w-[76%] rounded-[2rem] border bg-card p-5 shadow-[0_30px_90px_rgba(15,23,42,0.16)] transition-transform duration-300 hover:-translate-y-1">
-              <div className="flex h-full flex-col overflow-hidden rounded-[1.5rem] border bg-[radial-gradient(circle_at_20%_10%,rgba(21,120,103,0.18),transparent_28rem),linear-gradient(135deg,#f8f4ea,#dfe7df_45%,#b9c7bd)] p-6">
+              <div className="flex h-full flex-col overflow-hidden rounded-[1.5rem] border bg-gradient-to-br from-stone-50 via-emerald-50 to-stone-300 p-6">
                 <div className="flex items-center justify-between">
                   <span className="rounded-full bg-card/85 px-3 py-1 text-xs font-medium text-primary">TBX Secure</span>
                   <span className="rounded-full bg-foreground px-3 py-1 text-xs font-medium text-background">Verified 92</span>
                 </div>
-                <div className="mt-auto space-y-3">
+                <div className="mt-auto space-y-3 rounded-3xl border bg-card/70 p-5 backdrop-blur-sm">
                   <p className="text-sm font-medium text-muted-foreground">Vaulted collectible</p>
                   <h2 className="max-w-sm text-4xl font-semibold leading-tight">UCS Millennium Falcon sealed first owner set</h2>
                   <p className="max-w-sm text-sm leading-6 text-muted-foreground">
@@ -100,9 +100,18 @@ export default function HomePage() {
                   <ShieldCheck className="h-9 w-9 text-primary" />
                 </div>
                 <div className="mt-6 space-y-3 text-sm">
-                  <div className="flex items-center justify-between"><span>Identity verified</span><span className="font-medium text-primary">Complete</span></div>
-                  <div className="flex items-center justify-between"><span>Successful trades</span><span className="font-medium">184</span></div>
-                  <div className="flex items-center justify-between"><span>Average dispatch</span><span className="font-medium">1.6 days</span></div>
+                  <div className="flex items-center justify-between gap-4">
+                    <span>Identity verified</span>
+                    <span className="font-medium text-primary">Complete</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <span>Successful trades</span>
+                    <span className="font-medium">184</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <span>Average dispatch</span>
+                    <span className="font-medium">1.6 days</span>
+                  </div>
                 </div>
               </div>
             </div>
