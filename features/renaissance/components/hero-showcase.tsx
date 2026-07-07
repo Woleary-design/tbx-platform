@@ -10,6 +10,7 @@ type HeroShowcaseProps = {
   imageDetail: string;
   primarySignal: string;
   secondarySignal: string;
+  imageSrc?: string;
   primaryHref?: string;
 };
 
@@ -21,6 +22,7 @@ export function HeroShowcase({
   imageDetail,
   primarySignal,
   secondarySignal,
+  imageSrc = "/images/hero-collector-cabinet.svg",
   primaryHref = "/marketplace",
 }: HeroShowcaseProps) {
   return (
@@ -50,23 +52,10 @@ export function HeroShowcase({
       </div>
 
       <div className="relative min-h-[560px] lg:min-h-[660px]">
-        <div
-          className="absolute inset-x-0 top-0 h-[560px] overflow-hidden rounded-[2rem] border border-slate-200 bg-slate-950 shadow-[0_34px_110px_rgba(15,23,42,0.22)] lg:h-[640px]"
-          role="img"
-          aria-label={imageLabel}
-        >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.16),transparent_26rem)]" />
-          <div className="absolute inset-x-8 bottom-10 top-8 grid grid-cols-2 gap-5">
-            {["Eiffel", "Taj", "Pyramid", "Colosseum", "Modular", "Diner", "Station", "Gallery"].map((piece) => (
-              <div key={piece} className="rounded-xl border border-white/10 bg-white/10 p-4 shadow-inner">
-                <div className="h-full rounded-lg bg-gradient-to-br from-stone-100/90 via-stone-200/70 to-slate-500/70" />
-              </div>
-            ))}
-          </div>
-          <div className="absolute inset-x-0 top-1/2 h-px bg-white/10" />
-          <div className="absolute left-8 right-8 top-[27%] h-px bg-white/10" />
-          <div className="absolute left-8 right-8 top-[73%] h-px bg-white/10" />
-          <div className="absolute bottom-7 left-7 right-7 rounded-2xl border border-white/10 bg-white/90 p-5 text-slate-950 shadow-[0_20px_70px_rgba(0,0,0,0.22)] backdrop-blur">
+        <div className="absolute inset-x-0 top-0 h-[560px] overflow-hidden rounded-[2rem] border border-slate-200 bg-slate-950 shadow-[0_34px_110px_rgba(15,23,42,0.22)] lg:h-[640px]">
+          <img src={imageSrc} alt={imageLabel} className="h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-black/5" />
+          <div className="absolute bottom-7 left-7 right-7 rounded-2xl border border-white/20 bg-white/90 p-5 text-slate-950 shadow-[0_20px_70px_rgba(0,0,0,0.22)] backdrop-blur">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-medium text-slate-500">{imageLabel}</p>
