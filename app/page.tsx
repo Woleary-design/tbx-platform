@@ -1,77 +1,60 @@
 import Link from "next/link";
-import { ShieldCheck } from "lucide-react";
+import { ArrowRight, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { HeroShowcase } from "@/features/renaissance/components/hero-showcase";
 
-const categories = ["Graded cards", "Sealed LEGO", "Vintage comics", "Designer toys", "Game memorabilia"];
+const categories = ["Retired LEGO icons", "Graded cards", "Vintage comics", "Designer toys", "Game memorabilia"];
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen">
-      <header className="border-b bg-card">
-        <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2 text-lg font-semibold tracking-normal">
-            <ShieldCheck className="h-5 w-5 text-primary" />
+    <div className="min-h-screen overflow-hidden bg-white">
+      <header className="border-b bg-white/90 backdrop-blur-xl">
+        <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+          <Link href="/" className="flex items-center gap-3 text-sm font-semibold tracking-normal text-slate-950 sm:text-base">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-950 text-white">
+              <ShieldCheck className="h-4 w-4" />
+            </span>
             The Block Exchange
           </Link>
+          <div className="hidden items-center gap-8 text-sm font-medium text-slate-500 md:flex">
+            <Link className="transition-colors hover:text-slate-950" href="/marketplace">Marketplace</Link>
+            <Link className="transition-colors hover:text-slate-950" href="/vault">Vault</Link>
+            <Link className="transition-colors hover:text-slate-950" href="/insights">Insights</Link>
+          </div>
           <div className="flex items-center gap-3 text-sm">
-            <Link className="text-muted-foreground hover:text-foreground" href="/dashboard">
-              Dashboard
+            <Link className="hidden text-slate-500 transition-colors hover:text-slate-950 sm:inline" href="/dashboard">
+              Sign in
             </Link>
-            <Button asChild size="sm">
-              <Link href="/dashboard">Enter TBX</Link>
+            <Button asChild size="sm" className="rounded-xl bg-slate-950 px-5 text-white hover:bg-slate-800">
+              <Link href="/dashboard">Get Started</Link>
             </Button>
           </div>
         </nav>
       </header>
 
-      <main className="mx-auto max-w-6xl space-y-12 px-4 py-10">
-        <section className="grid gap-8 py-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-          <div className="space-y-5">
-            <p className="text-sm font-medium text-primary">Premium collector marketplace</p>
-            <h1 className="text-4xl font-semibold tracking-normal sm:text-5xl">Collect with confidence.</h1>
-            <p className="max-w-2xl text-base leading-7 text-muted-foreground">
-              TBX is a trust-first marketplace for high-value collectibles, built around visible reputation,
-              protected transactions, and quality-first discovery.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Button asChild>
-                <Link href="/dashboard">View dashboard</Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link href="/marketplace">Browse marketplace</Link>
-              </Button>
-            </div>
-          </div>
-          <div className="rounded-xl border bg-card p-6 shadow-soft">
-            <div className="rounded-lg border bg-background p-5">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">TBX Trust</p>
-                  <p className="mt-2 text-4xl font-semibold">92</p>
-                </div>
-                <ShieldCheck className="h-10 w-10 text-primary" />
-              </div>
-              <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                {categories.slice(0, 3).map((category) => (
-                  <div key={category} className="rounded-md border bg-card p-3 text-sm font-medium">
-                    {category}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
+      <main>
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:py-20">
+          <HeroShowcase
+            eyebrow="Escrow-protected collector marketplace"
+            title="Own with confidence. Trade with trust."
+            description="South Africa's trusted platform for collectors. Whether you're buying your first collectible or managing a premium collection, TBX provides secure transactions, trusted sellers and powerful collection management."
+            imageLabel="Curated architectural collection"
+            imageDetail="Museum-lit collectibles, verified sellers and protected value in a single trusted marketplace."
+            primarySignal="TBX Secure"
+            secondarySignal="Verified 96"
+          />
+        </div>
 
-        <section className="space-y-4">
-          <h2 className="text-2xl font-semibold">Explore collector categories</h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             {categories.map((category) => (
               <Link
                 key={category}
                 href="/marketplace"
-                className="rounded-lg border bg-card p-4 text-sm font-medium transition-colors hover:border-primary/60"
+                className="group rounded-2xl border border-slate-200 bg-white p-5 text-sm font-medium text-slate-950 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_18px_60px_rgba(15,23,42,0.10)]"
               >
-                {category}
+                <span>{category}</span>
+                <ArrowRight className="mt-10 h-4 w-4 text-blue-600 transition-transform group-hover:translate-x-1" />
               </Link>
             ))}
           </div>
