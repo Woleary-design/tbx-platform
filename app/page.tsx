@@ -3,7 +3,33 @@ import { ArrowRight, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HeroShowcase } from "@/features/renaissance/components/hero-showcase";
 
-const categories = ["Retired LEGO icons", "Graded cards", "Vintage comics", "Designer toys", "Game memorabilia"];
+const categories = [
+  {
+    title: "Retired LEGO Icons",
+    detail: "Rarest sets. Timeless investments.",
+    imageSrc: "/images/category-brick-icons.svg",
+  },
+  {
+    title: "Graded Cards",
+    detail: "PSA, BGS and SGC certified.",
+    imageSrc: "/images/category-graded-card.svg",
+  },
+  {
+    title: "Vintage Comics",
+    detail: "Key issues from golden eras.",
+    imageSrc: "/images/category-vintage-comic.svg",
+  },
+  {
+    title: "Designer Toys",
+    detail: "Limited editions from top artists.",
+    imageSrc: "/images/category-designer-toy.svg",
+  },
+  {
+    title: "Game Memorabilia",
+    detail: "Rare consoles, games and collectibles.",
+    imageSrc: "/images/category-game-memorabilia.svg",
+  },
+];
 
 export default function HomePage() {
   return (
@@ -11,7 +37,7 @@ export default function HomePage() {
       <header className="border-b bg-white/90 backdrop-blur-xl">
         <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-3 text-sm font-semibold tracking-normal text-slate-950 sm:text-base">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-950 text-white">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-yellow-400 text-slate-950">
               <ShieldCheck className="h-4 w-4" />
             </span>
             The Block Exchange
@@ -42,6 +68,7 @@ export default function HomePage() {
             imageDetail="Museum-lit collectibles, verified sellers and protected value in a single trusted marketplace."
             primarySignal="TBX Secure"
             secondarySignal="Verified 96"
+            imageSrc="/images/hero-collector-cabinet.svg"
           />
         </div>
 
@@ -49,12 +76,16 @@ export default function HomePage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             {categories.map((category) => (
               <Link
-                key={category}
+                key={category.title}
                 href="/marketplace"
-                className="group rounded-2xl border border-slate-200 bg-white p-5 text-sm font-medium text-slate-950 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_18px_60px_rgba(15,23,42,0.10)]"
+                className="group flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 text-slate-950 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_18px_60px_rgba(15,23,42,0.10)]"
               >
-                <span>{category}</span>
-                <ArrowRight className="mt-10 h-4 w-4 text-blue-600 transition-transform group-hover:translate-x-1" />
+                <img src={category.imageSrc} alt="" className="h-20 w-20 shrink-0 rounded-xl object-cover" />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-semibold">{category.title}</span>
+                  <span className="mt-1 block text-sm leading-6 text-slate-600">{category.detail}</span>
+                </span>
+                <ArrowRight className="h-4 w-4 shrink-0 text-slate-950 transition-transform group-hover:translate-x-1" />
               </Link>
             ))}
           </div>
