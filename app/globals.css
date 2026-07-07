@@ -3,15 +3,15 @@
 @tailwind utilities;
 
 :root {
-  --background: 42 24% 96%;
-  --foreground: 217 24% 14%;
+  --background: 44 30% 96%;
+  --foreground: 218 24% 12%;
   --card: 0 0% 100%;
-  --card-foreground: 217 24% 14%;
+  --card-foreground: 218 24% 12%;
   --primary: 166 56% 27%;
   --primary-foreground: 0 0% 100%;
-  --muted: 42 17% 90%;
-  --muted-foreground: 216 12% 42%;
-  --border: 42 14% 84%;
+  --muted: 42 18% 91%;
+  --muted-foreground: 216 12% 39%;
+  --border: 40 16% 84%;
   --ring: 166 56% 27%;
 }
 
@@ -19,8 +19,21 @@
   border-color: hsl(var(--border));
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   min-height: 100vh;
-  background: hsl(var(--background));
+  background:
+    radial-gradient(circle at top left, rgba(21, 120, 103, 0.08), transparent 32rem),
+    linear-gradient(180deg, hsl(44 34% 98%) 0%, hsl(var(--background)) 44%, hsl(40 20% 93%) 100%);
   color: hsl(var(--foreground));
+  font-feature-settings: "ss01" on, "cv01" on;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: hsl(var(--primary) / 0.16);
 }
