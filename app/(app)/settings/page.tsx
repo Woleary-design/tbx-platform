@@ -3,9 +3,9 @@ import { AppRoutePlaceholder } from "@/features/dashboard/components/app-route-p
 export default function SettingsPage() {
   return (
     <AppRoutePlaceholder
-      title="Settings"
-      description="Account, verification, notification, privacy, and seller preference settings."
-      items={["Account profile", "Verification", "Notifications"]}
+      title="Account"
+      description="Manage the identity, privacy and verification signals that shape how other collectors experience your reputation on TBX."
+      items={["Identity and verification", "Privacy preferences", "Seller reputation controls"]}
     />
   );
 }
