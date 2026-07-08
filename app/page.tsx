@@ -5,97 +5,99 @@ import { HeroShowcase } from "@/features/renaissance/components/hero-showcase";
 import { PremiumListingCard } from "@/features/renaissance/components/premium-listing-card";
 import { marketplaceListings } from "@/features/renaissance/data/collector-experience.mock";
 
-const landingPhotos = {
-  heroCabinet:
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg/1200px-Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg",
-  architecture:
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg/700px-Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg",
-  cards:
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Thorne_Miniature_Rooms_-_Art_Institute_of_Chicago.jpg/700px-Thorne_Miniature_Rooms_-_Art_Institute_of_Chicago.jpg",
-  comics:
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Thorne_Miniature_Rooms_detail_-_Art_Institute_of_Chicago.jpg/700px-Thorne_Miniature_Rooms_detail_-_Art_Institute_of_Chicago.jpg",
-  toys:
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Unfinished_part_of_Langweil_model_in_City_of_Prague_Museum.jpg/700px-Unfinished_part_of_Langweil_model_in_City_of_Prague_Museum.jpg",
-  games:
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg/700px-Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg",
-};
-
 const categories = [
   {
-    title: "Architectural Icons",
-    detail: "Museum-grade models, studied and protected.",
-    imageSrc: landingPhotos.architecture,
+    title: "Retired LEGO Icons",
+    detail: "Vault-worthy sets with verified condition and provenance.",
+    accent: "bg-yellow-400",
   },
   {
-    title: "Graded Cards",
-    detail: "Population-aware slabs with visible provenance.",
-    imageSrc: landingPhotos.cards,
+    title: "Sealed Box Grails",
+    detail: "Factory-sealed examples, protected from payment to delivery.",
+    accent: "bg-red-600",
   },
   {
-    title: "Vintage Comics",
-    detail: "Key issues from golden eras, handled with care.",
-    imageSrc: landingPhotos.comics,
+    title: "Minifigure Vault",
+    detail: "Rare figures, complete lots and collector-grade presentation.",
+    accent: "bg-blue-600",
   },
   {
-    title: "Designer Toys",
-    detail: "Artist editions, low runs and gallery releases.",
-    imageSrc: landingPhotos.toys,
+    title: "Modular Buildings",
+    detail: "Retired streetscapes, complete builds and boxed investments.",
+    accent: "bg-emerald-700",
   },
   {
-    title: "Game Memorabilia",
-    detail: "Rare hardware, sealed games and culture pieces.",
-    imageSrc: landingPhotos.games,
+    title: "Technic & Display",
+    detail: "Statement builds for collectors who care about engineering.",
+    accent: "bg-slate-900",
   },
 ];
 
 const stories = [
   {
     collector: "Maya Chen",
-    title: "From scattered shelves to a documented architectural archive.",
-    detail: "Maya tracks provenance, insured value and seller reputation before every acquisition.",
+    title: "A retired modular street rebuilt into a documented collection.",
+    detail: "Maya tracks box condition, completeness, seller trust and insured value before every acquisition.",
   },
   {
     collector: "Andre Singh",
-    title: "A rare model found through a verified private seller.",
-    detail: "TBX Secure held funds until condition, parts and dispatch evidence were confirmed.",
+    title: "A sealed LEGO grail found through a verified private seller.",
+    detail: "TBX Secure held funds until packaging, seals and dispatch evidence were confirmed.",
   },
   {
     collector: "Nadia Jacobs",
-    title: "Gallery-grade pieces without the marketplace noise.",
-    detail: "Watchlist signals help Nadia move when rare editions surface at credible prices.",
+    title: "Rare minifigure lots without the marketplace noise.",
+    detail: "Watchlist signals help Nadia move when credible sellers list hard-to-find collector pieces.",
   },
 ];
 
 const trustReasons = [
   { title: "Escrow protection", detail: "Funds stay protected until the collector confirms delivery.", icon: LockKeyhole },
   { title: "Visible reputation", detail: "Seller trust, verification and history appear before purchase intent.", icon: ShieldCheck },
-  { title: "Curated discovery", detail: "Listings are presented like collection pieces, not commodity stock.", icon: Sparkles },
+  { title: "Collector-grade listings", detail: "Condition, seals, completeness and box quality are treated as first-class details.", icon: Sparkles },
   { title: "Private by design", detail: "Collector identity, value and ownership records stay carefully controlled.", icon: BadgeCheck },
 ];
 
 const featuredCollectors = [
-  { name: "Maya Chen", specialty: "Architectural builds", score: "94", location: "Cape Town" },
-  { name: "Elliot Venter", specialty: "Museum editions", score: "97", location: "Johannesburg" },
-  { name: "Nadia Jacobs", specialty: "Designer toys", score: "89", location: "Stellenbosch" },
+  { name: "Maya Chen", specialty: "Retired modulars", score: "94", location: "Cape Town" },
+  { name: "Elliot Venter", specialty: "Sealed grails", score: "97", location: "Johannesburg" },
+  { name: "Nadia Jacobs", specialty: "Rare minifigures", score: "89", location: "Stellenbosch" },
 ];
 
-const concepts = [
+const principles = [
   {
-    label: "A - Museum",
-    title: "The chosen direction",
-    detail: "A warm cabinet, spotlit pieces and calm editorial pacing. This is the world TBX should own.",
+    label: "Condition First",
+    title: "Boxes, seals and completeness matter.",
+    detail: "TBX listings are designed around the details LEGO collectors actually inspect before buying.",
   },
   {
-    label: "B - Apple x Leica",
-    title: "Sharper product theatre",
-    detail: "Fewer words, tighter contrast and meticulous close-ups for collectors who care about precision.",
+    label: "Trust Visible",
+    title: "Seller reputation is part of the product.",
+    detail: "Trust scores, verification and transaction history sit close to price and condition.",
   },
   {
-    label: "C - Curator's Atelier",
-    title: "A little more wonder",
-    detail: "A friendly TBX curator, floating bricks and tactile craft cues without becoming childish.",
+    label: "Collector Calm",
+    title: "A quieter way to trade LEGO.",
+    detail: "The experience should feel curated, premium and focused, not like a noisy auction feed.",
   },
 ];
+
+function CategoryVisual({ accent }: { accent: string }) {
+  return (
+    <div className="relative aspect-[4/3] overflow-hidden bg-[#fbf4e8]">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_35%_28%,rgba(250,204,21,0.26),transparent_28%),linear-gradient(135deg,#fff7e6,#f2dfbf)]" />
+      <div className="absolute left-1/2 top-1/2 h-24 w-32 -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white/70 shadow-[0_18px_45px_rgba(43,30,18,0.15)]" />
+      <div className={`absolute left-1/2 top-1/2 h-16 w-24 -translate-x-1/2 -translate-y-1/2 rounded-xl ${accent} shadow-[0_14px_28px_rgba(43,30,18,0.18)]`}>
+        <div className="grid grid-cols-3 gap-2 p-3">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <span key={index} className="h-4 rounded-full bg-white/35 shadow-inner" />
+          ))}
+        </div>
+        <span className="absolute bottom-0 left-0 h-4 w-full rounded-b-xl bg-slate-950/80" />
+      </div>
+    </div>
+  );
+}
 
 export default function HomePage() {
   const previewListings = marketplaceListings.slice(0, 3);
@@ -143,14 +145,13 @@ export default function HomePage() {
           <div className="pointer-events-none absolute bottom-20 left-4 hidden h-10 w-10 rounded-xl bg-red-500/80 shadow-[0_22px_50px_rgba(185,28,28,0.18)] -rotate-12 lg:block" />
           <div className="pointer-events-none absolute bottom-16 right-8 hidden h-12 w-12 rounded-xl bg-blue-500/80 shadow-[0_22px_50px_rgba(37,99,235,0.18)] rotate-12 lg:block" />
           <HeroShowcase
-            eyebrow="The trusted marketplace for premium collectibles"
+            eyebrow="The trusted marketplace for premium LEGO collectors"
             title="Own with confidence. Trade with trust."
-            description="Authenticated pieces. Protected transactions. Built for collectors, by collectors."
-            imageLabel="Curated architectural collection"
-            imageDetail="Museum-lit original builds, verified sellers and protected value in one trusted destination."
+            description="Rare sets, sealed boxes and collector pieces traded with verification, reputation and TBX Secure protection."
+            imageLabel="Curated LEGO collector cabinet"
+            imageDetail="Retired sets, minifigure vaults and sealed grails, presented with seller trust and protected value."
             primarySignal="TBX Secure"
             secondarySignal="Verified 96"
-            imageSrc={landingPhotos.heroCabinet}
           />
         </section>
 
@@ -176,8 +177,8 @@ export default function HomePage() {
         <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
           <div className="grid gap-8 lg:grid-cols-[260px_1fr] lg:items-end">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Trending collections</p>
-              <h2 className="mt-4 text-4xl font-semibold leading-tight tracking-normal text-slate-950">Discover what collectors love.</h2>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Trending LEGO categories</p>
+              <h2 className="mt-4 text-4xl font-semibold leading-tight tracking-normal text-slate-950">Discover what serious collectors are watching.</h2>
               <Link href="/marketplace" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-slate-950">
                 View all collections <ArrowRight className="h-4 w-4" />
               </Link>
@@ -189,9 +190,7 @@ export default function HomePage() {
                   href="/marketplace"
                   className="group overflow-hidden rounded-2xl border border-[#eadfce] bg-white text-slate-950 shadow-[0_16px_50px_rgba(43,30,18,0.07)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_26px_80px_rgba(43,30,18,0.13)]"
                 >
-                  <div className="aspect-[4/3] bg-[#fbf4e8]">
-                    <img src={category.imageSrc} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                  </div>
+                  <CategoryVisual accent={category.accent} />
                   <div className="p-4">
                     <span className="block text-sm font-semibold">{category.title}</span>
                     <span className="mt-2 block text-sm leading-6 text-slate-600">{category.detail}</span>
@@ -207,8 +206,8 @@ export default function HomePage() {
           <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Collector stories</p>
-              <h2 className="mt-4 max-w-xl text-4xl font-semibold leading-tight tracking-normal text-slate-950">The human side of provenance.</h2>
-              <p className="mt-5 max-w-lg text-lg leading-8 text-slate-600">TBX should feel like a private viewing, not a stock room. Every story is built around trust, condition, timing and taste.</p>
+              <h2 className="mt-4 max-w-xl text-4xl font-semibold leading-tight tracking-normal text-slate-950">For the sets you never want to explain to a generic marketplace.</h2>
+              <p className="mt-5 max-w-lg text-lg leading-8 text-slate-600">TBX should feel like a private collector room for LEGO: calm, trusted and built around the details that make a set valuable.</p>
             </div>
             <div className="grid gap-4">
               {stories.map((story) => (
@@ -226,7 +225,7 @@ export default function HomePage() {
           <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Marketplace preview</p>
-              <h2 className="mt-4 text-4xl font-semibold tracking-normal text-slate-950">Collector-grade listings, beautifully verified.</h2>
+              <h2 className="mt-4 text-4xl font-semibold tracking-normal text-slate-950">Collector-grade LEGO listings, beautifully verified.</h2>
             </div>
             <Button asChild variant="outline" className="h-11 rounded-xl border-[#eadfce] bg-white px-5">
               <Link href="/marketplace">Browse marketplace <ArrowRight className="h-4 w-4" /></Link>
@@ -243,8 +242,8 @@ export default function HomePage() {
           <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-400">Why trust TBX</p>
-              <h2 className="mt-4 text-4xl font-semibold leading-tight tracking-normal">Trust should be visible before anyone clicks buy.</h2>
-              <p className="mt-5 text-lg leading-8 text-slate-300">The experience leads with reputation, custody, condition and privacy. The design should make confidence feel immediate.</p>
+              <h2 className="mt-4 text-4xl font-semibold leading-tight tracking-normal">The condition report should be as visible as the price.</h2>
+              <p className="mt-5 text-lg leading-8 text-slate-300">Every LEGO trade should make trust obvious: seller history, seal status, completeness, box condition and protected payment.</p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               {trustReasons.map((reason) => {
@@ -265,7 +264,7 @@ export default function HomePage() {
           <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr]">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Featured collectors</p>
-              <h2 className="mt-4 text-4xl font-semibold leading-tight tracking-normal text-slate-950">Verified people, not anonymous storefronts.</h2>
+              <h2 className="mt-4 text-4xl font-semibold leading-tight tracking-normal text-slate-950">Verified LEGO people, not anonymous storefronts.</h2>
             </div>
             <div className="grid gap-4 md:grid-cols-3">
               {featuredCollectors.map((collector) => (
@@ -288,15 +287,15 @@ export default function HomePage() {
         <section className="bg-white py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="mb-8 max-w-2xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Three homepage concepts</p>
-              <h2 className="mt-4 text-4xl font-semibold tracking-normal text-slate-950">Museum wins, but the system can flex.</h2>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Built for LEGO trading</p>
+              <h2 className="mt-4 text-4xl font-semibold tracking-normal text-slate-950">Not another auction feed.</h2>
             </div>
             <div className="grid gap-4 lg:grid-cols-3">
-              {concepts.map((concept) => (
-                <article key={concept.label} className="rounded-[1.5rem] border border-[#eadfce] bg-[#fffaf1] p-6 shadow-[0_16px_50px_rgba(43,30,18,0.07)]">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-yellow-700">{concept.label}</p>
-                  <h3 className="mt-4 text-2xl font-semibold text-slate-950">{concept.title}</h3>
-                  <p className="mt-3 text-sm leading-6 text-slate-600">{concept.detail}</p>
+              {principles.map((principle) => (
+                <article key={principle.label} className="rounded-[1.5rem] border border-[#eadfce] bg-[#fffaf1] p-6 shadow-[0_16px_50px_rgba(43,30,18,0.07)]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-yellow-700">{principle.label}</p>
+                  <h3 className="mt-4 text-2xl font-semibold text-slate-950">{principle.title}</h3>
+                  <p className="mt-3 text-sm leading-6 text-slate-600">{principle.detail}</p>
                 </article>
               ))}
             </div>
@@ -309,8 +308,8 @@ export default function HomePage() {
             <div className="relative grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
               <div>
                 <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-sm text-yellow-200"><Users className="h-4 w-4" /> Join TBX</p>
-                <h2 className="mt-6 max-w-2xl text-5xl font-semibold leading-tight tracking-normal">Enter the collector museum built for trust.</h2>
-                <p className="mt-5 max-w-xl text-lg leading-8 text-slate-300">Start with a watchlist, document your vault, or discover a piece worthy of the cabinet.</p>
+                <h2 className="mt-6 max-w-2xl text-5xl font-semibold leading-tight tracking-normal">Enter the trusted home for serious LEGO collectors.</h2>
+                <p className="mt-5 max-w-xl text-lg leading-8 text-slate-300">Start with a watchlist, document your vault, or discover the retired set your collection has been missing.</p>
               </div>
               <div className="flex flex-wrap gap-3">
                 <Button asChild className="h-12 rounded-xl bg-yellow-400 px-6 font-semibold text-slate-950 hover:bg-yellow-300">
