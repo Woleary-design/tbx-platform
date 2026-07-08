@@ -2,7 +2,7 @@ import { Search, ShieldCheck } from "lucide-react";
 import { PremiumListingCard } from "@/features/renaissance/components/premium-listing-card";
 import { marketplaceListings } from "@/features/renaissance/data/collector-experience.mock";
 
-const filters = ["All", "Retired Modular", "Icons", "Star Wars UCS", "Castle", "TBX Secure"];
+const filters = ["All", "Architectural Builds", "Limited Construction", "Museum Architecture", "Glasshouse Builds", "TBX Secure"];
 
 export default function MarketplacePage() {
   return (
@@ -24,7 +24,7 @@ export default function MarketplacePage() {
           <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             className="h-12 w-full rounded-full border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm outline-none transition-colors placeholder:text-slate-400 focus:border-slate-400"
-            placeholder="Search by set, seller or category"
+            placeholder="Search by piece, seller or category"
           />
         </div>
       </section>
