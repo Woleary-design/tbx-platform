@@ -1,3 +1,13 @@
+const photos = {
+  heroCabinet: "https://source.unsplash.com/1600x1100/?museum,display,cabinet,collectibles",
+  townhouse: "https://source.unsplash.com/1000x750/?architectural-model,museum",
+  lighthouse: "https://source.unsplash.com/1000x750/?lighthouse,architecture,model",
+  castle: "https://source.unsplash.com/1000x750/?castle,architecture,model",
+  museum: "https://source.unsplash.com/1000x750/?museum,architecture,model",
+  conservatory: "https://source.unsplash.com/1000x750/?botanical,conservatory,architecture",
+  station: "https://source.unsplash.com/1000x750/?railway-station,architecture",
+};
+
 export const homeHero = {
   eyebrow: "Private collector home",
   title: "Own with confidence. Trade with trust.",
@@ -5,7 +15,7 @@ export const homeHero = {
     "A calm home for exceptional pieces, verified reputation and TBX Secure transactions.",
   imageLabel: "Museum-lit architectural collection",
   imageDetail: "Original brick-built icons, provenance notes and protected-trade readiness in one view.",
-  imageSrc: "/images/hero-collector-cabinet.svg",
+  imageSrc: photos.heroCabinet,
   primarySignal: "TBX Secure active",
   secondarySignal: "Trust 96",
 };
@@ -73,7 +83,7 @@ export const recommendedAcquisitions = [
     seller: "Maya Chen",
     trustScore: 94,
     secure: true,
-    imageSrc: "/images/listing-assembly-square.svg",
+    imageSrc: photos.townhouse,
   },
   {
     id: "harbor-lighthouse",
@@ -84,7 +94,7 @@ export const recommendedAcquisitions = [
     seller: "Andre Singh",
     trustScore: 91,
     secure: true,
-    imageSrc: "/images/listing-titanic.svg",
+    imageSrc: photos.lighthouse,
   },
   {
     id: "hilltop-castle",
@@ -95,7 +105,7 @@ export const recommendedAcquisitions = [
     seller: "Warren O'Leary",
     trustScore: 96,
     secure: true,
-    imageSrc: "/images/listing-castle.svg",
+    imageSrc: photos.castle,
   },
 ];
 
@@ -110,7 +120,7 @@ export const marketplaceListings = [
     seller: "Elliot Venter",
     trustScore: 97,
     secure: true,
-    imageSrc: "/images/listing-cafe-corner.svg",
+    imageSrc: photos.museum,
   },
   {
     id: "botanical-conservatory",
@@ -121,7 +131,7 @@ export const marketplaceListings = [
     seller: "Nadia Jacobs",
     trustScore: 89,
     secure: true,
-    imageSrc: "/images/listing-boutique-hotel.svg",
+    imageSrc: photos.conservatory,
   },
   {
     id: "railway-station",
@@ -132,6 +142,6 @@ export const marketplaceListings = [
     seller: "Maya Chen",
     trustScore: 94,
     secure: true,
-    imageSrc: "/images/listing-falcon.svg",
+    imageSrc: photos.station,
   },
 ];
