@@ -127,7 +127,7 @@ export function HeroShowcase({
           <div className="absolute right-10 top-6 z-20 rounded-full bg-slate-950 px-3 py-1.5 text-xs font-medium text-white shadow-sm">
             {secondarySignal}
           </div>
-          <div className="absolute bottom-7 left-7 right-7 z-30 rounded-2xl border border-white/20 bg-white/92 p-5 text-slate-950 shadow-[0_20px_70px_rgba(0,0,0,0.22)] backdrop-blur">
+          <div className="absolute bottom-7 left-7 right-7 z-30 rounded-2xl border border-white/20 bg-white/90 p-5 text-slate-950 shadow-[0_20px_70px_rgba(0,0,0,0.22)] backdrop-blur">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-medium text-slate-500">{imageLabel}</p>
