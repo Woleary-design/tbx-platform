@@ -82,7 +82,7 @@ function SealedVisual() {
       <span className="absolute bottom-5 left-8 h-28 w-40 rounded-2xl bg-red-600 shadow-[0_24px_50px_rgba(43,30,18,0.18)]" />
       <span className="absolute bottom-5 left-8 h-9 w-40 rounded-b-2xl bg-slate-950" />
       <span className="absolute left-14 top-12 h-14 w-28 rounded-xl bg-yellow-300" />
-      <Studs rows={2} columns={5} className="absolute left-16 top-15 w-24" />
+      <Studs rows={2} columns={5} className="absolute left-16 top-[60px] w-24" />
       <span className="absolute right-12 top-10 h-16 w-4 rounded-full bg-white/35" />
     </div>
   );
