@@ -3,24 +3,36 @@
 @tailwind utilities;
 
 :root {
-  --background: 42 24% 96%;
-  --foreground: 217 24% 14%;
+  --background: 210 20% 98%;
+  --foreground: 222 39% 10%;
   --card: 0 0% 100%;
-  --card-foreground: 217 24% 14%;
-  --primary: 166 56% 27%;
+  --card-foreground: 222 39% 10%;
+  --primary: 224 42% 12%;
   --primary-foreground: 0 0% 100%;
-  --muted: 42 17% 90%;
-  --muted-foreground: 216 12% 42%;
-  --border: 42 14% 84%;
-  --ring: 166 56% 27%;
+  --muted: 216 24% 94%;
+  --muted-foreground: 217 20% 42%;
+  --border: 216 28% 89%;
+  --ring: 224 42% 12%;
 }
 
 * {
   border-color: hsl(var(--border));
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   min-height: 100vh;
-  background: hsl(var(--background));
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.06), transparent 32rem),
+    linear-gradient(180deg, #ffffff 0%, hsl(var(--background)) 45%, #f3f6fa 100%);
   color: hsl(var(--foreground));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgba(37, 99, 235, 0.14);
 }

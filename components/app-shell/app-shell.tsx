@@ -5,31 +5,28 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import {
   Archive,
-  BarChart3,
   Bell,
-  Boxes,
   ChevronDown,
-  Gauge,
+  Gem,
+  Home,
   Inbox,
   LayoutGrid,
-  MessageSquare,
   Search,
   Settings,
   ShieldCheck,
-  ShoppingBag,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 const navigation = [
-  { href: "/dashboard", label: "Dashboard", icon: Gauge },
+  { href: "/dashboard", label: "Home", icon: Home },
   { href: "/marketplace", label: "Marketplace", icon: LayoutGrid },
-  { href: "/vault", label: "Vault", icon: Archive },
-  { href: "/orders", label: "Orders", icon: ShoppingBag },
+  { href: "/insights", label: "Collection", icon: Archive },
+  { href: "/vault", label: "Vault", icon: Gem },
   { href: "/messages", label: "Messages", icon: Inbox },
-  { href: "/insights", label: "Insights", icon: BarChart3 },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/settings", label: "Account", icon: Settings },
 ];
 
 type AppShellProps = {
@@ -41,21 +38,21 @@ export function AppShell({ children }: AppShellProps) {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 border-r bg-card lg:block">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 border-r bg-white/80 backdrop-blur-xl lg:block">
         <div className="flex h-full flex-col">
-          <div className="border-b p-6">
+          <div className="border-b px-6 py-7">
             <Link href="/dashboard" className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950 text-white shadow-[0_18px_44px_rgba(15,23,42,0.18)]">
                 <ShieldCheck className="h-5 w-5" />
               </span>
               <span>
-                <span className="block text-lg font-semibold">TBX</span>
-                <span className="block text-xs text-muted-foreground">Collector Console</span>
+                <span className="block text-lg font-semibold tracking-normal text-slate-950">The Block Exchange</span>
+                <span className="block text-xs text-slate-500">Private Collector Platform</span>
               </span>
             </Link>
           </div>
 
-          <nav className="flex-1 space-y-1 p-4">
+          <nav className="flex-1 space-y-1.5 p-4">
             {navigation.map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
@@ -65,56 +62,53 @@ export function AppShell({ children }: AppShellProps) {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
+                    "group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
                     isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                      ? "bg-slate-950 text-white shadow-[0_16px_44px_rgba(15,23,42,0.16)]"
+                      : "text-slate-500 hover:bg-slate-100 hover:text-slate-950",
                   )}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-4 w-4 transition-transform duration-200 group-hover:scale-105" />
                   {item.label}
                 </Link>
               );
             })}
           </nav>
 
-          <div className="m-4 rounded-lg border bg-background p-4">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <Boxes className="h-4 w-4 text-primary" />
-              Trust-first mode
+          <div className="m-4 rounded-2xl border bg-slate-50 p-4">
+            <div className="flex items-center gap-2 text-sm font-medium text-slate-950">
+              <Sparkles className="h-4 w-4 text-blue-600" />
+              TBX Secure ready
             </div>
-            <p className="mt-2 text-xs leading-5 text-muted-foreground">
-              Mock data only. Ready for Supabase-backed account intelligence.
+            <p className="mt-2 text-xs leading-5 text-slate-500">
+              Reputation, provenance and protected trading signals stay visible across every collection decision.
             </p>
           </div>
         </div>
       </aside>
 
       <div className="lg:pl-72">
-        <header className="sticky top-0 z-20 border-b bg-card/95 backdrop-blur">
+        <header className="sticky top-0 z-20 border-b bg-white/80 backdrop-blur-xl">
           <div className="flex min-h-16 flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between lg:px-8">
             <div className="flex items-center justify-between gap-3">
-              <Link href="/dashboard" className="flex items-center gap-2 font-semibold lg:hidden">
-                <ShieldCheck className="h-5 w-5 text-primary" />
+              <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-slate-950 lg:hidden">
+                <ShieldCheck className="h-5 w-5 text-blue-600" />
                 TBX
               </Link>
-              <div className="hidden text-sm text-muted-foreground lg:block">Authenticated Workspace</div>
+              <div className="hidden text-sm text-slate-500 lg:block">Own with confidence. Trade with trust.</div>
             </div>
 
             <div className="flex flex-1 items-center gap-3 sm:max-w-xl">
               <div className="relative flex-1">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input placeholder="Search listings, orders, vault items..." className="pl-10" />
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Input placeholder="Search vaulted pieces, sellers, orders..." className="rounded-full border-slate-200 bg-slate-50 pl-10" />
               </div>
-              <Button variant="outline" size="sm" aria-label="Notifications">
+              <Button variant="outline" size="sm" aria-label="Notifications" className="rounded-full border-slate-200 bg-white px-3">
                 <Bell className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="sm" aria-label="Messages">
-                <MessageSquare className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="sm" className="gap-2">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
-                  W
+              <Button variant="outline" size="sm" className="rounded-full border-slate-200 bg-white pl-1.5 pr-3">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-950 text-xs font-semibold text-white">
+                  WO
                 </span>
                 <ChevronDown className="h-4 w-4" />
               </Button>
@@ -129,8 +123,8 @@ export function AppShell({ children }: AppShellProps) {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium",
-                    isActive ? "bg-primary text-primary-foreground" : "text-muted-foreground",
+                    "whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium",
+                    isActive ? "bg-slate-950 text-white" : "text-slate-500",
                   )}
                 >
                   {item.label}
