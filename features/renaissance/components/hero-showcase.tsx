@@ -14,59 +14,97 @@ type HeroShowcaseProps = {
   primaryHref?: string;
 };
 
-const cabinetPieces = [
-  { label: "Retired Modular", tone: "bg-amber-300", accent: "bg-red-700", shape: "wide" },
-  { label: "Sealed Icons", tone: "bg-stone-100", accent: "bg-slate-950", shape: "box" },
-  { label: "Minifig Vault", tone: "bg-yellow-300", accent: "bg-blue-700", shape: "figures" },
-  { label: "Space Grail", tone: "bg-slate-200", accent: "bg-red-500", shape: "ship" },
-  { label: "Castle Lot", tone: "bg-stone-300", accent: "bg-emerald-700", shape: "castle" },
-  { label: "Factory Sealed", tone: "bg-red-600", accent: "bg-yellow-300", shape: "box" },
+type CabinetPiece = {
+  label: string;
+  kind: "modular" | "sealed" | "figures" | "ship" | "castle" | "boxed";
+  glow: string;
+};
+
+const cabinetPieces: CabinetPiece[] = [
+  { label: "Retired Modular", kind: "modular", glow: "rgba(250,204,21,0.34)" },
+  { label: "Sealed Icons", kind: "sealed", glow: "rgba(255,255,255,0.26)" },
+  { label: "Minifig Vault", kind: "figures", glow: "rgba(59,130,246,0.24)" },
+  { label: "Space Grail", kind: "ship", glow: "rgba(226,232,240,0.28)" },
+  { label: "Castle Lot", kind: "castle", glow: "rgba(16,185,129,0.20)" },
+  { label: "Factory Sealed", kind: "boxed", glow: "rgba(239,68,68,0.26)" },
 ];
 
-function BrickStuds() {
+function StudGrid({ rows = 2, columns = 4 }: { rows?: number; columns?: number }) {
   return (
-    <div className="absolute inset-x-4 top-4 grid grid-cols-4 gap-2 opacity-80">
-      {Array.from({ length: 8 }).map((_, index) => (
-        <span key={index} className="h-3 rounded-full bg-white/35 shadow-inner" />
+    <div className="absolute inset-x-4 top-3 grid gap-2" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
+      {Array.from({ length: rows * columns }).map((_, index) => (
+        <span key={index} className="h-3.5 rounded-full bg-white/40 shadow-[inset_0_2px_3px_rgba(255,255,255,0.5),inset_0_-2px_4px_rgba(0,0,0,0.16)]" />
       ))}
     </div>
   );
 }
 
-function CabinetPiece({ piece }: { piece: (typeof cabinetPieces)[number] }) {
+function BoxedSet({ color = "bg-yellow-400", band = "bg-red-600", wide = false }: { color?: string; band?: string; wide?: boolean }) {
   return (
-    <div className="group relative flex min-h-[142px] flex-col justify-end overflow-hidden rounded-2xl border border-white/10 bg-black/24 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-transform duration-300 hover:-translate-y-1">
-      <div className="absolute inset-x-8 top-3 h-10 rounded-full bg-yellow-200/40 blur-xl" />
-      <div className="relative mx-auto mb-4 flex h-20 w-full max-w-[150px] items-end justify-center">
-        {piece.shape === "figures" ? (
-          <div className="flex items-end gap-2">
-            {[0, 1, 2].map((item) => (
-              <div key={item} className="relative h-16 w-9 rounded-t-xl bg-yellow-300 shadow-[0_10px_20px_rgba(0,0,0,0.25)]">
-                <span className="absolute left-2 top-2 h-5 w-5 rounded-full bg-yellow-100" />
-                <span className={`absolute bottom-0 left-0 h-8 w-full rounded-t-md ${item === 1 ? "bg-blue-700" : "bg-slate-900"}`} />
-              </div>
-            ))}
-          </div>
-        ) : piece.shape === "ship" ? (
-          <div className="relative h-16 w-36">
-            <span className="absolute bottom-3 left-4 h-5 w-28 rounded-full bg-stone-200" />
-            <span className="absolute bottom-8 left-12 h-6 w-14 rounded-t-full bg-slate-400" />
-            <span className="absolute bottom-0 left-0 h-3 w-12 skew-x-[-28deg] rounded bg-red-500" />
-            <span className="absolute bottom-0 right-0 h-3 w-12 skew-x-[28deg] rounded bg-red-500" />
-          </div>
-        ) : piece.shape === "castle" ? (
-          <div className="relative h-20 w-36">
-            <span className={`absolute bottom-0 left-2 h-12 w-8 rounded-t-md ${piece.tone}`} />
-            <span className={`absolute bottom-0 left-14 h-16 w-10 rounded-t-md ${piece.tone}`} />
-            <span className={`absolute bottom-0 right-2 h-12 w-8 rounded-t-md ${piece.tone}`} />
-            <span className={`absolute bottom-0 left-0 h-5 w-full rounded ${piece.accent}`} />
-          </div>
-        ) : (
-          <div className={`relative h-16 ${piece.shape === "wide" ? "w-40" : "w-28"} rounded-xl ${piece.tone} shadow-[0_14px_24px_rgba(0,0,0,0.28)]`}>
-            <BrickStuds />
-            <span className={`absolute bottom-0 left-0 h-5 w-full rounded-b-xl ${piece.accent}`} />
-          </div>
-        )}
+    <div className={`relative ${wide ? "h-24 w-40" : "h-24 w-32"} rounded-xl ${color} shadow-[0_18px_34px_rgba(0,0,0,0.34)] ring-1 ring-white/35`}>
+      <StudGrid rows={2} columns={wide ? 5 : 4} />
+      <div className="absolute inset-x-4 bottom-8 h-8 rounded-lg bg-white/26" />
+      <span className={`absolute bottom-0 left-0 h-7 w-full rounded-b-xl ${band}`} />
+      <span className="absolute inset-y-3 right-3 w-2 rounded-full bg-white/25" />
+    </div>
+  );
+}
+
+function Minifigures() {
+  return (
+    <div className="flex items-end justify-center gap-3">
+      {["bg-slate-950", "bg-blue-600", "bg-slate-950"].map((torso, index) => (
+        <div key={`${torso}-${index}`} className={`${index === 1 ? "h-[86px]" : "h-20"} relative w-12 rounded-t-2xl bg-yellow-300 shadow-[0_16px_28px_rgba(0,0,0,0.30)] ring-1 ring-white/25`}>
+          <span className="absolute left-3 top-3 h-6 w-6 rounded-full bg-yellow-100 shadow-inner" />
+          <span className={`absolute bottom-0 left-0 h-10 w-full rounded-t-lg ${torso}`} />
+          <span className="absolute bottom-3 left-3 h-4 w-2 rounded bg-yellow-300" />
+          <span className="absolute bottom-3 right-3 h-4 w-2 rounded bg-yellow-300" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SpaceShip() {
+  return (
+    <div className="relative h-28 w-44">
+      <span className="absolute bottom-8 left-8 h-8 w-28 rounded-full bg-stone-200 shadow-[0_16px_28px_rgba(0,0,0,0.24)]" />
+      <span className="absolute bottom-14 left-16 h-8 w-14 rounded-t-full bg-slate-400" />
+      <span className="absolute bottom-3 left-2 h-5 w-16 skew-x-[-28deg] rounded bg-red-500" />
+      <span className="absolute bottom-3 right-2 h-5 w-16 skew-x-[28deg] rounded bg-red-500" />
+      <span className="absolute bottom-7 left-0 h-4 w-12 rounded-full bg-slate-300" />
+      <span className="absolute bottom-7 right-0 h-4 w-12 rounded-full bg-slate-300" />
+      <span className="absolute bottom-0 left-10 h-3 w-24 rounded-full bg-black/55 blur-sm" />
+    </div>
+  );
+}
+
+function CastleLot() {
+  return (
+    <div className="relative h-28 w-44">
+      <span className="absolute bottom-0 left-1 h-16 w-10 rounded-t-md bg-stone-300 shadow-lg" />
+      <span className="absolute bottom-0 left-14 h-24 w-14 rounded-t-md bg-stone-200 shadow-lg" />
+      <span className="absolute bottom-0 right-1 h-16 w-10 rounded-t-md bg-stone-300 shadow-lg" />
+      <span className="absolute bottom-0 left-0 h-7 w-full rounded bg-emerald-800" />
+      <span className="absolute left-16 top-3 h-4 w-10 rounded-t-full bg-red-700" />
+      <span className="absolute bottom-9 left-6 h-6 w-4 rounded bg-slate-950/70" />
+      <span className="absolute bottom-9 right-6 h-6 w-4 rounded bg-slate-950/70" />
+    </div>
+  );
+}
+
+function CabinetPieceCard({ piece }: { piece: CabinetPiece }) {
+  return (
+    <div className="group relative flex min-h-[148px] flex-col justify-end overflow-hidden rounded-[1.35rem] border border-white/12 bg-white/[0.055] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.13)] transition-transform duration-300 hover:-translate-y-1">
+      <div className="absolute inset-x-5 top-2 h-16 rounded-full blur-2xl" style={{ backgroundColor: piece.glow }} />
+      <div className="absolute inset-x-0 top-0 h-px bg-white/30" />
+      <div className="relative mx-auto mb-4 flex h-28 w-full max-w-[190px] items-end justify-center">
+        {piece.kind === "modular" ? <BoxedSet wide /> : null}
+        {piece.kind === "sealed" ? <BoxedSet color="bg-stone-100" band="bg-slate-950" /> : null}
+        {piece.kind === "figures" ? <Minifigures /> : null}
+        {piece.kind === "ship" ? <SpaceShip /> : null}
+        {piece.kind === "castle" ? <CastleLot /> : null}
+        {piece.kind === "boxed" ? <BoxedSet color="bg-red-600" band="bg-yellow-300" wide /> : null}
       </div>
       <div className="relative rounded-lg bg-slate-950 px-3 py-2 text-center text-[10px] font-semibold uppercase tracking-[0.14em] text-yellow-300 shadow-lg">
         {piece.label}
@@ -113,12 +151,13 @@ export function HeroShowcase({
 
       <div className="relative min-h-[560px] lg:min-h-[660px]">
         <div className="absolute inset-x-0 top-0 h-[560px] overflow-hidden rounded-[2rem] border border-[#e6d7bf] bg-[#24170f] p-6 shadow-[0_34px_110px_rgba(15,23,42,0.22)] lg:h-[640px]">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_24%_18%,rgba(250,204,21,0.30),transparent_24%),radial-gradient(circle_at_76%_18%,rgba(250,204,21,0.24),transparent_22%),linear-gradient(135deg,#4a2b18_0%,#0b1020_100%)]" />
-          <div className="absolute inset-5 rounded-[1.65rem] border border-white/25 bg-white/5 shadow-[inset_0_0_60px_rgba(255,255,255,0.08)]" />
-          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/40 to-transparent" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_24%_18%,rgba(250,204,21,0.34),transparent_24%),radial-gradient(circle_at_76%_18%,rgba(250,204,21,0.24),transparent_22%),linear-gradient(135deg,#4a2b18_0%,#0b1020_100%)]" />
+          <div className="absolute inset-5 rounded-[1.65rem] border border-white/25 bg-white/5 shadow-[inset_0_0_70px_rgba(255,255,255,0.08)]" />
+          <div className="absolute left-10 right-10 top-[48%] h-px bg-white/18" />
+          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/45 to-transparent" />
           <div className="relative z-10 grid h-[440px] grid-cols-2 gap-4 sm:grid-cols-3 lg:h-[520px]">
             {cabinetPieces.map((piece) => (
-              <CabinetPiece key={piece.label} piece={piece} />
+              <CabinetPieceCard key={piece.label} piece={piece} />
             ))}
           </div>
           <div className="absolute left-10 top-6 z-20 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-blue-700 shadow-sm">
