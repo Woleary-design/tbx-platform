@@ -6,18 +6,24 @@ import { PremiumListingCard } from "@/features/renaissance/components/premium-li
 import { marketplaceListings } from "@/features/renaissance/data/collector-experience.mock";
 
 const landingPhotos = {
-  heroCabinet: "https://source.unsplash.com/1600x1100/?museum,display,cabinet,collectibles",
-  architecture: "https://source.unsplash.com/640x480/?architectural-model,museum",
-  cards: "https://source.unsplash.com/640x480/?graded-card,collectible",
-  comics: "https://source.unsplash.com/640x480/?vintage-comic,collectible",
-  toys: "https://source.unsplash.com/640x480/?designer-toy,collectible",
-  games: "https://source.unsplash.com/640x480/?retro-game,collectible",
+  heroCabinet:
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg/1200px-Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg",
+  architecture:
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg/700px-Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg",
+  cards:
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Thorne_Miniature_Rooms_-_Art_Institute_of_Chicago.jpg/700px-Thorne_Miniature_Rooms_-_Art_Institute_of_Chicago.jpg",
+  comics:
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Thorne_Miniature_Rooms_detail_-_Art_Institute_of_Chicago.jpg/700px-Thorne_Miniature_Rooms_detail_-_Art_Institute_of_Chicago.jpg",
+  toys:
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Unfinished_part_of_Langweil_model_in_City_of_Prague_Museum.jpg/700px-Unfinished_part_of_Langweil_model_in_City_of_Prague_Museum.jpg",
+  games:
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg/700px-Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg",
 };
 
 const categories = [
   {
     title: "Architectural Icons",
-    detail: "Original brick-built museums, stations and townhouses.",
+    detail: "Museum-grade models, studied and protected.",
     imageSrc: landingPhotos.architecture,
   },
   {
@@ -50,12 +56,12 @@ const stories = [
   },
   {
     collector: "Andre Singh",
-    title: "A lighthouse study found through a verified private seller.",
+    title: "A rare model found through a verified private seller.",
     detail: "TBX Secure held funds until condition, parts and dispatch evidence were confirmed.",
   },
   {
     collector: "Nadia Jacobs",
-    title: "Gallery-grade toys without the marketplace noise.",
+    title: "Gallery-grade pieces without the marketplace noise.",
     detail: "Watchlist signals help Nadia move when rare editions surface at credible prices.",
   },
 ];
@@ -77,10 +83,10 @@ const concepts = [
   {
     label: "A - Museum",
     title: "The chosen direction",
-    detail: "A warm walnut cabinet, spotlit pieces and calm editorial pacing. This is the world TBX should own.",
+    detail: "A warm cabinet, spotlit pieces and calm editorial pacing. This is the world TBX should own.",
   },
   {
-    label: "B - Apple × Leica",
+    label: "B - Apple x Leica",
     title: "Sharper product theatre",
     detail: "Fewer words, tighter contrast and meticulous close-ups for collectors who care about precision.",
   },
@@ -203,21 +209,6 @@ export default function HomePage() {
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Collector stories</p>
               <h2 className="mt-4 max-w-xl text-4xl font-semibold leading-tight tracking-normal text-slate-950">The human side of provenance.</h2>
               <p className="mt-5 max-w-lg text-lg leading-8 text-slate-600">TBX should feel like a private viewing, not a stock room. Every story is built around trust, condition, timing and taste.</p>
-              <div className="mt-8 rounded-[1.75rem] border border-[#eadfce] bg-[#fffaf1] p-5 shadow-[0_18px_60px_rgba(43,30,18,0.08)]">
-                <div className="flex items-center gap-4">
-                  <div className="relative h-20 w-20 rounded-2xl bg-yellow-400 shadow-inner">
-                    <div className="absolute left-5 top-5 h-10 w-10 rounded-full bg-[#ffd56a]" />
-                    <div className="absolute left-8 top-8 h-2 w-2 rounded-full bg-slate-950" />
-                    <div className="absolute right-8 top-8 h-2 w-2 rounded-full bg-slate-950" />
-                    <div className="absolute bottom-6 left-7 h-2 w-7 rounded-full bg-slate-950/80" />
-                    <div className="absolute -bottom-2 left-4 h-8 w-12 rounded-t-2xl bg-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-slate-950">Meet Theo, the TBX curator</p>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">A warm, original museum guide for onboarding, provenance cues and future collection education.</p>
-                  </div>
-                </div>
-              </div>
             </div>
             <div className="grid gap-4">
               {stories.map((story) => (
@@ -298,7 +289,7 @@ export default function HomePage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="mb-8 max-w-2xl">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Three homepage concepts</p>
-              <h2 className="mt-4 text-4xl font-semibold tracking-normal text-slate-950">Challenge accepted. Museum wins, but the system can flex.</h2>
+              <h2 className="mt-4 text-4xl font-semibold tracking-normal text-slate-950">Museum wins, but the system can flex.</h2>
             </div>
             <div className="grid gap-4 lg:grid-cols-3">
               {concepts.map((concept) => (
