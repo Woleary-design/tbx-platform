@@ -3,7 +3,7 @@ import { ArrowRight, BadgeCheck, LockKeyhole, Search, ShieldCheck, Sparkles, Use
 import { Button } from "@/components/ui/button";
 import { HeroShowcase } from "@/features/renaissance/components/hero-showcase";
 import { PremiumListingCard } from "@/features/renaissance/components/premium-listing-card";
-import { marketplaceListings } from "@/features/renaissance/data/collector-experience.mock";
+import { homeHero, marketplaceListings } from "@/features/renaissance/data/collector-experience.mock";
 
 const categories = [
   {
@@ -168,8 +168,9 @@ export default function HomePage() {
             eyebrow="The trusted marketplace for premium LEGO collectors"
             title="Own with confidence. Trade with trust."
             description="Rare sets, sealed boxes and current collector heat traded with verification, reputation and TBX Secure protection."
-            imageLabel="Current LEGO collector cabinet"
-            imageDetail="UCS 75419, 2026 modular watchlists, Blacktron return and sealed 18+ grails, presented with seller trust and protected value."
+            imageLabel={homeHero.imageLabel}
+            imageDetail={homeHero.imageDetail}
+            imageSrc={homeHero.imageSrc}
             primarySignal="TBX Secure"
             secondarySignal="Verified 96"
           />
