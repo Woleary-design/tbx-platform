@@ -140,7 +140,7 @@ export default function HomePage() {
         </section>
 
         <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
-          <div className="rounded-[2rem] border border-[#eadfce] bg-white/82 p-5 shadow-[0_24px_80px_rgba(43,30,18,0.08)] backdrop-blur">
+          <div className="rounded-[2rem] border border-[#eadfce] bg-white/80 p-5 shadow-[0_24px_80px_rgba(43,30,18,0.08)] backdrop-blur">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {trustReasons.map((reason) => {
                 const Icon = reason.icon;
@@ -250,7 +250,7 @@ export default function HomePage() {
               {trustReasons.map((reason) => {
                 const Icon = reason.icon;
                 return (
-                  <article key={reason.title} className="rounded-[1.5rem] border border-white/10 bg-white/6 p-6 shadow-[0_20px_70px_rgba(0,0,0,0.24)]">
+                  <article key={reason.title} className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_20px_70px_rgba(0,0,0,0.24)]">
                     <Icon className="h-7 w-7 text-yellow-400" />
                     <h3 className="mt-5 text-lg font-semibold">{reason.title}</h3>
                     <p className="mt-3 text-sm leading-6 text-slate-300">{reason.detail}</p>
