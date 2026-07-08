@@ -7,47 +7,47 @@ import { marketplaceListings } from "@/features/renaissance/data/collector-exper
 
 const categories = [
   {
-    title: "Retired LEGO Icons",
-    detail: "Vault-worthy sets with verified condition and provenance.",
+    title: "UCS Display Grails",
+    detail: "Flagship 18+ centrepieces, verified against market heat and seller history.",
+    accent: "bg-slate-900",
+  },
+  {
+    title: "2026 Modular Watch",
+    detail: "Launch-window modular inventory, tracked before supply and pricing settle.",
     accent: "bg-yellow-400",
   },
   {
-    title: "Sealed Box Grails",
-    detail: "Factory-sealed examples, protected from payment to delivery.",
-    accent: "bg-red-600",
-  },
-  {
-    title: "Minifigure Vault",
-    detail: "Rare figures, complete lots and collector-grade presentation.",
+    title: "Smart Play Era",
+    detail: "New tech-led LEGO releases with collector curiosity and early demand signals.",
     accent: "bg-blue-600",
   },
   {
-    title: "Modular Buildings",
-    detail: "Retired streetscapes, complete builds and boxed investments.",
-    accent: "bg-emerald-700",
+    title: "Classic Space Return",
+    detail: "Blacktron, space nostalgia and sealed archive lots with visible provenance.",
+    accent: "bg-slate-950",
   },
   {
-    title: "Technic & Display",
-    detail: "Statement builds for collectors who care about engineering.",
-    accent: "bg-slate-900",
+    title: "Sealed 18+ Icons",
+    detail: "Factory-sealed adult collector sets where box condition drives value.",
+    accent: "bg-red-600",
   },
 ];
 
 const stories = [
   {
     collector: "Maya Chen",
-    title: "A retired modular street rebuilt into a documented collection.",
-    detail: "Maya tracks box condition, completeness, seller trust and insured value before every acquisition.",
+    title: "A UCS flagship watchlist built before launch-week noise.",
+    detail: "Maya tracks seller reputation, allocation quality and protected payment readiness before making a move.",
   },
   {
     collector: "Andre Singh",
-    title: "A sealed LEGO grail found through a verified private seller.",
-    detail: "TBX Secure held funds until packaging, seals and dispatch evidence were confirmed.",
+    title: "A 2026 modular lead found through a verified private seller.",
+    detail: "TBX Secure keeps the deal calm while condition photos, packaging and dispatch evidence are checked.",
   },
   {
     collector: "Nadia Jacobs",
-    title: "Rare minifigure lots without the marketplace noise.",
-    detail: "Watchlist signals help Nadia move when credible sellers list hard-to-find collector pieces.",
+    title: "Blacktron-era nostalgia without anonymous marketplace chaos.",
+    detail: "Watchlist signals help Nadia spot credible sealed listings and complete archive lots before they spike.",
   },
 ];
 
@@ -59,16 +59,16 @@ const trustReasons = [
 ];
 
 const featuredCollectors = [
-  { name: "Maya Chen", specialty: "Retired modulars", score: "94", location: "Cape Town" },
-  { name: "Elliot Venter", specialty: "Sealed grails", score: "97", location: "Johannesburg" },
-  { name: "Nadia Jacobs", specialty: "Rare minifigures", score: "89", location: "Stellenbosch" },
+  { name: "Maya Chen", specialty: "UCS display grails", score: "94", location: "Cape Town" },
+  { name: "Elliot Venter", specialty: "Sealed 18+ Icons", score: "97", location: "Johannesburg" },
+  { name: "Nadia Jacobs", specialty: "Classic Space return", score: "89", location: "Stellenbosch" },
 ];
 
 const principles = [
   {
-    label: "Condition First",
-    title: "Boxes, seals and completeness matter.",
-    detail: "TBX listings are designed around the details LEGO collectors actually inspect before buying.",
+    label: "Current Heat",
+    title: "TBX should follow the sets collectors are chasing now.",
+    detail: "UCS flagships, modular launches, sealed 18+ Icons and nostalgia waves are presented as market signals, not stale shelf filler.",
   },
   {
     label: "Trust Visible",
@@ -82,19 +82,39 @@ const principles = [
   },
 ];
 
-function CategoryVisual({ accent }: { accent: string }) {
+function CategoryVisual({ accent, title }: { accent: string; title: string }) {
+  const isUcs = title.includes("UCS");
+  const isSmart = title.includes("Smart");
+  const isSpace = title.includes("Space");
+  const isSealed = title.includes("Sealed");
+
   return (
     <div className="relative aspect-[4/3] overflow-hidden bg-[#fbf4e8]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_35%_28%,rgba(250,204,21,0.26),transparent_28%),linear-gradient(135deg,#fff7e6,#f2dfbf)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_35%_28%,rgba(250,204,21,0.28),transparent_28%),linear-gradient(135deg,#fff7e6,#f2dfbf)]" />
       <div className="absolute left-1/2 top-1/2 h-24 w-32 -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white/70 shadow-[0_18px_45px_rgba(43,30,18,0.15)]" />
-      <div className={`absolute left-1/2 top-1/2 h-16 w-24 -translate-x-1/2 -translate-y-1/2 rounded-xl ${accent} shadow-[0_14px_28px_rgba(43,30,18,0.18)]`}>
-        <div className="grid grid-cols-3 gap-2 p-3">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <span key={index} className="h-4 rounded-full bg-white/35 shadow-inner" />
-          ))}
+      {isUcs ? (
+        <div className="absolute left-1/2 top-1/2 h-20 w-28 -translate-x-1/2 -translate-y-1/2 rounded-t-full border-[8px] border-slate-300 border-b-0 bg-slate-950 shadow-[0_14px_28px_rgba(43,30,18,0.18)]" />
+      ) : isSmart ? (
+        <div className="absolute left-1/2 top-1/2 h-16 w-28 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_14px_28px_rgba(43,30,18,0.18)]">
+          <span className="absolute right-3 top-2 h-5 w-5 rounded-full bg-yellow-300 shadow-[0_0_22px_rgba(250,204,21,0.75)]" />
+          <span className="absolute left-8 top-5 h-8 w-12 rounded-t-full bg-blue-500" />
         </div>
-        <span className="absolute bottom-0 left-0 h-4 w-full rounded-b-xl bg-slate-950/80" />
-      </div>
+      ) : isSpace ? (
+        <div className="absolute left-1/2 top-1/2 h-16 w-32 -translate-x-1/2 -translate-y-1/2 rounded-[1rem] bg-slate-950 shadow-[0_14px_28px_rgba(43,30,18,0.18)]">
+          <span className="absolute left-1/2 top-3 h-7 w-12 -translate-x-1/2 rounded-t-full bg-yellow-300" />
+          <span className="absolute -bottom-3 left-1 h-5 w-20 -skew-x-[24deg] rounded bg-slate-950" />
+          <span className="absolute -bottom-3 right-1 h-5 w-20 skew-x-[24deg] rounded bg-slate-950" />
+        </div>
+      ) : (
+        <div className={`absolute left-1/2 top-1/2 h-16 w-24 -translate-x-1/2 -translate-y-1/2 rounded-xl ${accent} shadow-[0_14px_28px_rgba(43,30,18,0.18)]`}>
+          <div className="grid grid-cols-3 gap-2 p-3">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <span key={index} className="h-4 rounded-full bg-white/35 shadow-inner" />
+            ))}
+          </div>
+          <span className={`absolute bottom-0 left-0 h-4 w-full rounded-b-xl ${isSealed ? "bg-slate-950" : "bg-slate-950/80"}`} />
+        </div>
+      )}
     </div>
   );
 }
@@ -147,9 +167,9 @@ export default function HomePage() {
           <HeroShowcase
             eyebrow="The trusted marketplace for premium LEGO collectors"
             title="Own with confidence. Trade with trust."
-            description="Rare sets, sealed boxes and collector pieces traded with verification, reputation and TBX Secure protection."
-            imageLabel="Curated LEGO collector cabinet"
-            imageDetail="Retired sets, minifigure vaults and sealed grails, presented with seller trust and protected value."
+            description="Rare sets, sealed boxes and current collector heat traded with verification, reputation and TBX Secure protection."
+            imageLabel="Current LEGO collector cabinet"
+            imageDetail="UCS 75419, 2026 modular watchlists, Blacktron return and sealed 18+ grails, presented with seller trust and protected value."
             primarySignal="TBX Secure"
             secondarySignal="Verified 96"
           />
@@ -177,8 +197,8 @@ export default function HomePage() {
         <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
           <div className="grid gap-8 lg:grid-cols-[260px_1fr] lg:items-end">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Trending LEGO categories</p>
-              <h2 className="mt-4 text-4xl font-semibold leading-tight tracking-normal text-slate-950">Discover what serious collectors are watching.</h2>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Current collector heat</p>
+              <h2 className="mt-4 text-4xl font-semibold leading-tight tracking-normal text-slate-950">Discover what serious LEGO collectors are watching now.</h2>
               <Link href="/marketplace" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-slate-950">
                 View all collections <ArrowRight className="h-4 w-4" />
               </Link>
@@ -190,7 +210,7 @@ export default function HomePage() {
                   href="/marketplace"
                   className="group overflow-hidden rounded-2xl border border-[#eadfce] bg-white text-slate-950 shadow-[0_16px_50px_rgba(43,30,18,0.07)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_26px_80px_rgba(43,30,18,0.13)]"
                 >
-                  <CategoryVisual accent={category.accent} />
+                  <CategoryVisual accent={category.accent} title={category.title} />
                   <div className="p-4">
                     <span className="block text-sm font-semibold">{category.title}</span>
                     <span className="mt-2 block text-sm leading-6 text-slate-600">{category.detail}</span>
@@ -206,8 +226,8 @@ export default function HomePage() {
           <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Collector stories</p>
-              <h2 className="mt-4 max-w-xl text-4xl font-semibold leading-tight tracking-normal text-slate-950">For the sets you never want to explain to a generic marketplace.</h2>
-              <p className="mt-5 max-w-lg text-lg leading-8 text-slate-600">TBX should feel like a private collector room for LEGO: calm, trusted and built around the details that make a set valuable.</p>
+              <h2 className="mt-4 max-w-xl text-4xl font-semibold leading-tight tracking-normal text-slate-950">For the LEGO you never want to explain to a generic marketplace.</h2>
+              <p className="mt-5 max-w-lg text-lg leading-8 text-slate-600">TBX should feel like a private collector room for LEGO: calm, trusted and tuned to what is moving now.</p>
             </div>
             <div className="grid gap-4">
               {stories.map((story) => (
@@ -225,7 +245,7 @@ export default function HomePage() {
           <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Marketplace preview</p>
-              <h2 className="mt-4 text-4xl font-semibold tracking-normal text-slate-950">Collector-grade LEGO listings, beautifully verified.</h2>
+              <h2 className="mt-4 text-4xl font-semibold tracking-normal text-slate-950">Current LEGO listings, beautifully verified.</h2>
             </div>
             <Button asChild variant="outline" className="h-11 rounded-xl border-[#eadfce] bg-white px-5">
               <Link href="/marketplace">Browse marketplace <ArrowRight className="h-4 w-4" /></Link>
@@ -309,7 +329,7 @@ export default function HomePage() {
               <div>
                 <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-sm text-yellow-200"><Users className="h-4 w-4" /> Join TBX</p>
                 <h2 className="mt-6 max-w-2xl text-5xl font-semibold leading-tight tracking-normal">Enter the trusted home for serious LEGO collectors.</h2>
-                <p className="mt-5 max-w-xl text-lg leading-8 text-slate-300">Start with a watchlist, document your vault, or discover the retired set your collection has been missing.</p>
+                <p className="mt-5 max-w-xl text-lg leading-8 text-slate-300">Start with a watchlist, document your vault, or discover the current set your collection has been missing.</p>
               </div>
               <div className="flex flex-wrap gap-3">
                 <Button asChild className="h-12 rounded-xl bg-yellow-400 px-6 font-semibold text-slate-950 hover:bg-yellow-300">
