@@ -109,7 +109,7 @@ export default function HomePage() {
             <Link className="transition-colors hover:text-slate-950" href="#trust">About</Link>
           </div>
           <div className="flex items-center gap-3 text-sm">
-            <Button asChild variant="ghost" size="icon" className="hidden rounded-full text-slate-950 sm:inline-flex" aria-label="Search">
+            <Button asChild variant="ghost" className="hidden h-10 w-10 rounded-full p-0 text-slate-950 sm:inline-flex" aria-label="Search">
               <Link href="/marketplace"><Search className="h-5 w-5" /></Link>
             </Button>
             <Link className="hidden text-slate-700 transition-colors hover:text-slate-950 sm:inline" href="/dashboard">
