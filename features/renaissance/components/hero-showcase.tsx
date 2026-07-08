@@ -4,6 +4,9 @@ import { ArrowRight, LockKeyhole, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
+const verifiedHeroImage =
+  "https://storage.ghost.io/c/51/f8/51f871d8-b6be-4a73-b958-0ca4fff0110a/content/images/hyperallergic-newspack-s3-amazonaws-com/uploads/2017/03/models-prototypes.jpg";
+
 type HeroShowcaseProps = {
   eyebrow: string;
   title: string;
@@ -24,9 +27,11 @@ export function HeroShowcase({
   imageDetail,
   primarySignal,
   secondarySignal,
-  imageSrc = "https://storage.ghost.io/c/51/f8/51f871d8-b6be-4a73-b958-0ca4fff0110a/content/images/hyperallergic-newspack-s3-amazonaws-com/uploads/2017/03/models-prototypes.jpg",
+  imageSrc = verifiedHeroImage,
   primaryHref = "/marketplace",
 }: HeroShowcaseProps) {
+  const safeImageSrc = imageSrc.includes("upload.wikimedia.org") ? verifiedHeroImage : imageSrc;
+
   return (
     <section className="grid gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
       <div className="space-y-8">
@@ -57,7 +62,7 @@ export function HeroShowcase({
         <div className="absolute inset-x-0 top-0 h-[560px] overflow-hidden rounded-[2rem] border border-slate-200 bg-[#21160f] shadow-[0_34px_110px_rgba(15,23,42,0.22)] lg:h-[640px]">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_24%_20%,rgba(250,204,21,0.34),transparent_24%),radial-gradient(circle_at_72%_18%,rgba(250,204,21,0.22),transparent_20%),linear-gradient(135deg,#3b2518_0%,#0f172a_100%)]" />
           <img
-            src={imageSrc}
+            src={safeImageSrc}
             alt={imageLabel}
             className="relative z-10 h-full w-full object-cover"
             onError={(event) => {
