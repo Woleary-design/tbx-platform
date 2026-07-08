@@ -1,11 +1,18 @@
 const photos = {
-  heroCabinet: "https://source.unsplash.com/1600x1100/?museum,display,cabinet,collectibles",
-  townhouse: "https://source.unsplash.com/1000x750/?architectural-model,museum",
-  lighthouse: "https://source.unsplash.com/1000x750/?lighthouse,architecture,model",
-  castle: "https://source.unsplash.com/1000x750/?castle,architecture,model",
-  museum: "https://source.unsplash.com/1000x750/?museum,architecture,model",
-  conservatory: "https://source.unsplash.com/1000x750/?botanical,conservatory,architecture",
-  station: "https://source.unsplash.com/1000x750/?railway-station,architecture",
+  heroCabinet:
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg/1200px-Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg",
+  townhouse:
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg/900px-Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg",
+  lighthouse:
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Unfinished_part_of_Langweil_model_in_City_of_Prague_Museum.jpg/900px-Unfinished_part_of_Langweil_model_in_City_of_Prague_Museum.jpg",
+  castle:
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Thorne_Miniature_Rooms_-_Art_Institute_of_Chicago.jpg/900px-Thorne_Miniature_Rooms_-_Art_Institute_of_Chicago.jpg",
+  museum:
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg/900px-Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg",
+  conservatory:
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Thorne_Miniature_Rooms_detail_-_Art_Institute_of_Chicago.jpg/900px-Thorne_Miniature_Rooms_detail_-_Art_Institute_of_Chicago.jpg",
+  station:
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Unfinished_part_of_Langweil_model_in_City_of_Prague_Museum.jpg/900px-Unfinished_part_of_Langweil_model_in_City_of_Prague_Museum.jpg",
 };
 
 export const homeHero = {
