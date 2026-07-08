@@ -1,5 +1,5 @@
 const photos = {
-  heroCabinet: "tbx-museum-cabinet",
+  heroCabinet: "https://cdn.shopify.com/s/files/1/0637/3277/7049/files/e3154f8b92295a855cf4f008ed904253_272927c3-cb13-4466-89e9-99b74b264617.jpg?v=1753839137",
   ucsGrail: "lego-ucs-grail",
   modularWatch: "lego-2026-modular-watch",
   smartPlay: "lego-smart-play-era",
@@ -14,8 +14,8 @@ export const homeHero = {
   title: "Own with confidence. Trade with trust.",
   description:
     "A calm home for rare LEGO sets, verified reputation and TBX Secure transactions.",
-  imageLabel: "TBX museum cabinet",
-  imageDetail: "A bespoke collector cabinet for original brick-built grails, verified collectors and protected value.",
+  imageLabel: "Premium LEGO collector display cabinet",
+  imageDetail: "A bright glass collector cabinet with warm lighting, protected value signals and display-ready LEGO grails.",
   imageSrc: photos.heroCabinet,
   primarySignal: "TBX Secure active",
   secondarySignal: "Trust 96",
