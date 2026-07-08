@@ -1,27 +1,20 @@
 const photos = {
-  heroCabinet:
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg/1200px-Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg",
-  townhouse:
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg/900px-Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg",
-  lighthouse:
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Unfinished_part_of_Langweil_model_in_City_of_Prague_Museum.jpg/900px-Unfinished_part_of_Langweil_model_in_City_of_Prague_Museum.jpg",
-  castle:
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Thorne_Miniature_Rooms_-_Art_Institute_of_Chicago.jpg/900px-Thorne_Miniature_Rooms_-_Art_Institute_of_Chicago.jpg",
-  museum:
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg/900px-Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg",
-  conservatory:
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Thorne_Miniature_Rooms_detail_-_Art_Institute_of_Chicago.jpg/900px-Thorne_Miniature_Rooms_detail_-_Art_Institute_of_Chicago.jpg",
-  station:
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Unfinished_part_of_Langweil_model_in_City_of_Prague_Museum.jpg/900px-Unfinished_part_of_Langweil_model_in_City_of_Prague_Museum.jpg",
+  heroCabinet: "lego-cabinet",
+  retiredIcons: "lego-retired-icons",
+  sealedBox: "lego-sealed-box",
+  minifigureVault: "lego-minifigure-vault",
+  modularStreet: "lego-modular-street",
+  technicDisplay: "lego-technic-display",
+  castleArchive: "lego-castle-archive",
 };
 
 export const homeHero = {
-  eyebrow: "Private collector home",
+  eyebrow: "Private LEGO collector home",
   title: "Own with confidence. Trade with trust.",
   description:
-    "A calm home for exceptional pieces, verified reputation and TBX Secure transactions.",
-  imageLabel: "Museum-lit architectural collection",
-  imageDetail: "Original brick-built icons, provenance notes and protected-trade readiness in one view.",
+    "A calm home for rare LEGO sets, verified reputation and TBX Secure transactions.",
+  imageLabel: "Curated LEGO collector cabinet",
+  imageDetail: "Retired sets, minifigure vaults and sealed grails with protected-trade readiness in one view.",
   imageSrc: photos.heroCabinet,
   primarySignal: "TBX Secure active",
   secondarySignal: "Trust 96",
@@ -30,7 +23,7 @@ export const homeHero = {
 export const collectionSummary = {
   value: "$128,400",
   change: "+8.4% this quarter",
-  itemCount: "47 documented pieces",
+  itemCount: "47 documented LEGO pieces",
   insured: "$142,000 insured value",
 };
 
@@ -42,113 +35,113 @@ export const trustStatus = {
 
 export const watchlistOpportunities = [
   {
-    title: "Harbor Lighthouse Atelier",
+    title: "Retired Modular Street Corner",
     price: "$2,850",
     signal: "12% below six-month benchmark",
-    category: "Architectural Builds",
+    category: "Retired LEGO Icons",
   },
   {
-    title: "Walnut Observatory Edition",
+    title: "Sealed Collector Space Cruiser",
     price: "$940",
     signal: "Verified seller reduced price today",
-    category: "Limited Construction",
+    category: "Sealed Box Grails",
   },
 ];
 
 export const marketMovers = [
   {
-    title: "European Townhouse Series",
+    title: "Retired Modular Buildings",
     movement: "+6.8%",
     detail: "Sealed examples tightened after two verified sales.",
   },
   {
-    title: "Hilltop Castle Builds",
+    title: "Castle Archive Lots",
     movement: "+4.1%",
     detail: "Complete boxed sets are moving faster across private collectors.",
   },
   {
-    title: "Civic Museum Editions",
+    title: "Loose Minifigure Lots",
     movement: "-3.2%",
     detail: "Short-term softness created a watchlist opportunity.",
   },
 ];
 
 export const recentActivity = [
-  "Atelier Row seller dispatch proof verified.",
-  "Walnut Observatory provenance note added to Vault.",
-  "Civic Museum watchlist threshold crossed below target range.",
-  "Harbor Lighthouse entered TBX Secure inspection window.",
+  "Retired Modular seller dispatch proof verified.",
+  "Sealed Space Cruiser provenance note added to Vault.",
+  "Minifigure lot watchlist threshold crossed below target range.",
+  "Castle Archive entered TBX Secure inspection window.",
 ];
 
 export const recommendedAcquisitions = [
   {
-    id: "european-townhouse",
-    title: "European Townhouse Archive",
+    id: "retired-modular-street",
+    title: "Retired Modular Street Corner",
     price: "$580",
-    condition: "Factory sealed",
-    category: "Architectural Builds",
+    condition: "Factory sealed, sharp corners",
+    category: "Retired LEGO Icons",
     seller: "Maya Chen",
     trustScore: 94,
     secure: true,
-    imageSrc: photos.townhouse,
+    imageSrc: photos.retiredIcons,
   },
   {
-    id: "harbor-lighthouse",
-    title: "Harbor Lighthouse Atelier",
+    id: "sealed-space-cruiser",
+    title: "Sealed Collector Space Cruiser",
     price: "$940",
     condition: "Sealed first owner",
-    category: "Limited Construction",
+    category: "Sealed Box Grails",
     seller: "Andre Singh",
     trustScore: 91,
     secure: true,
-    imageSrc: photos.lighthouse,
+    imageSrc: photos.sealedBox,
   },
   {
-    id: "hilltop-castle",
-    title: "Hilltop Castle Founder's Box",
+    id: "rare-minifigure-vault",
+    title: "Rare Minifigure Vault Lot",
     price: "$470",
-    condition: "New open box",
-    category: "Castle Architecture",
+    condition: "Complete with accessories",
+    category: "Minifigure Vault",
     seller: "Warren O'Leary",
     trustScore: 96,
     secure: true,
-    imageSrc: photos.castle,
+    imageSrc: photos.minifigureVault,
   },
 ];
 
 export const marketplaceListings = [
   ...recommendedAcquisitions,
   {
-    id: "civic-museum",
-    title: "Civic Museum Corner Edition",
+    id: "sealed-modular-street",
+    title: "Sealed Modular Street Archive",
     price: "$2,850",
-    condition: "Used complete",
-    category: "Museum Architecture",
+    condition: "Factory sealed, collector stored",
+    category: "Modular Buildings",
     seller: "Elliot Venter",
     trustScore: 97,
     secure: true,
-    imageSrc: photos.museum,
+    imageSrc: photos.modularStreet,
   },
   {
-    id: "botanical-conservatory",
-    title: "Botanical Conservatory Study",
+    id: "technic-display-car",
+    title: "Technic Display Car Edition",
     price: "$260",
-    condition: "Factory sealed",
-    category: "Glasshouse Builds",
+    condition: "New open box, bags sealed",
+    category: "Technic & Display",
     seller: "Nadia Jacobs",
     trustScore: 89,
     secure: true,
-    imageSrc: photos.conservatory,
+    imageSrc: photos.technicDisplay,
   },
   {
-    id: "railway-station",
-    title: "Old Town Railway Station",
+    id: "castle-archive-lot",
+    title: "Castle Archive Complete Lot",
     price: "$1,120",
-    condition: "Sealed with shipper",
-    category: "Transport Architecture",
+    condition: "Complete with manuals",
+    category: "Castle Archive",
     seller: "Maya Chen",
     trustScore: 94,
     secure: true,
-    imageSrc: photos.station,
+    imageSrc: photos.castleArchive,
   },
 ];
