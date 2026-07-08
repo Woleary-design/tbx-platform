@@ -5,31 +5,40 @@ import { HeroShowcase } from "@/features/renaissance/components/hero-showcase";
 import { PremiumListingCard } from "@/features/renaissance/components/premium-listing-card";
 import { marketplaceListings } from "@/features/renaissance/data/collector-experience.mock";
 
+const landingPhotos = {
+  heroCabinet: "https://source.unsplash.com/1600x1100/?museum,display,cabinet,collectibles",
+  architecture: "https://source.unsplash.com/640x480/?architectural-model,museum",
+  cards: "https://source.unsplash.com/640x480/?graded-card,collectible",
+  comics: "https://source.unsplash.com/640x480/?vintage-comic,collectible",
+  toys: "https://source.unsplash.com/640x480/?designer-toy,collectible",
+  games: "https://source.unsplash.com/640x480/?retro-game,collectible",
+};
+
 const categories = [
   {
     title: "Architectural Icons",
     detail: "Original brick-built museums, stations and townhouses.",
-    imageSrc: "/images/category-brick-icons.svg",
+    imageSrc: landingPhotos.architecture,
   },
   {
     title: "Graded Cards",
     detail: "Population-aware slabs with visible provenance.",
-    imageSrc: "/images/category-graded-card.svg",
+    imageSrc: landingPhotos.cards,
   },
   {
     title: "Vintage Comics",
     detail: "Key issues from golden eras, handled with care.",
-    imageSrc: "/images/category-vintage-comic.svg",
+    imageSrc: landingPhotos.comics,
   },
   {
     title: "Designer Toys",
     detail: "Artist editions, low runs and gallery releases.",
-    imageSrc: "/images/category-designer-toy.svg",
+    imageSrc: landingPhotos.toys,
   },
   {
     title: "Game Memorabilia",
     detail: "Rare hardware, sealed games and culture pieces.",
-    imageSrc: "/images/category-game-memorabilia.svg",
+    imageSrc: landingPhotos.games,
   },
 ];
 
@@ -135,7 +144,7 @@ export default function HomePage() {
             imageDetail="Museum-lit original builds, verified sellers and protected value in one trusted destination."
             primarySignal="TBX Secure"
             secondarySignal="Verified 96"
-            imageSrc="/images/hero-collector-cabinet.svg"
+            imageSrc={landingPhotos.heroCabinet}
           />
         </section>
 
@@ -174,8 +183,8 @@ export default function HomePage() {
                   href="/marketplace"
                   className="group overflow-hidden rounded-2xl border border-[#eadfce] bg-white text-slate-950 shadow-[0_16px_50px_rgba(43,30,18,0.07)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_26px_80px_rgba(43,30,18,0.13)]"
                 >
-                  <div className="aspect-[4/3] bg-[#fbf4e8] p-4">
-                    <img src={category.imageSrc} alt="" className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105" />
+                  <div className="aspect-[4/3] bg-[#fbf4e8]">
+                    <img src={category.imageSrc} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
                   </div>
                   <div className="p-4">
                     <span className="block text-sm font-semibold">{category.title}</span>
