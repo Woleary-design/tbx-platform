@@ -19,6 +19,17 @@ const categories = [
   "Vintage Pirates",
 ];
 
+function FourDotLogo() {
+  return (
+    <span className="grid h-10 w-10 grid-cols-2 gap-1 rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-slate-200">
+      <span className="rounded bg-slate-950" />
+      <span className="rounded bg-slate-950" />
+      <span className="rounded bg-slate-950" />
+      <span className="rounded bg-yellow-400" />
+    </span>
+  );
+}
+
 export default function HomePage() {
   const previewListings = marketplaceListings.slice(0, 3);
 
@@ -27,20 +38,16 @@ export default function HomePage() {
       <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-[#f6f9fc]/85 backdrop-blur-xl">
         <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3 font-semibold text-slate-950">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-slate-950 text-white shadow-sm">
-              <span className="grid h-4 w-4 grid-cols-2 gap-0.5">
-                <span className="rounded-sm bg-white/90" />
-                <span className="rounded-sm bg-white/90" />
-                <span className="rounded-sm bg-white/90" />
-                <span className="rounded-sm bg-white/90" />
-              </span>
+            <FourDotLogo />
+            <span className="leading-tight">
+              <span className="block text-[10px] font-semibold uppercase tracking-[0.32em] text-yellow-600">The</span>
+              <span className="block text-lg font-semibold">Block Exchange</span>
             </span>
-            <span>The Block Exchange</span>
           </Link>
 
           <div className="hidden items-center gap-9 text-sm font-medium text-slate-600 md:flex">
             <Link href="/marketplace" className="hover:text-slate-950">Marketplace</Link>
-            <Link href="/vault" className="hover:text-slate-950">Vault</Link>
+            <Link href="/vault" className="hover:text-slate-950">My Vault</Link>
             <Link href="/insights" className="hover:text-slate-950">Insights</Link>
             <Link href="/marketplace" className="hover:text-slate-950">Pricing</Link>
           </div>
@@ -70,7 +77,7 @@ export default function HomePage() {
               </h1>
 
               <p className="mt-7 text-pretty text-lg leading-relaxed text-slate-600">
-                South Africa&apos;s trusted platform for collectors. Whether you&apos;re buying your first collectible or managing a premium collection, TBX provides secure transactions, trusted sellers and powerful collection management.
+                South Africa&apos;s trusted platform for collectors. Specialising in rare, retired and sealed LEGO sets with verified sellers, protected checkout and transparent condition details.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -91,11 +98,7 @@ export default function HomePage() {
 
             <div className="relative">
               <div className="relative aspect-[4/5] overflow-hidden rounded-3xl bg-slate-950 shadow-2xl shadow-slate-950/20 ring-1 ring-slate-950/10 sm:aspect-[5/4] lg:aspect-[4/5]">
-                <img
-                  src="https://the-block-exchange-landing-page.vercel.app/hero-cabinet.png"
-                  alt="A premium collector display cabinet with beautifully lit LEGO sets"
-                  className="h-full w-full object-cover"
-                />
+                <img src="https://the-block-exchange-landing-page.vercel.app/hero-cabinet.png" alt="A premium collector display cabinet with beautifully lit LEGO sets" className="h-full w-full object-cover" />
               </div>
               <div className="absolute -bottom-5 left-5 flex items-center gap-3 rounded-xl border border-slate-200 bg-white/95 px-4 py-3 shadow-xl backdrop-blur-sm">
                 <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
@@ -128,8 +131,8 @@ export default function HomePage() {
         <section className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
           <div className="grid gap-10 lg:grid-cols-[300px_1fr] lg:items-start">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">Current collector heat</p>
-              <h2 className="mt-4 text-4xl font-semibold leading-tight tracking-tight text-slate-950">Grails serious collectors are watching now.</h2>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">Featured Collectibles</p>
+              <h2 className="mt-4 text-4xl font-semibold leading-tight tracking-tight text-slate-950">Verified LEGO sets from trusted collectors.</h2>
               <div className="mt-8 flex flex-wrap gap-2">
                 {categories.map((category) => (
                   <Link key={category} href="/marketplace" className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-950">
@@ -140,9 +143,7 @@ export default function HomePage() {
             </div>
 
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {previewListings.map((listing) => (
-                <PremiumListingCard key={listing.id} {...listing} />
-              ))}
+              {previewListings.map((listing) => <PremiumListingCard key={listing.id} {...listing} />)}
             </div>
           </div>
         </section>
