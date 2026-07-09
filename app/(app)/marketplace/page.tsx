@@ -15,13 +15,13 @@ export default function MarketplacePage() {
         <div className="grid gap-8 lg:grid-cols-[1fr_440px]">
           <div className="p-7 text-white md:p-10">
             <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-medium text-yellow-300">
-              <ShieldCheck className="h-4 w-4" /> TBX Secure marketplace
+              <ShieldCheck className="h-4 w-4" /> TBX Secure Marketplace
             </p>
             <h1 className="mt-6 max-w-3xl text-4xl font-semibold leading-tight md:text-6xl">
-              Grails serious collectors are watching now.
+              The trusted marketplace for premium LEGO collectors.
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-white/70">
-              Browse verified sellers, protected listings and collector-grade LEGO sets presented with reputation, condition and confidence before price.
+              Buy rare, retired and sealed LEGO sets from verified sellers with TBX Secure protection. Every listing includes transparent condition details, seller reputation and protected checkout.
             </p>
             <div className="mt-8 grid gap-3 sm:grid-cols-3">
               {["R34M protected", "4,821 collectors", "96 avg trust"].map((stat) => (
@@ -32,7 +32,7 @@ export default function MarketplacePage() {
           <div className="relative min-h-[360px] bg-[#f6f1e8]">
             <img src="https://the-block-exchange-landing-page.vercel.app/hero-cabinet.png" alt="Premium collector cabinet" className="h-full w-full object-cover" />
             <div className="absolute bottom-5 left-5 right-5 rounded-2xl bg-white/95 p-4 shadow-xl backdrop-blur">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-yellow-600">Featured grail</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-yellow-600">Featured collectible</p>
               <p className="mt-1 text-xl font-semibold text-slate-950">{featured.title}</p>
               <p className="mt-1 text-sm text-slate-600">{featured.price} · TBX Score {featured.trustScore}</p>
             </div>
@@ -61,8 +61,8 @@ export default function MarketplacePage() {
       <section className="space-y-5">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600"><Sparkles className="h-4 w-4" /> Featured Grails</p>
-            <h2 className="mt-3 text-3xl font-semibold text-slate-950">Photo-first listings with visible trust.</h2>
+            <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600"><Sparkles className="h-4 w-4" /> Featured Collectibles</p>
+            <h2 className="mt-3 text-3xl font-semibold text-slate-950">Verified LEGO sets from trusted collectors.</h2>
           </div>
         </div>
         <div className="grid gap-6 md:grid-cols-2 2xl:grid-cols-3">
