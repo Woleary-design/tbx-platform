@@ -25,7 +25,7 @@ const navigation = [
   { href: "/vault", label: "My Vault", icon: Gem },
   { href: "/insights", label: "Insights", icon: Archive },
   { href: "/messages", label: "Messages", icon: Inbox },
-  { href: "/settings", label: "Account", icon: Settings },
+  { href: "/profile", label: "Profile", icon: Settings },
 ];
 
 type AppShellProps = { children: ReactNode };
@@ -110,9 +110,11 @@ export function AppShell({ children }: AppShellProps) {
               <Button variant="outline" size="sm" aria-label="Notifications" className="rounded-full border-slate-200 bg-white px-3">
                 <Bell className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="sm" className="rounded-full border-slate-200 bg-white pl-1.5 pr-3">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-950 text-xs font-semibold text-white">WO</span>
-                <ChevronDown className="h-4 w-4" />
+              <Button asChild variant="outline" size="sm" className="rounded-full border-slate-200 bg-white pl-1.5 pr-3">
+                <Link href="/profile">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-950 text-xs font-semibold text-white">WO</span>
+                  <ChevronDown className="h-4 w-4" />
+                </Link>
               </Button>
             </div>
           </div>
