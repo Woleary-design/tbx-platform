@@ -13,7 +13,6 @@ import {
   LayoutGrid,
   Search,
   Settings,
-  ShieldCheck,
   Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,15 +22,24 @@ import { cn } from "@/lib/utils";
 const navigation = [
   { href: "/dashboard", label: "Home", icon: Home },
   { href: "/marketplace", label: "Marketplace", icon: LayoutGrid },
-  { href: "/insights", label: "Collection", icon: Archive },
-  { href: "/vault", label: "Vault", icon: Gem },
+  { href: "/vault", label: "My Vault", icon: Gem },
+  { href: "/insights", label: "Insights", icon: Archive },
   { href: "/messages", label: "Messages", icon: Inbox },
   { href: "/settings", label: "Account", icon: Settings },
 ];
 
-type AppShellProps = {
-  children: ReactNode;
-};
+type AppShellProps = { children: ReactNode };
+
+function FourDotLogo({ small = false }: { small?: boolean }) {
+  return (
+    <span className={cn("grid grid-cols-2 gap-1 rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-slate-200", small ? "h-8 w-8" : "h-11 w-11")}> 
+      <span className="rounded bg-slate-950" />
+      <span className="rounded bg-slate-950" />
+      <span className="rounded bg-slate-950" />
+      <span className="rounded bg-yellow-400" />
+    </span>
+  );
+}
 
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
@@ -42,11 +50,10 @@ export function AppShell({ children }: AppShellProps) {
         <div className="flex h-full flex-col">
           <div className="border-b px-6 py-7">
             <Link href="/dashboard" className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950 text-white shadow-[0_18px_44px_rgba(15,23,42,0.18)]">
-                <ShieldCheck className="h-5 w-5" />
-              </span>
-              <span>
-                <span className="block text-lg font-semibold tracking-normal text-slate-950">The Block Exchange</span>
+              <FourDotLogo />
+              <span className="leading-tight">
+                <span className="block text-[10px] font-semibold uppercase tracking-[0.32em] text-yellow-600">The</span>
+                <span className="block text-lg font-semibold tracking-normal text-slate-950">Block Exchange</span>
                 <span className="block text-xs text-slate-500">Private Collector Platform</span>
               </span>
             </Link>
@@ -56,16 +63,13 @@ export function AppShell({ children }: AppShellProps) {
             {navigation.map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
-
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={cn(
                     "group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                    isActive
-                      ? "bg-slate-950 text-white shadow-[0_16px_44px_rgba(15,23,42,0.16)]"
-                      : "text-slate-500 hover:bg-slate-100 hover:text-slate-950",
+                    isActive ? "bg-slate-950 text-white shadow-[0_16px_44px_rgba(15,23,42,0.16)]" : "text-slate-500 hover:bg-slate-100 hover:text-slate-950",
                   )}
                 >
                   <Icon className="h-4 w-4 transition-transform duration-200 group-hover:scale-105" />
@@ -77,7 +81,7 @@ export function AppShell({ children }: AppShellProps) {
 
           <div className="m-4 rounded-2xl border bg-slate-50 p-4">
             <div className="flex items-center gap-2 text-sm font-medium text-slate-950">
-              <Sparkles className="h-4 w-4 text-blue-600" />
+              <Sparkles className="h-4 w-4 text-yellow-500" />
               TBX Secure ready
             </div>
             <p className="mt-2 text-xs leading-5 text-slate-500">
@@ -92,7 +96,7 @@ export function AppShell({ children }: AppShellProps) {
           <div className="flex min-h-16 flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between lg:px-8">
             <div className="flex items-center justify-between gap-3">
               <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-slate-950 lg:hidden">
-                <ShieldCheck className="h-5 w-5 text-blue-600" />
+                <FourDotLogo small />
                 TBX
               </Link>
               <div className="hidden text-sm text-slate-500 lg:block">Own with confidence. Trade with trust.</div>
@@ -107,9 +111,7 @@ export function AppShell({ children }: AppShellProps) {
                 <Bell className="h-4 w-4" />
               </Button>
               <Button variant="outline" size="sm" className="rounded-full border-slate-200 bg-white pl-1.5 pr-3">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-950 text-xs font-semibold text-white">
-                  WO
-                </span>
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-950 text-xs font-semibold text-white">WO</span>
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </div>
@@ -119,14 +121,7 @@ export function AppShell({ children }: AppShellProps) {
             {navigation.map((item) => {
               const isActive = pathname === item.href;
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium",
-                    isActive ? "bg-slate-950 text-white" : "text-slate-500",
-                  )}
-                >
+                <Link key={item.href} href={item.href} className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium", isActive ? "bg-slate-950 text-white" : "text-slate-500")}>
                   {item.label}
                 </Link>
               );
