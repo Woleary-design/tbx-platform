@@ -6,6 +6,14 @@ import { ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
+function getSiteUrl() {
+  const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  const fallbackUrl = window.location.origin;
+  const url = configuredUrl || fallbackUrl;
+
+  return url.endsWith("/") ? url.slice(0, -1) : url;
+}
+
 export function SignInForm() {
   const router = useRouter();
   const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
@@ -34,7 +42,7 @@ export function SignInForm() {
               display_name: displayName || email.split("@")[0],
               username: email.split("@")[0],
             },
-            emailRedirectTo: `${window.location.origin}/dashboard`,
+            emailRedirectTo: `${getSiteUrl()}/dashboard`,
           },
         });
 
