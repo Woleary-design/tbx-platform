@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import { cn } from "@/lib/utils";
 
 const navigation = [
@@ -28,7 +29,20 @@ const navigation = [
   { href: "/profile", label: "Profile", icon: Settings },
 ];
 
-type AppShellProps = { children: ReactNode };
+type CollectorIdentity = {
+  displayName: string;
+  initials: string;
+  avatarUrl: string | null;
+  level: string;
+  score: number;
+  tbxId: string;
+  email: string;
+};
+
+type AppShellProps = {
+  children: ReactNode;
+  collector: CollectorIdentity;
+};
 
 function FourDotLogo({ small = false }: { small?: boolean }) {
   return (
@@ -41,7 +55,7 @@ function FourDotLogo({ small = false }: { small?: boolean }) {
   );
 }
 
-export function AppShell({ children }: AppShellProps) {
+export function AppShell({ children, collector }: AppShellProps) {
   const pathname = usePathname();
 
   return (
@@ -79,14 +93,28 @@ export function AppShell({ children }: AppShellProps) {
             })}
           </nav>
 
-          <div className="m-4 rounded-2xl border bg-slate-50 p-4">
-            <div className="flex items-center gap-2 text-sm font-medium text-slate-950">
-              <Sparkles className="h-4 w-4 text-yellow-500" />
-              TBX Secure ready
+          <div className="m-4 space-y-3">
+            <Link href="/profile" className="block rounded-2xl border bg-white p-4 shadow-sm transition hover:border-slate-300">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-yellow-400 text-sm font-semibold text-slate-950">
+                  {collector.avatarUrl ? <img src={collector.avatarUrl} alt="" className="h-full w-full object-cover" /> : collector.initials}
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-slate-950">{collector.displayName}</p>
+                  <p className="truncate text-xs text-slate-500">{collector.level} · Score {collector.score}</p>
+                </div>
+              </div>
+              <p className="mt-3 truncate text-[11px] font-medium uppercase tracking-[0.12em] text-yellow-600">{collector.tbxId}</p>
+            </Link>
+
+            <div className="rounded-2xl border bg-slate-50 p-4">
+              <div className="flex items-center gap-2 text-sm font-medium text-slate-950">
+                <Sparkles className="h-4 w-4 text-yellow-500" />
+                TBX Secure ready
+              </div>
+              <p className="mt-2 text-xs leading-5 text-slate-500">Reputation, provenance and protected trading signals stay visible across every collection decision.</p>
             </div>
-            <p className="mt-2 text-xs leading-5 text-slate-500">
-              Reputation, provenance and protected trading signals stay visible across every collection decision.
-            </p>
+            <SignOutButton />
           </div>
         </div>
       </aside>
@@ -111,8 +139,10 @@ export function AppShell({ children }: AppShellProps) {
                 <Bell className="h-4 w-4" />
               </Button>
               <Button asChild variant="outline" size="sm" className="rounded-full border-slate-200 bg-white pl-1.5 pr-3">
-                <Link href="/profile">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-950 text-xs font-semibold text-white">WO</span>
+                <Link href="/profile" title={collector.displayName}>
+                  <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-slate-950 text-xs font-semibold text-white">
+                    {collector.avatarUrl ? <img src={collector.avatarUrl} alt="" className="h-full w-full object-cover" /> : collector.initials}
+                  </span>
                   <ChevronDown className="h-4 w-4" />
                 </Link>
               </Button>
@@ -128,6 +158,7 @@ export function AppShell({ children }: AppShellProps) {
                 </Link>
               );
             })}
+            <SignOutButton />
           </nav>
         </header>
 
