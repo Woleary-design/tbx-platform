@@ -1,6 +1,5 @@
-import Link from "next/link";
-import { ArrowRight, LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
+import { SignInForm } from "@/components/auth/sign-in-form";
 
 function FourDotLogo() {
   return (
@@ -47,30 +46,16 @@ export default function SignInPage() {
               <h2 className="text-xl font-semibold">Block Exchange</h2>
             </div>
           </div>
-          <h3 className="mt-8 text-3xl font-semibold tracking-tight">Welcome back, Warren.</h3>
-          <p className="mt-2 text-sm leading-6 text-slate-600">This is a mock sign-in flow for now. Real authentication comes next with Supabase/Auth.</p>
+          <h3 className="mt-8 text-3xl font-semibold tracking-tight">Welcome to TBX.</h3>
+          <p className="mt-2 text-sm leading-6 text-slate-600">Sign in to an existing collector account or create your passport and vault.</p>
 
-          <div className="mt-7 space-y-4">
-            <label className="block">
-              <span className="text-sm font-medium text-slate-700">Email</span>
-              <input className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-slate-400" defaultValue="olearywarren@gmail.com" />
-            </label>
-            <label className="block">
-              <span className="text-sm font-medium text-slate-700">Password</span>
-              <input className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-slate-400" type="password" defaultValue="tbx-demo" />
-            </label>
+          <div className="mt-7">
+            <SignInForm />
           </div>
-
-          <Button asChild className="mt-6 h-12 w-full rounded-xl bg-yellow-400 font-semibold text-slate-950 hover:bg-yellow-300">
-            <Link href="/dashboard">Enter TBX <ArrowRight className="h-4 w-4" /></Link>
-          </Button>
-          <Button asChild variant="outline" className="mt-3 h-12 w-full rounded-xl border-slate-200 bg-white">
-            <Link href="/profile">View public profile</Link>
-          </Button>
 
           <div className="mt-6 grid gap-3 text-sm text-slate-600">
             <div className="flex items-center gap-2"><LockKeyhole className="h-4 w-4 text-yellow-500" /> Protected checkout and vault data stay private.</div>
-            <div className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-yellow-500" /> Your seller reputation follows every listing.</div>
+            <div className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-yellow-500" /> Your collector record is created automatically after registration.</div>
           </div>
         </section>
       </div>
