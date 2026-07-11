@@ -7,13 +7,26 @@ import { Button } from "@/components/ui/button";
 import { legoCatalogue, type LegoCatalogueSet } from "@/lib/lego/catalog";
 import { createClient } from "@/lib/supabase/client";
 
-const conditions = ["New Sealed", "New Open Box", "Used Complete", "Used Incomplete", "Unknown"];
+const itemConditions = [
+  { value: "New Sealed", label: "New — factory sealed" },
+  { value: "New Open Box", label: "New — opened box" },
+  { value: "Built / Displayed", label: "Built / displayed" },
+  { value: "Unknown", label: "Not sure" },
+];
+
+const completenessOptions = [
+  { value: "complete", label: "Build complete" },
+  { value: "missing", label: "Missing pieces" },
+  { value: "unchecked", label: "Not checked" },
+];
 
 export function AddSetForm() {
   const router = useRouter();
   const [mode, setMode] = useState<"catalogue" | "manual">("catalogue");
   const [query, setQuery] = useState("");
   const [selectedSet, setSelectedSet] = useState<LegoCatalogueSet | null>(null);
+  const [itemCondition, setItemCondition] = useState("Built / Displayed");
+  const [completeness, setCompleteness] = useState("complete");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,11 +55,7 @@ export function AddSetForm() {
     setError(null);
   }
 
-  async function uploadPhotos(
-    files: File[],
-    userId: string,
-    assetId: string,
-  ) {
+  async function uploadPhotos(files: File[], userId: string, assetId: string) {
     const supabase = createClient();
 
     for (let index = 0; index < files.length; index += 1) {
@@ -110,6 +119,26 @@ export function AddSetForm() {
       const purchasePrice = purchasePriceRaw ? Number(purchasePriceRaw) : null;
       const photos = form.getAll("photos").filter((value): value is File => value instanceof File && value.size > 0);
 
+      const missingCount = String(form.get("missing_piece_count") || "").trim();
+      const missingDetails = String(form.get("missing_piece_details") || "").trim();
+      const catalogueYear = mode === "catalogue" && selectedSet?.year ? `Catalogue year: ${selectedSet.year}` : "";
+      const completenessNote = completeness === "complete"
+        ? "Build completeness: Complete"
+        : completeness === "missing"
+          ? `Build completeness: Missing pieces${missingCount ? ` (${missingCount})` : ""}${missingDetails ? `. Missing: ${missingDetails}` : ""}`
+          : "Build completeness: Not checked";
+      const notes = [catalogueYear, completenessNote].filter(Boolean).join("\n");
+
+      const databaseCondition = itemCondition === "New Sealed"
+        ? "New Sealed"
+        : itemCondition === "New Open Box"
+          ? "New Open Box"
+          : completeness === "complete"
+            ? "Used Complete"
+            : completeness === "missing"
+              ? "Used Incomplete"
+              : "Unknown";
+
       const { data: asset, error: insertError } = await supabase
         .from("assets")
         .insert({
@@ -117,19 +146,17 @@ export function AddSetForm() {
           set_number: setNumber,
           set_name: setName,
           theme: theme || null,
-          condition: String(form.get("condition") || "Unknown"),
+          condition: databaseCondition,
           purchase_price: purchasePrice !== null && Number.isFinite(purchasePrice) ? purchasePrice : null,
           estimated_value: estimatedValue !== null && Number.isFinite(estimatedValue) ? estimatedValue : null,
           original_owner: form.get("original_owner") === "on",
           original_receipt: form.get("original_receipt") === "on",
           instructions_complete: form.get("instructions_complete") === "on",
           minifigures_complete: form.get("minifigures_complete") === "on",
-          sealed: String(form.get("condition")) === "New Sealed",
+          sealed: itemCondition === "New Sealed",
           passport_status: "Draft",
           is_public: false,
-          notes: mode === "catalogue" && selectedSet?.year
-            ? `Catalogue year: ${selectedSet.year}`
-            : null,
+          notes,
         })
         .select("id")
         .single();
@@ -153,18 +180,10 @@ export function AddSetForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-2 rounded-2xl bg-slate-100 p-1">
-        <button
-          type="button"
-          onClick={() => switchMode("catalogue")}
-          className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${mode === "catalogue" ? "bg-white text-slate-950 shadow-sm" : "text-slate-500"}`}
-        >
+        <button type="button" onClick={() => switchMode("catalogue")} className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${mode === "catalogue" ? "bg-white text-slate-950 shadow-sm" : "text-slate-500"}`}>
           Find a LEGO set
         </button>
-        <button
-          type="button"
-          onClick={() => switchMode("manual")}
-          className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${mode === "manual" ? "bg-white text-slate-950 shadow-sm" : "text-slate-500"}`}
-        >
+        <button type="button" onClick={() => switchMode("manual")} className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${mode === "manual" ? "bg-white text-slate-950 shadow-sm" : "text-slate-500"}`}>
           Add manually
         </button>
       </div>
@@ -175,28 +194,14 @@ export function AddSetForm() {
             <span className="text-sm font-medium text-slate-700">Search by set number or product name</span>
             <div className="relative mt-2">
               <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <input
-                value={query}
-                onChange={(event) => {
-                  setQuery(event.target.value);
-                  setSelectedSet(null);
-                }}
-                placeholder="Try 10182 or Café Corner"
-                autoComplete="off"
-                className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm outline-none focus:border-slate-400"
-              />
+              <input value={query} onChange={(event) => { setQuery(event.target.value); setSelectedSet(null); }} placeholder="Try 10182 or Café Corner" autoComplete="off" className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm outline-none focus:border-slate-400" />
             </div>
           </label>
 
           {matches.length > 0 && !selectedSet ? (
             <div className="absolute left-0 right-0 z-20 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
               {matches.map((set) => (
-                <button
-                  key={set.setNumber}
-                  type="button"
-                  onClick={() => chooseSet(set)}
-                  className="flex w-full items-center justify-between gap-4 border-b border-slate-100 px-4 py-3 text-left last:border-b-0 hover:bg-[#fffaf1]"
-                >
+                <button key={set.setNumber} type="button" onClick={() => chooseSet(set)} className="flex w-full items-center justify-between gap-4 border-b border-slate-100 px-4 py-3 text-left last:border-b-0 hover:bg-[#fffaf1]">
                   <span>
                     <span className="block font-semibold text-slate-950">{set.name}</span>
                     <span className="mt-1 block text-xs text-slate-500">LEGO {set.setNumber} · {set.theme}{set.year ? ` · ${set.year}` : ""}</span>
@@ -242,11 +247,34 @@ export function AddSetForm() {
 
       <div className="grid gap-4 md:grid-cols-2">
         <label className="block">
-          <span className="text-sm font-medium text-slate-700">Condition</span>
-          <select name="condition" className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-slate-400">
-            {conditions.map((condition) => <option key={condition}>{condition}</option>)}
+          <span className="text-sm font-medium text-slate-700">Item condition</span>
+          <select value={itemCondition} onChange={(event) => setItemCondition(event.target.value)} className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-slate-400">
+            {itemConditions.map((condition) => <option key={condition.value} value={condition.value}>{condition.label}</option>)}
           </select>
         </label>
+
+        {itemCondition !== "New Sealed" ? (
+          <label className="block">
+            <span className="text-sm font-medium text-slate-700">Build completeness</span>
+            <select value={completeness} onChange={(event) => setCompleteness(event.target.value)} className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-slate-400">
+              {completenessOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            </select>
+          </label>
+        ) : <div />}
+
+        {itemCondition !== "New Sealed" && completeness === "missing" ? (
+          <>
+            <label className="block">
+              <span className="text-sm font-medium text-slate-700">How many pieces are missing?</span>
+              <input name="missing_piece_count" type="number" min="1" placeholder="e.g. 6" className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-slate-400" />
+            </label>
+            <label className="block">
+              <span className="text-sm font-medium text-slate-700">What is missing?</span>
+              <input name="missing_piece_details" placeholder="e.g. 2 grey tiles and one minifigure" className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-slate-400" />
+            </label>
+          </>
+        ) : null}
+
         <label className="block">
           <span className="text-sm font-medium text-slate-700">Purchase price (R)</span>
           <input name="purchase_price" type="number" min="0" step="0.01" placeholder="Optional" className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-slate-400" />
@@ -255,7 +283,7 @@ export function AddSetForm() {
           <span className="text-sm font-medium text-slate-700">Estimated value (R)</span>
           <input name="estimated_value" type="number" min="0" step="0.01" placeholder="Optional" className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-slate-400" />
         </label>
-        <label className="block">
+        <label className="block md:col-span-2">
           <span className="text-sm font-medium text-slate-700">Photos</span>
           <span className="mt-2 flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-600 hover:border-slate-400">
             <Camera className="h-4 w-4" /> Choose one or more images
@@ -265,14 +293,14 @@ export function AddSetForm() {
       </div>
 
       <div className="rounded-2xl border border-[#eadfce] bg-[#fffaf1] p-5">
-        <p className="font-semibold text-slate-950">Item details</p>
-        <p className="mt-1 text-sm text-slate-600">These details improve clarity. They can be completed or edited later.</p>
+        <p className="font-semibold text-slate-950">Included items</p>
+        <p className="mt-1 text-sm text-slate-600">Mark what is included. These details can be edited later.</p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {[
             ["original_owner", "I am the original owner"],
             ["original_receipt", "Original receipt available"],
-            ["instructions_complete", "Instructions complete"],
-            ["minifigures_complete", "Minifigures complete"],
+            ["instructions_complete", "Instructions included and complete"],
+            ["minifigures_complete", "All minifigures included"],
           ].map(([name, label]) => (
             <label key={name} className="flex items-center gap-3 rounded-xl bg-white p-3 text-sm text-slate-700">
               <input name={name} type="checkbox" className="h-4 w-4" /> {label}
