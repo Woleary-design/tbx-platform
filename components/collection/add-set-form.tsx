@@ -1,11 +1,19 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Camera, Check, Loader2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { legoCatalogue, type LegoCatalogueSet } from "@/lib/lego/catalog";
+import type { LegoCatalogueSet } from "@/lib/lego/catalog";
 import { createClient } from "@/lib/supabase/client";
+
+type CatalogueSearchResult = LegoCatalogueSet & {
+  id?: string;
+  subtheme?: string | null;
+  pieces?: number | null;
+  minifigures?: number | null;
+  imageUrl?: string | null;
+};
 
 const itemConditions = [
   { value: "New Sealed", label: "New — factory sealed" },
@@ -24,34 +32,61 @@ export function AddSetForm() {
   const router = useRouter();
   const [mode, setMode] = useState<"catalogue" | "manual">("catalogue");
   const [query, setQuery] = useState("");
-  const [selectedSet, setSelectedSet] = useState<LegoCatalogueSet | null>(null);
+  const [matches, setMatches] = useState<CatalogueSearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [selectedSet, setSelectedSet] = useState<CatalogueSearchResult | null>(null);
   const [itemCondition, setItemCondition] = useState("Built / Displayed");
   const [completeness, setCompleteness] = useState("complete");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const matches = useMemo(() => {
-    const cleanQuery = query.trim().toLowerCase();
-    if (cleanQuery.length < 2) return [];
+  useEffect(() => {
+    const cleanQuery = query.trim();
 
-    return legoCatalogue
-      .filter((set) =>
-        set.setNumber.toLowerCase().includes(cleanQuery) ||
-        set.name.toLowerCase().includes(cleanQuery) ||
-        set.theme.toLowerCase().includes(cleanQuery),
-      )
-      .slice(0, 8);
-  }, [query]);
+    if (mode !== "catalogue" || selectedSet || cleanQuery.length < 2) {
+      setMatches([]);
+      setSearching(false);
+      return;
+    }
 
-  function chooseSet(set: LegoCatalogueSet) {
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setSearching(true);
+
+      try {
+        const response = await fetch(`/api/catalogue/search?q=${encodeURIComponent(cleanQuery)}`, {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) throw new Error("Catalogue search is temporarily unavailable.");
+
+        const payload = (await response.json()) as { results?: CatalogueSearchResult[] };
+        setMatches(payload.results ?? []);
+      } catch (caughtError) {
+        if (caughtError instanceof DOMException && caughtError.name === "AbortError") return;
+        setMatches([]);
+      } finally {
+        if (!controller.signal.aborted) setSearching(false);
+      }
+    }, 250);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(timer);
+    };
+  }, [mode, query, selectedSet]);
+
+  function chooseSet(set: CatalogueSearchResult) {
     setSelectedSet(set);
     setQuery(`${set.setNumber} · ${set.name}`);
+    setMatches([]);
   }
 
   function switchMode(nextMode: "catalogue" | "manual") {
     setMode(nextMode);
     setSelectedSet(null);
     setQuery("");
+    setMatches([]);
     setError(null);
   }
 
@@ -117,11 +152,15 @@ export function AddSetForm() {
       const purchasePriceRaw = String(form.get("purchase_price") || "").trim();
       const estimatedValue = estimatedValueRaw ? Number(estimatedValueRaw) : null;
       const purchasePrice = purchasePriceRaw ? Number(purchasePriceRaw) : null;
-      const photos = form.getAll("photos").filter((value): value is File => value instanceof File && value.size > 0);
+      const photos = form
+        .getAll("photos")
+        .filter((value): value is File => value instanceof File && value.size > 0);
 
       const missingCount = String(form.get("missing_piece_count") || "").trim();
       const missingDetails = String(form.get("missing_piece_details") || "").trim();
-      const catalogueYear = mode === "catalogue" && selectedSet?.year ? `Catalogue year: ${selectedSet.year}` : "";
+      const catalogueYear = mode === "catalogue" && selectedSet?.year
+        ? `Catalogue year: ${selectedSet.year}`
+        : "";
       const completenessNote = completeness === "complete"
         ? "Build completeness: Complete"
         : completeness === "missing"
@@ -143,6 +182,7 @@ export function AddSetForm() {
         .from("assets")
         .insert({
           owner_id: userData.user.id,
+          lego_set_id: selectedSet?.id ?? null,
           set_number: setNumber,
           set_name: setName,
           theme: theme || null,
@@ -194,17 +234,29 @@ export function AddSetForm() {
             <span className="text-sm font-medium text-slate-700">Search by set number or product name</span>
             <div className="relative mt-2">
               <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <input value={query} onChange={(event) => { setQuery(event.target.value); setSelectedSet(null); }} placeholder="Try 10182 or Café Corner" autoComplete="off" className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm outline-none focus:border-slate-400" />
+              <input
+                value={query}
+                onChange={(event) => {
+                  setQuery(event.target.value);
+                  setSelectedSet(null);
+                }}
+                placeholder="Try 10182 or Café Corner"
+                autoComplete="off"
+                className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-11 text-sm outline-none focus:border-slate-400"
+              />
+              {searching ? <Loader2 className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-slate-400" /> : null}
             </div>
           </label>
 
           {matches.length > 0 && !selectedSet ? (
             <div className="absolute left-0 right-0 z-20 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
               {matches.map((set) => (
-                <button key={set.setNumber} type="button" onClick={() => chooseSet(set)} className="flex w-full items-center justify-between gap-4 border-b border-slate-100 px-4 py-3 text-left last:border-b-0 hover:bg-[#fffaf1]">
+                <button key={set.id ?? set.setNumber} type="button" onClick={() => chooseSet(set)} className="flex w-full items-center justify-between gap-4 border-b border-slate-100 px-4 py-3 text-left last:border-b-0 hover:bg-[#fffaf1]">
                   <span>
                     <span className="block font-semibold text-slate-950">{set.name}</span>
-                    <span className="mt-1 block text-xs text-slate-500">LEGO {set.setNumber} · {set.theme}{set.year ? ` · ${set.year}` : ""}</span>
+                    <span className="mt-1 block text-xs text-slate-500">
+                      LEGO {set.setNumber} · {set.theme}{set.year ? ` · ${set.year}` : ""}{set.pieces ? ` · ${set.pieces.toLocaleString()} pieces` : ""}
+                    </span>
                   </span>
                   <ArrowRight className="h-4 w-4 shrink-0 text-slate-400" />
                 </button>
@@ -212,7 +264,7 @@ export function AddSetForm() {
             </div>
           ) : null}
 
-          {query.trim().length >= 2 && matches.length === 0 && !selectedSet ? (
+          {query.trim().length >= 2 && !searching && matches.length === 0 && !selectedSet ? (
             <div className="mt-3 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
               No match yet. Check the spelling or use <button type="button" onClick={() => switchMode("manual")} className="font-semibold text-slate-950 underline">Add manually</button>.
             </div>
