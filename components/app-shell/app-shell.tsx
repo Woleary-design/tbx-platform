@@ -7,10 +7,10 @@ import {
   Archive,
   Bell,
   ChevronDown,
-  Gem,
   Home,
   Inbox,
   LayoutGrid,
+  LibraryBig,
   Search,
   Settings,
   Sparkles,
@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 const navigation = [
   { href: "/dashboard", label: "Home", icon: Home },
   { href: "/marketplace", label: "Marketplace", icon: LayoutGrid },
-  { href: "/vault", label: "My Vault", icon: Gem },
+  { href: "/collection", label: "My Collection", icon: LibraryBig },
   { href: "/insights", label: "Insights", icon: Archive },
   { href: "/messages", label: "Messages", icon: Inbox },
   { href: "/profile", label: "Profile", icon: Settings },
@@ -75,7 +75,7 @@ export function AppShell({ children, collector }: AppShellProps) {
 
           <nav className="flex-1 space-y-1.5 p-4">
             {navigation.map((item) => {
-              const isActive = pathname === item.href;
+              const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
               const Icon = item.icon;
               return (
                 <Link
@@ -133,7 +133,7 @@ export function AppShell({ children, collector }: AppShellProps) {
             <div className="flex flex-1 items-center gap-3 sm:max-w-xl">
               <div className="relative flex-1">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <Input placeholder="Search vaulted pieces, sellers, orders..." className="rounded-full border-slate-200 bg-slate-50 pl-10" />
+                <Input placeholder="Search collection, sets, sellers, orders..." className="rounded-full border-slate-200 bg-slate-50 pl-10" />
               </div>
               <Button variant="outline" size="sm" aria-label="Notifications" className="rounded-full border-slate-200 bg-white px-3">
                 <Bell className="h-4 w-4" />
@@ -151,7 +151,7 @@ export function AppShell({ children, collector }: AppShellProps) {
 
           <nav className="flex gap-2 overflow-x-auto border-t px-4 py-2 lg:hidden">
             {navigation.map((item) => {
-              const isActive = pathname === item.href;
+              const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
               return (
                 <Link key={item.href} href={item.href} className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium", isActive ? "bg-slate-950 text-white" : "text-slate-500")}>
                   {item.label}
