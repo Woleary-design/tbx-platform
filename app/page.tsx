@@ -47,7 +47,7 @@ export default function HomePage() {
 
           <div className="hidden items-center gap-9 text-sm font-medium text-slate-600 md:flex">
             <Link href="/marketplace" className="hover:text-slate-950">Marketplace</Link>
-            <Link href="/vault" className="hover:text-slate-950">My Vault</Link>
+            <Link href="/collection" className="hover:text-slate-950">My Collection</Link>
             <Link href="/insights" className="hover:text-slate-950">Insights</Link>
             <Link href="/marketplace" className="hover:text-slate-950">Pricing</Link>
           </div>
