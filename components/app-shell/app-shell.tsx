@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import {
   Archive,
   Bell,
+  BookOpen,
   ChevronDown,
   Home,
   Inbox,
@@ -22,8 +23,9 @@ import { cn } from "@/lib/utils";
 
 const navigation = [
   { href: "/dashboard", label: "Home", icon: Home },
-  { href: "/marketplace", label: "Marketplace", icon: LayoutGrid },
   { href: "/collection", label: "My Collection", icon: LibraryBig },
+  { href: "/atlas", label: "Atlas", icon: BookOpen },
+  { href: "/marketplace", label: "Marketplace", icon: LayoutGrid },
   { href: "/insights", label: "Insights", icon: Archive },
   { href: "/messages", label: "Messages", icon: Inbox },
   { href: "/profile", label: "Profile", icon: Settings },
@@ -46,7 +48,7 @@ type AppShellProps = {
 
 function FourDotLogo({ small = false }: { small?: boolean }) {
   return (
-    <span className={cn("grid grid-cols-2 gap-1 rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-slate-200", small ? "h-8 w-8" : "h-11 w-11")}> 
+    <span className={cn("grid grid-cols-2 gap-1 rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-slate-200", small ? "h-8 w-8" : "h-11 w-11")}>
       <span className="rounded bg-slate-950" />
       <span className="rounded bg-slate-950" />
       <span className="rounded bg-slate-950" />
@@ -133,7 +135,7 @@ export function AppShell({ children, collector }: AppShellProps) {
             <div className="flex flex-1 items-center gap-3 sm:max-w-xl">
               <div className="relative flex-1">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <Input placeholder="Search collection, sets, sellers, orders..." className="rounded-full border-slate-200 bg-slate-50 pl-10" />
+                <Input placeholder="Search collection, Atlas, sellers, orders..." className="rounded-full border-slate-200 bg-slate-50 pl-10" />
               </div>
               <Button variant="outline" size="sm" aria-label="Notifications" className="rounded-full border-slate-200 bg-white px-3">
                 <Bell className="h-4 w-4" />
