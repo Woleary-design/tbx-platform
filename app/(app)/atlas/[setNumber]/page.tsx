@@ -18,8 +18,8 @@ export default async function AtlasSetPage({ params }: { params: Promise<{ setNu
   if (!set) notFound();
 
   const user = userData.user;
-  const [{ count: wantCount }, { data: existingWant }] = await Promise.all([
-    supabase.from("collector_wants").select("id", { count: "exact", head: true }).eq("lego_set_id", set.id),
+  const [{ data: wantCount }, { data: existingWant }] = await Promise.all([
+    supabase.rpc("atlas_want_count", { target_set_id: set.id }),
     user
       ? supabase.from("collector_wants").select("id").eq("collector_id", user.id).eq("lego_set_id", set.id).maybeSingle()
       : Promise.resolve({ data: null }),
@@ -42,7 +42,7 @@ export default async function AtlasSetPage({ params }: { params: Promise<{ setNu
             <div className="mt-8 grid gap-3 sm:grid-cols-3">
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4"><CalendarDays className="h-5 w-5 text-yellow-300" /><p className="mt-3 text-2xl font-semibold">{set.year_released ?? "—"}</p><p className="mt-1 text-xs uppercase tracking-wide text-white/45">Released</p></div>
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4"><Puzzle className="h-5 w-5 text-yellow-300" /><p className="mt-3 text-2xl font-semibold">{set.piece_count ?? "—"}</p><p className="mt-1 text-xs uppercase tracking-wide text-white/45">Pieces</p></div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4"><Users className="h-5 w-5 text-yellow-300" /><p className="mt-3 text-2xl font-semibold">{wantCount ?? 0}</p><p className="mt-1 text-xs uppercase tracking-wide text-white/45">Collectors want</p></div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4"><Users className="h-5 w-5 text-yellow-300" /><p className="mt-3 text-2xl font-semibold">{Number(wantCount ?? 0)}</p><p className="mt-1 text-xs uppercase tracking-wide text-white/45">Collectors want</p></div>
             </div>
 
             <div className="mt-8 flex flex-wrap gap-3">
