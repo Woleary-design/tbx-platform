@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, BadgeCheck, BookOpen, Box, Camera, CircleDollarSign, FileText, MapPin, PackageCheck, ShoppingBag, Sparkles } from "lucide-react";
+import { ArrowLeft, BadgeCheck, BookOpen, Box, Camera, CircleDollarSign, FilePenLine, FileText, MapPin, PackageCheck, ShoppingBag, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 
@@ -29,7 +29,10 @@ export default async function CollectionItemPage({ params }: { params: Promise<{
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">
-      <Link href="/collection" className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-950"><ArrowLeft className="h-4 w-4" /> Back to My Collection</Link>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Link href="/collection" className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-950"><ArrowLeft className="h-4 w-4" /> Back to My Collection</Link>
+        <Button asChild variant="outline" className="rounded-xl border-[#eadfce] bg-white"><Link href={`/collection/${asset.id}/edit`}><FilePenLine className="h-4 w-4" /> Edit Collection Record</Link></Button>
+      </div>
 
       <section className="overflow-hidden rounded-[2rem] border border-[#eadfce] bg-slate-950 text-white shadow-[0_28px_100px_rgba(15,23,42,0.16)]">
         <div className="grid lg:grid-cols-[1fr_380px]">
@@ -76,6 +79,7 @@ export default async function CollectionItemPage({ params }: { params: Promise<{
               {!asset.original_owner && <p>• Add ownership information</p>}
               {health === 100 && <p>Everything currently requested is complete.</p>}
             </div>
+            {health < 100 ? <Button asChild variant="outline" className="mt-5 w-full rounded-xl border-[#eadfce]"><Link href={`/collection/${asset.id}/edit`}>Improve Collection Health</Link></Button> : null}
           </div>
 
           <div className="rounded-[2rem] border border-[#eadfce] bg-slate-950 p-6 text-white shadow-[0_24px_80px_rgba(15,23,42,0.14)]">
