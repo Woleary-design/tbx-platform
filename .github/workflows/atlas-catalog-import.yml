@@ -1,0 +1,50 @@
+name: Atlas catalogue import
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Download and validate without writing to Supabase
+        required: false
+        default: true
+        type: boolean
+      limit:
+        description: Optional number of sets to process for testing
+        required: false
+        default: ""
+        type: string
+  schedule:
+    - cron: "17 2 * * 0"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: atlas-catalog-import
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      ATLAS_IMPORT_DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
+      ATLAS_IMPORT_LIMIT: ${{ github.event_name == 'workflow_dispatch' && inputs.limit || '' }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Import official LEGO catalogue into Atlas
+        run: npm run atlas:import
