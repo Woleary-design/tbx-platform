@@ -96,3 +96,15 @@ drop trigger if exists collector_wants_touch_updated_at on public.collector_want
 create trigger collector_wants_touch_updated_at
 before update on public.collector_wants
 for each row execute function public.touch_updated_at();
+
+create or replace function public.atlas_want_count(target_set_id uuid)
+returns bigint
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select count(*) from public.collector_wants where lego_set_id = target_set_id;
+$$;
+
+grant execute on function public.atlas_want_count(uuid) to authenticated;
