@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Bell, CheckCircle2 } from "lucide-react";
+import { MarkAllReadButton } from "@/components/notifications/mark-all-read-button";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function NotificationsPage() {
@@ -16,12 +17,22 @@ export default async function NotificationsPage() {
         .limit(100)
     : { data: [] };
 
+  const unreadCount = (notifications ?? []).filter((notification) => !notification.read_at).length;
+
   return (
     <div className="mx-auto max-w-4xl space-y-8">
       <section className="rounded-[2rem] bg-slate-950 p-7 text-white shadow-[0_28px_100px_rgba(15,23,42,0.16)] md:p-10">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-300">Notification Centre</p>
-        <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">What needs your attention</h1>
-        <p className="mt-4 max-w-2xl text-white/65">Wanted listings, confidence changes and collection milestones will appear here.</p>
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-300">Notification Centre</p>
+            <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">What needs your attention</h1>
+            <p className="mt-4 max-w-2xl text-white/65">Wanted listings, confidence changes and collection milestones appear here.</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="rounded-full bg-yellow-400 px-4 py-2 text-sm font-semibold text-slate-950">{unreadCount} unread</span>
+            <MarkAllReadButton disabled={unreadCount === 0} />
+          </div>
+        </div>
       </section>
 
       {!notifications || notifications.length === 0 ? (
@@ -37,7 +48,10 @@ export default async function NotificationsPage() {
               <div className={`flex gap-4 border-b border-slate-100 p-5 last:border-b-0 ${notification.read_at ? "bg-white" : "bg-[#fffaf1]"}`}>
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-slate-950 text-white"><Bell className="h-4 w-4" /></span>
                 <div className="min-w-0">
-                  <p className="font-semibold text-slate-950">{notification.title}</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-semibold text-slate-950">{notification.title}</p>
+                    {!notification.read_at ? <span className="rounded-full bg-yellow-400 px-2 py-0.5 text-[10px] font-semibold uppercase text-slate-950">New</span> : null}
+                  </div>
                   {notification.body ? <p className="mt-1 text-sm leading-6 text-slate-600">{notification.body}</p> : null}
                   <p className="mt-2 text-xs text-slate-400">{new Date(notification.created_at).toLocaleString("en-ZA")}</p>
                 </div>
