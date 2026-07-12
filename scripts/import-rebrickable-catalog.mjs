@@ -109,9 +109,19 @@ function toInteger(value) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function findCanonicalCollisions(rows) {
+  const seen = new Set();
+  const collisions = new Set();
+
+  for (const row of rows) {
+    if (seen.has(row.set_number)) collisions.add(row.set_number);
+    seen.add(row.set_number);
+  }
+
+  return [...collisions];
+}
+
 async function main() {
-  const supabaseUrl = requiredEnv("SUPABASE_URL", ["NEXT_PUBLIC_SUPABASE_URL"]);
-  const serviceRoleKey = requiredEnv("SUPABASE_SERVICE_ROLE_KEY");
   const setsUrl = process.env.REBRICKABLE_SETS_URL?.trim() || DEFAULT_SETS_URL;
   const themesUrl = process.env.REBRICKABLE_THEMES_URL?.trim() || DEFAULT_THEMES_URL;
   const dryRun = process.env.ATLAS_IMPORT_DRY_RUN === "true";
@@ -156,17 +166,10 @@ async function main() {
       };
     });
 
-  const duplicateNumbers = catalogueRows.filter(
-    (row, index, rows) => rows.findIndex((candidate) => candidate.set_number === row.set_number) !== index,
-  );
-
-  if (duplicateNumbers.length > 0) {
+  const collisions = findCanonicalCollisions(catalogueRows);
+  if (collisions.length > 0) {
     throw new Error(
-      `Import aborted: canonical set-number collisions found (${[
-        ...new Set(duplicateNumbers.map((row) => row.set_number)),
-      ]
-        .slice(0, 10)
-        .join(", ")})`,
+      `Import aborted: canonical set-number collisions found (${collisions.slice(0, 10).join(", ")})`,
     );
   }
 
@@ -177,6 +180,8 @@ async function main() {
     return;
   }
 
+  const supabaseUrl = requiredEnv("SUPABASE_URL", ["NEXT_PUBLIC_SUPABASE_URL"]);
+  const serviceRoleKey = requiredEnv("SUPABASE_SERVICE_ROLE_KEY");
   const supabase = createClient(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
