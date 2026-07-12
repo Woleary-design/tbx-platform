@@ -2,19 +2,28 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Boxes, CalendarDays, PackagePlus, Puzzle, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { WantSetButton } from "@/components/atlas/want-set-button";
+import { getAtlasSetByNumber } from "@/lib/atlas/service";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function AtlasSetPage({ params }: { params: Promise<{ setNumber: string }> }) {
   const { setNumber } = await params;
   const supabase = await createClient();
-  const { data: set } = await supabase
-    .from("lego_sets")
-    .select("id, set_number, name, theme, subtheme, year_released, year_retired, piece_count, minifigure_count, image_url, retail_price_zar, instructions_url, barcode")
-    .eq("set_number", decodeURIComponent(setNumber))
-    .eq("is_active", true)
-    .maybeSingle();
+  const decodedSetNumber = decodeURIComponent(setNumber);
+  const [{ data: set }, { data: userData }] = await Promise.all([
+    getAtlasSetByNumber(supabase, decodedSetNumber),
+    supabase.auth.getUser(),
+  ]);
 
   if (!set) notFound();
+
+  const user = userData.user;
+  const [{ count: wantCount }, { data: existingWant }] = await Promise.all([
+    supabase.from("collector_wants").select("id", { count: "exact", head: true }).eq("lego_set_id", set.id),
+    user
+      ? supabase.from("collector_wants").select("id").eq("collector_id", user.id).eq("lego_set_id", set.id).maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">
@@ -33,12 +42,15 @@ export default async function AtlasSetPage({ params }: { params: Promise<{ setNu
             <div className="mt-8 grid gap-3 sm:grid-cols-3">
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4"><CalendarDays className="h-5 w-5 text-yellow-300" /><p className="mt-3 text-2xl font-semibold">{set.year_released ?? "—"}</p><p className="mt-1 text-xs uppercase tracking-wide text-white/45">Released</p></div>
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4"><Puzzle className="h-5 w-5 text-yellow-300" /><p className="mt-3 text-2xl font-semibold">{set.piece_count ?? "—"}</p><p className="mt-1 text-xs uppercase tracking-wide text-white/45">Pieces</p></div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4"><Users className="h-5 w-5 text-yellow-300" /><p className="mt-3 text-2xl font-semibold">{set.minifigure_count ?? "—"}</p><p className="mt-1 text-xs uppercase tracking-wide text-white/45">Minifigures</p></div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4"><Users className="h-5 w-5 text-yellow-300" /><p className="mt-3 text-2xl font-semibold">{wantCount ?? 0}</p><p className="mt-1 text-xs uppercase tracking-wide text-white/45">Collectors want</p></div>
             </div>
 
-            <Button asChild className="mt-8 h-12 rounded-xl bg-yellow-400 px-6 font-semibold text-slate-950 hover:bg-yellow-300">
-              <Link href={`/collection/add?set=${encodeURIComponent(set.set_number)}`}><PackagePlus className="h-4 w-4" /> Add to My Collection</Link>
-            </Button>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button asChild className="h-12 rounded-xl bg-yellow-400 px-6 font-semibold text-slate-950 hover:bg-yellow-300">
+                <Link href={`/collection/add?set=${encodeURIComponent(set.set_number)}`}><PackagePlus className="h-4 w-4" /> Add to My Collection</Link>
+              </Button>
+              {user ? <WantSetButton legoSetId={set.id} initialWanted={Boolean(existingWant)} /> : null}
+            </div>
           </div>
         </div>
       </section>
@@ -60,9 +72,9 @@ export default async function AtlasSetPage({ params }: { params: Promise<{ setNu
         </div>
 
         <div className="rounded-[2rem] border border-[#eadfce] bg-slate-950 p-6 text-white shadow-[0_20px_65px_rgba(15,23,42,0.12)]">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-300">Collection-first</p>
-          <h2 className="mt-3 text-2xl font-semibold">Own this set?</h2>
-          <p className="mt-3 text-sm leading-6 text-white/65">Create your Collection Record from this Atlas entry. TBX will reuse the set number, name, theme and catalogue link so you only add details about your copy.</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-300">Collector intent</p>
+          <h2 className="mt-3 text-2xl font-semibold">Own it or want it.</h2>
+          <p className="mt-3 text-sm leading-6 text-white/65">Add the set to My Collection when you own a copy. Add it to Wants when you are actively looking for one, so TBX can match future marketplace listings.</p>
           <Button asChild className="mt-6 h-12 w-full rounded-xl bg-white font-semibold text-slate-950 hover:bg-slate-100"><Link href={`/collection/add?set=${encodeURIComponent(set.set_number)}`}>Add this set</Link></Button>
         </div>
       </section>
