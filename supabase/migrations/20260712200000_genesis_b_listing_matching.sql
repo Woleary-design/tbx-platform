@@ -19,9 +19,12 @@ create table if not exists public.marketplace_listings (
   status text not null default 'draft' check (status in ('draft', 'live', 'reserved', 'sold', 'withdrawn')),
   published_at timestamptz,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
-  unique (asset_id)
+  updated_at timestamptz not null default now()
 );
+
+create unique index if not exists marketplace_listings_active_asset_idx
+on public.marketplace_listings (asset_id)
+where status in ('draft', 'live', 'reserved');
 
 create index if not exists marketplace_listings_live_set_idx
 on public.marketplace_listings (lego_set_id, published_at desc)
@@ -55,6 +58,7 @@ create policy "Sellers can delete their own draft listings"
 on public.marketplace_listings for delete
 using (auth.uid() = seller_id and status = 'draft');
 
+drop trigger if exists marketplace_listings_touch_updated_at on public.marketplace_listings;
 create trigger marketplace_listings_touch_updated_at
 before update on public.marketplace_listings
 for each row execute function public.touch_updated_at();
@@ -66,7 +70,11 @@ security definer
 set search_path = public
 as $$
 begin
-  if new.status <> 'live' or (tg_op = 'UPDATE' and old.status = 'live') then
+  if new.status <> 'live' then
+    return new;
+  end if;
+
+  if tg_op = 'UPDATE' and old.status = 'live' then
     return new;
   end if;
 
