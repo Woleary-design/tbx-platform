@@ -12,21 +12,15 @@ export default async function AuthenticatedAppLayout({ children }: { children: R
     return (
       <AppShell
         collector={{
-          displayName: "Alpha Preview",
+          displayName: "Guest",
           initials: "TB",
           avatarUrl: null,
-          level: "Read-only preview",
+          level: "Guest browsing",
           score: 0,
-          tbxId: "TBX PREVIEW",
-          email: "preview@tbx.local",
+          tbxId: "",
+          email: "",
         }}
       >
-        <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900">
-          <p className="font-semibold">Alpha Preview Mode</p>
-          <p className="mt-1 text-amber-800">
-            You can explore the current TBX interface without signing in. Private collector data and all write actions remain protected by Supabase authentication and row-level security.
-          </p>
-        </div>
         {children}
       </AppShell>
     );
