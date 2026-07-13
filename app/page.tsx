@@ -10,18 +10,24 @@ const trustReasons = [
   { title: "Private by design", detail: "Collection ownership and private collector information are never exposed through marketplace browsing.", icon: BadgeCheck },
 ];
 
+type LegoSetJoin = {
+  set_number: string;
+  name: string;
+  theme: string | null;
+  image_url: string | null;
+};
+
 type ListingRow = {
   id: string;
   price_zar: number | string;
   condition: string;
   confidence_score: number;
   dispatch_days: number;
-  lego_sets: {
-    set_number: string;
-    name: string;
-    theme: string | null;
-    image_url: string | null;
-  } | null;
+  lego_sets: LegoSetJoin[] | null;
+};
+
+type LandingListing = Omit<ListingRow, "lego_sets"> & {
+  legoSet: LegoSetJoin;
 };
 
 function FourDotLogo() {
@@ -44,7 +50,13 @@ export default async function HomePage() {
     .order("published_at", { ascending: false })
     .limit(3);
 
-  const listings = ((data ?? []) as ListingRow[]).filter((listing) => listing.lego_sets);
+  const listings: LandingListing[] = ((data ?? []) as ListingRow[]).flatMap((listing) => {
+    const legoSet = listing.lego_sets?.[0];
+    if (!legoSet) return [];
+
+    const { lego_sets: _legoSets, ...listingFields } = listing;
+    return [{ ...listingFields, legoSet }];
+  });
 
   return (
     <div className="min-h-screen bg-[#f6f9fc] text-slate-950">
@@ -145,7 +157,7 @@ export default async function HomePage() {
             {listings.length > 0 ? (
               <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                 {listings.map((listing) => {
-                  const set = listing.lego_sets!;
+                  const set = listing.legoSet;
                   return (
                     <Link key={listing.id} href={`/marketplace/${listing.id}`} className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.08)] transition hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(15,23,42,0.12)]">
                       <div className="grid aspect-[4/3] place-items-center bg-[#fffaf1] p-6">
