@@ -18,8 +18,13 @@ type AtlasResult = {
 
 const categories = ["Star Wars", "Technic", "Icons", "Harry Potter", "City", "NINJAGO", "Friends"];
 
-export function AtlasLiveSearch({ initialResults }: { initialResults: AtlasResult[] }) {
-  const [query, setQuery] = useState("");
+type AtlasLiveSearchProps = {
+  initialResults: AtlasResult[];
+  initialQuery?: string;
+};
+
+export function AtlasLiveSearch({ initialResults, initialQuery = "" }: AtlasLiveSearchProps) {
+  const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState(initialResults);
   const [loading, setLoading] = useState(false);
 
