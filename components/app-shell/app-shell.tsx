@@ -6,16 +6,15 @@ import type { ReactNode } from "react";
 import {
   Archive,
   Bell,
-  BookOpen,
   ChevronDown,
   Heart,
   Home,
-  Inbox,
-  LayoutGrid,
   LibraryBig,
   Search,
   Settings,
+  ShoppingBag,
   Sparkles,
+  Tag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,10 +25,8 @@ const navigation = [
   { href: "/dashboard", label: "Home", icon: Home },
   { href: "/collection", label: "My Collection", icon: LibraryBig },
   { href: "/wants", label: "My Wants", icon: Heart },
-  { href: "/atlas", label: "Atlas", icon: BookOpen },
-  { href: "/marketplace", label: "Marketplace", icon: LayoutGrid },
+  { href: "/marketplace", label: "Buy LEGO", icon: ShoppingBag },
   { href: "/insights", label: "Insights", icon: Archive },
-  { href: "/messages", label: "Messages", icon: Inbox },
   { href: "/profile", label: "Profile", icon: Settings },
 ];
 
@@ -77,6 +74,12 @@ export function AppShell({ children, collector }: AppShellProps) {
             </Link>
           </div>
 
+          <div className="p-4 pb-0">
+            <Button asChild className="h-12 w-full rounded-2xl bg-yellow-400 font-semibold text-slate-950 hover:bg-yellow-300">
+              <Link href="/sell"><Tag className="h-4 w-4" /> Sell LEGO</Link>
+            </Button>
+          </div>
+
           <nav className="flex-1 space-y-1.5 p-4">
             {navigation.map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -116,7 +119,7 @@ export function AppShell({ children, collector }: AppShellProps) {
                 <Sparkles className="h-4 w-4 text-yellow-500" />
                 TBX Secure ready
               </div>
-              <p className="mt-2 text-xs leading-5 text-slate-500">Reputation, provenance and protected trading signals stay visible across every collection decision.</p>
+              <p className="mt-2 text-xs leading-5 text-slate-500">Your Collection stays private. Selling is a structured fixed-price action.</p>
             </div>
             <SignOutButton />
           </div>
@@ -128,17 +131,19 @@ export function AppShell({ children, collector }: AppShellProps) {
           <div className="flex min-h-16 flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between lg:px-8">
             <div className="flex items-center justify-between gap-3">
               <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-slate-950 lg:hidden">
-                <FourDotLogo small />
-                TBX
+                <FourDotLogo small /> TBX
               </Link>
-              <div className="hidden text-sm text-slate-500 lg:block">Own with confidence. Trade with trust.</div>
+              <div className="hidden text-sm text-slate-500 lg:block">Your collection comes first. Selling is one option.</div>
             </div>
 
-            <div className="flex flex-1 items-center gap-3 sm:max-w-xl">
+            <div className="flex flex-1 items-center gap-3 sm:max-w-2xl">
               <div className="relative flex-1">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <Input placeholder="Search collection, Atlas, sellers, orders..." className="rounded-full border-slate-200 bg-slate-50 pl-10" />
+                <Input placeholder="Search your collection or live listings…" className="rounded-full border-slate-200 bg-slate-50 pl-10" />
               </div>
+              <Button asChild className="hidden rounded-full bg-yellow-400 px-5 font-semibold text-slate-950 hover:bg-yellow-300 sm:inline-flex">
+                <Link href="/sell"><Tag className="h-4 w-4" /> Sell LEGO</Link>
+              </Button>
               <Button asChild variant="outline" size="sm" className="rounded-full border-slate-200 bg-white px-3">
                 <Link href="/notifications" aria-label="Notifications"><Bell className="h-4 w-4" /></Link>
               </Button>
@@ -162,12 +167,15 @@ export function AppShell({ children, collector }: AppShellProps) {
                 </Link>
               );
             })}
-            <SignOutButton />
           </nav>
         </header>
 
         <main className="px-4 py-6 sm:px-6 lg:px-8">{children}</main>
       </div>
+
+      <Button asChild className="fixed bottom-5 right-5 z-40 h-14 rounded-full bg-yellow-400 px-5 font-semibold text-slate-950 shadow-2xl hover:bg-yellow-300 sm:hidden">
+        <Link href="/sell"><Tag className="h-5 w-5" /> Sell LEGO</Link>
+      </Button>
     </div>
   );
 }
