@@ -16,6 +16,8 @@ type AtlasResult = {
   imageUrl: string | null;
 };
 
+const categories = ["Star Wars", "Technic", "Icons", "Harry Potter", "City", "NINJAGO", "Friends"];
+
 export function AtlasLiveSearch({ initialResults }: { initialResults: AtlasResult[] }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState(initialResults);
@@ -65,6 +67,25 @@ export function AtlasLiveSearch({ initialResults }: { initialResults: AtlasResul
           />
           {loading ? <Loader2 className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 animate-spin text-slate-400" /> : null}
         </label>
+
+        <div className="mt-4 flex gap-2 overflow-x-auto pb-1" aria-label="Browse LEGO themes">
+          {categories.map((category) => {
+            const active = query.trim().toLowerCase() === category.toLowerCase();
+            return (
+              <button
+                key={category}
+                type="button"
+                onClick={() => setQuery(category)}
+                aria-pressed={active}
+                className={active
+                  ? "whitespace-nowrap rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white"
+                  : "whitespace-nowrap rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:border-slate-400 hover:text-slate-950"}
+              >
+                {category}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <section>
