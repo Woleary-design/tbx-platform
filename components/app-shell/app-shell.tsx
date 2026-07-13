@@ -8,6 +8,7 @@ import {
   Bell,
   BookOpen,
   ChevronDown,
+  Heart,
   Home,
   Inbox,
   LayoutGrid,
@@ -24,6 +25,7 @@ import { cn } from "@/lib/utils";
 const navigation = [
   { href: "/dashboard", label: "Home", icon: Home },
   { href: "/collection", label: "My Collection", icon: LibraryBig },
+  { href: "/wants", label: "My Wants", icon: Heart },
   { href: "/atlas", label: "Atlas", icon: BookOpen },
   { href: "/marketplace", label: "Marketplace", icon: LayoutGrid },
   { href: "/insights", label: "Insights", icon: Archive },
@@ -137,8 +139,8 @@ export function AppShell({ children, collector }: AppShellProps) {
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input placeholder="Search collection, Atlas, sellers, orders..." className="rounded-full border-slate-200 bg-slate-50 pl-10" />
               </div>
-              <Button variant="outline" size="sm" aria-label="Notifications" className="rounded-full border-slate-200 bg-white px-3">
-                <Bell className="h-4 w-4" />
+              <Button asChild variant="outline" size="sm" className="rounded-full border-slate-200 bg-white px-3">
+                <Link href="/notifications" aria-label="Notifications"><Bell className="h-4 w-4" /></Link>
               </Button>
               <Button asChild variant="outline" size="sm" className="rounded-full border-slate-200 bg-white pl-1.5 pr-3">
                 <Link href="/profile" title={collector.displayName}>
