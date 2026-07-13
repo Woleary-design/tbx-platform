@@ -22,7 +22,7 @@ type ListingRow = {
   lego_sets: CatalogueSet[] | null;
 };
 
-const categories = ["Icons", "Star Wars", "Technic", "Speed Champions", "Architecture", "Ninjago"];
+const categories = ["Icons", "Star Wars", "Technic", "Speed Champions", "Architecture", "NINJAGO"];
 
 export async function DashboardOverview() {
   const supabase = await createClient();
@@ -78,7 +78,15 @@ export async function DashboardOverview() {
             <Link href="/insights" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">Open Discover <ArrowRight className="h-4 w-4" /></Link>
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {categories.map((category) => <Link key={category} href={`/wants?q=${encodeURIComponent(category)}`} className="rounded-2xl border border-[#eadfce] bg-white p-5 text-lg font-semibold shadow-sm transition hover:-translate-y-0.5">{category}</Link>)}
+            {categories.map((category) => (
+              <Link
+                key={category}
+                href={`/atlas?theme=${encodeURIComponent(category)}`}
+                className="rounded-2xl border border-[#eadfce] bg-white p-5 text-lg font-semibold shadow-sm transition hover:-translate-y-0.5"
+              >
+                {category}
+              </Link>
+            ))}
           </div>
         </section>
 
