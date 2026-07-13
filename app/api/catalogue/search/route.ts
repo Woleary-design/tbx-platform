@@ -2,6 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { legoCatalogue } from "@/lib/lego/catalog";
 
+type AtlasSearchRow = {
+  id: string;
+  set_number: string;
+  name: string;
+  theme: string | null;
+  subtheme: string | null;
+  year_released: number | null;
+  piece_count: number | null;
+  minifigure_count: number | null;
+  image_url: string | null;
+};
+
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get("q")?.trim() ?? "";
 
@@ -15,10 +27,12 @@ export async function GET(request: NextRequest) {
     result_limit: 10,
   });
 
-  if (!error && data && data.length > 0) {
+  const atlasResults = (data ?? []) as AtlasSearchRow[];
+
+  if (!error && atlasResults.length > 0) {
     return NextResponse.json({
       source: "atlas",
-      results: data.map((set) => ({
+      results: atlasResults.map((set) => ({
         id: set.id,
         setNumber: set.set_number,
         name: set.name,
