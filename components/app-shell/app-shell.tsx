@@ -51,7 +51,7 @@ export function AppShell({ children, collector }: AppShellProps) {
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 border-r bg-white/90 backdrop-blur-xl lg:block">
         <div className="flex h-full flex-col">
           <div className="border-b px-6 py-7">
-            <Link href="/dashboard" className="flex items-center gap-3">
+            <Link href="/" aria-label="Go to Home" className="flex cursor-pointer items-center gap-3 transition-opacity hover:opacity-90">
               <FourDotLogo />
               <span className="leading-tight">
                 <span className="block text-[10px] font-semibold uppercase tracking-[0.32em] text-yellow-600">The</span>
@@ -106,7 +106,7 @@ export function AppShell({ children, collector }: AppShellProps) {
         <header className="sticky top-0 z-20 border-b bg-white/90 backdrop-blur-xl">
           <div className="flex min-h-16 flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between lg:px-8">
             <div className="flex items-center justify-between gap-3">
-              <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-slate-950 lg:hidden"><FourDotLogo small /> TBX</Link>
+              <Link href="/" aria-label="Go to Home" className="flex cursor-pointer items-center gap-2 font-semibold text-slate-950 transition-opacity hover:opacity-90 lg:hidden"><FourDotLogo small /> TBX</Link>
             </div>
 
             <div className="flex flex-1 items-center gap-3 sm:max-w-3xl">
