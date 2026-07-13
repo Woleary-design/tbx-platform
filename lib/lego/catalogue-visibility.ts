@@ -2,7 +2,7 @@ export type CatalogueVisibilityRecord = {
   name: string;
   theme: string | null;
   subtheme?: string | null;
-  piece_count: number | null;
+  piece_count?: number | null;
   image_url?: string | null;
 };
 
@@ -14,7 +14,7 @@ const EXCLUDED_NAME_PATTERNS = [
 export function isCollectorCatalogueRecord(record: CatalogueVisibilityRecord) {
   const theme = (record.theme ?? "").trim().toLowerCase();
   if (EXCLUDED_THEMES.has(theme)) return false;
-  if (!record.piece_count || record.piece_count <= 0) return false;
+  if (record.piece_count !== null && record.piece_count !== undefined && record.piece_count <= 0) return false;
   if (EXCLUDED_NAME_PATTERNS.some((pattern) => pattern.test(record.name))) return false;
   return true;
 }
