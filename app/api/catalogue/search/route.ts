@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
   const fallback = legoCatalogue
     .filter((set) =>
       (normalize(set.setNumber).includes(cleanQuery) || normalize(set.name).includes(cleanQuery) || normalize(set.theme).includes(cleanQuery)) &&
-      isCollectorCatalogueRecord({ name: set.name, theme: set.theme, piece_count: set.pieces ?? null }),
+      isCollectorCatalogueRecord({ name: set.name, theme: set.theme, piece_count: null }),
     )
     .sort((a, b) => (normalize(a.theme) === cleanQuery ? 0 : 1) - (normalize(b.theme) === cleanQuery ? 0 : 1) || (b.year ?? 0) - (a.year ?? 0))
     .slice(0, MAX_RESULTS);
