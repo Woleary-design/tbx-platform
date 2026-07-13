@@ -4,14 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import {
-  Archive,
   Bell,
   ChevronDown,
+  Compass,
   Heart,
   Home,
   LibraryBig,
   Search,
-  Settings,
   ShoppingBag,
   Sparkles,
   Tag,
@@ -24,10 +23,9 @@ import { cn } from "@/lib/utils";
 const navigation = [
   { href: "/dashboard", label: "Home", icon: Home },
   { href: "/collection", label: "My Collection", icon: LibraryBig },
-  { href: "/wants", label: "My Wants", icon: Heart },
-  { href: "/marketplace", label: "Buy LEGO", icon: ShoppingBag },
-  { href: "/insights", label: "Insights", icon: Archive },
-  { href: "/profile", label: "Profile", icon: Settings },
+  { href: "/wants", label: "Wishlist", icon: Heart },
+  { href: "/marketplace", label: "Marketplace", icon: ShoppingBag },
+  { href: "/insights", label: "Discover", icon: Compass },
 ];
 
 type CollectorIdentity = {
@@ -76,7 +74,7 @@ export function AppShell({ children, collector }: AppShellProps) {
 
           <div className="p-4 pb-0">
             <Button asChild className="h-12 w-full rounded-2xl bg-yellow-400 font-semibold text-slate-950 hover:bg-yellow-300">
-              <Link href="/sell"><Tag className="h-4 w-4" /> Sell LEGO</Link>
+              <Link href="/sell"><Tag className="h-4 w-4" /> Sell</Link>
             </Button>
           </div>
 
@@ -85,14 +83,7 @@ export function AppShell({ children, collector }: AppShellProps) {
               const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
               const Icon = item.icon;
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                    isActive ? "bg-slate-950 text-white shadow-[0_16px_44px_rgba(15,23,42,0.16)]" : "text-slate-500 hover:bg-slate-100 hover:text-slate-950",
-                  )}
-                >
+                <Link key={item.href} href={item.href} className={cn("group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all duration-200", isActive ? "bg-slate-950 text-white shadow-[0_16px_44px_rgba(15,23,42,0.16)]" : "text-slate-500 hover:bg-slate-100 hover:text-slate-950")}>
                   <Icon className="h-4 w-4 transition-transform duration-200 group-hover:scale-105" />
                   {item.label}
                 </Link>
@@ -115,11 +106,8 @@ export function AppShell({ children, collector }: AppShellProps) {
             </Link>
 
             <div className="rounded-2xl border bg-slate-50 p-4">
-              <div className="flex items-center gap-2 text-sm font-medium text-slate-950">
-                <Sparkles className="h-4 w-4 text-yellow-500" />
-                TBX Secure ready
-              </div>
-              <p className="mt-2 text-xs leading-5 text-slate-500">Your Collection stays private. Selling is a structured fixed-price action.</p>
+              <div className="flex items-center gap-2 text-sm font-medium text-slate-950"><Sparkles className="h-4 w-4 text-yellow-500" /> TBX Secure ready</div>
+              <p className="mt-2 text-xs leading-5 text-slate-500">Your collection stays private. Selling is a structured fixed-price action.</p>
             </div>
             <SignOutButton />
           </div>
@@ -130,42 +118,25 @@ export function AppShell({ children, collector }: AppShellProps) {
         <header className="sticky top-0 z-20 border-b bg-white/80 backdrop-blur-xl">
           <div className="flex min-h-16 flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between lg:px-8">
             <div className="flex items-center justify-between gap-3">
-              <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-slate-950 lg:hidden">
-                <FourDotLogo small /> TBX
-              </Link>
-              <div className="hidden text-sm text-slate-500 lg:block">Your collection comes first. Selling is one option.</div>
+              <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-slate-950 lg:hidden"><FourDotLogo small /> TBX</Link>
+              <div className="hidden text-sm text-slate-500 lg:block">Discover. Collect. Trade with confidence.</div>
             </div>
 
             <div className="flex flex-1 items-center gap-3 sm:max-w-2xl">
               <div className="relative flex-1">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <Input placeholder="Search your collection or live listings…" className="rounded-full border-slate-200 bg-slate-50 pl-10" />
+                <Input placeholder="Search collectibles or live listings…" className="rounded-full border-slate-200 bg-slate-50 pl-10" />
               </div>
-              <Button asChild className="hidden rounded-full bg-yellow-400 px-5 font-semibold text-slate-950 hover:bg-yellow-300 sm:inline-flex">
-                <Link href="/sell"><Tag className="h-4 w-4" /> Sell LEGO</Link>
-              </Button>
-              <Button asChild variant="outline" size="sm" className="rounded-full border-slate-200 bg-white px-3">
-                <Link href="/notifications" aria-label="Notifications"><Bell className="h-4 w-4" /></Link>
-              </Button>
-              <Button asChild variant="outline" size="sm" className="rounded-full border-slate-200 bg-white pl-1.5 pr-3">
-                <Link href="/profile" title={collector.displayName}>
-                  <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-slate-950 text-xs font-semibold text-white">
-                    {collector.avatarUrl ? <img src={collector.avatarUrl} alt="" className="h-full w-full object-cover" /> : collector.initials}
-                  </span>
-                  <ChevronDown className="h-4 w-4" />
-                </Link>
-              </Button>
+              <Button asChild className="hidden rounded-full bg-yellow-400 px-5 font-semibold text-slate-950 hover:bg-yellow-300 sm:inline-flex"><Link href="/sell"><Tag className="h-4 w-4" /> Sell</Link></Button>
+              <Button asChild variant="outline" size="sm" className="rounded-full border-slate-200 bg-white px-3"><Link href="/notifications" aria-label="Notifications"><Bell className="h-4 w-4" /></Link></Button>
+              <Button asChild variant="outline" size="sm" className="rounded-full border-slate-200 bg-white pl-1.5 pr-3"><Link href="/profile" title={collector.displayName}><span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-slate-950 text-xs font-semibold text-white">{collector.avatarUrl ? <img src={collector.avatarUrl} alt="" className="h-full w-full object-cover" /> : collector.initials}</span><ChevronDown className="h-4 w-4" /></Link></Button>
             </div>
           </div>
 
           <nav className="flex gap-2 overflow-x-auto border-t px-4 py-2 lg:hidden">
             {navigation.map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-              return (
-                <Link key={item.href} href={item.href} className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium", isActive ? "bg-slate-950 text-white" : "text-slate-500")}>
-                  {item.label}
-                </Link>
-              );
+              return <Link key={item.href} href={item.href} className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium", isActive ? "bg-slate-950 text-white" : "text-slate-500")}>{item.label}</Link>;
             })}
           </nav>
         </header>
@@ -173,9 +144,7 @@ export function AppShell({ children, collector }: AppShellProps) {
         <main className="px-4 py-6 sm:px-6 lg:px-8">{children}</main>
       </div>
 
-      <Button asChild className="fixed bottom-5 right-5 z-40 h-14 rounded-full bg-yellow-400 px-5 font-semibold text-slate-950 shadow-2xl hover:bg-yellow-300 sm:hidden">
-        <Link href="/sell"><Tag className="h-5 w-5" /> Sell LEGO</Link>
-      </Button>
+      <Button asChild className="fixed bottom-5 right-5 z-40 h-14 rounded-full bg-yellow-400 px-5 font-semibold text-slate-950 shadow-2xl hover:bg-yellow-300 sm:hidden"><Link href="/sell"><Tag className="h-5 w-5" /> Sell</Link></Button>
     </div>
   );
 }
