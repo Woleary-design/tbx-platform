@@ -1,18 +1,20 @@
 import { BuyLegoBrowser } from "@/components/marketplace/buy-lego-browser";
 import { createClient } from "@/lib/supabase/server";
 
+type JoinedSet = {
+  set_number: string;
+  name: string;
+  theme: string | null;
+  image_url: string | null;
+};
+
 type ListingRow = {
   id: string;
   price_zar: number | string;
   condition: string;
   confidence_score: number;
   dispatch_days: number;
-  lego_sets: {
-    set_number: string;
-    name: string;
-    theme: string | null;
-    image_url: string | null;
-  } | null;
+  lego_sets: JoinedSet[];
 };
 
 export default async function MarketplacePage() {
@@ -24,17 +26,19 @@ export default async function MarketplacePage() {
     .order("published_at", { ascending: false });
 
   const listings = ((data ?? []) as ListingRow[]).flatMap((listing) => {
-    if (!listing.lego_sets) return [];
+    const set = listing.lego_sets[0];
+    if (!set) return [];
+
     return [{
       id: listing.id,
       priceZar: Number(listing.price_zar),
       condition: listing.condition,
       confidenceScore: listing.confidence_score,
       dispatchDays: listing.dispatch_days,
-      setNumber: listing.lego_sets.set_number,
-      setName: listing.lego_sets.name,
-      theme: listing.lego_sets.theme,
-      imageUrl: listing.lego_sets.image_url,
+      setNumber: set.set_number,
+      setName: set.name,
+      theme: set.theme,
+      imageUrl: set.image_url,
     }];
   });
 
