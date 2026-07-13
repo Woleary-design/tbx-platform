@@ -4,6 +4,7 @@ import { gunzipSync } from "node:zlib";
 const DEFAULT_SETS_URL = "https://cdn.rebrickable.com/media/downloads/sets.csv.gz";
 const DEFAULT_THEMES_URL = "https://cdn.rebrickable.com/media/downloads/themes.csv.gz";
 const BATCH_SIZE = 500;
+const EXCLUDED_TOP_LEVEL_THEMES = new Set(["Books", "Gear"]);
 
 function requiredEnv(name, fallbacks = []) {
   const keys = [name, ...fallbacks];
@@ -98,6 +99,10 @@ function resolveTheme(themeId, themesById) {
   };
 }
 
+function isBuildableCatalogueRecord(theme) {
+  return !EXCLUDED_TOP_LEVEL_THEMES.has(theme);
+}
+
 function canonicalSetNumber(sourceSetNumber) {
   const trimmed = sourceSetNumber.trim();
   return trimmed.endsWith("-1") ? trimmed.slice(0, -2) : trimmed;
@@ -145,13 +150,19 @@ async function main() {
 
   const sourceSets = limit ? sets.slice(0, limit) : sets;
   const importedAt = new Date().toISOString();
+  let excludedCount = 0;
+
   const catalogueRows = sourceSets
     .filter((set) => set.set_num?.trim() && set.name?.trim())
-    .map((set) => {
+    .flatMap((set) => {
       const { theme, subtheme } = resolveTheme(set.theme_id, themesById);
-      const sourceSetNumber = set.set_num.trim();
+      if (!isBuildableCatalogueRecord(theme)) {
+        excludedCount += 1;
+        return [];
+      }
 
-      return {
+      const sourceSetNumber = set.set_num.trim();
+      return [{
         set_number: canonicalSetNumber(sourceSetNumber),
         name: set.name.trim(),
         theme,
@@ -163,7 +174,7 @@ async function main() {
         external_id: sourceSetNumber,
         is_active: true,
         updated_at: importedAt,
-      };
+      }];
     });
 
   const collisions = findCanonicalCollisions(catalogueRows);
@@ -173,7 +184,8 @@ async function main() {
     );
   }
 
-  console.log(`Prepared ${catalogueRows.length.toLocaleString()} Atlas records`);
+  console.log(`Excluded ${excludedCount.toLocaleString()} Books/Gear merchandise records`);
+  console.log(`Prepared ${catalogueRows.length.toLocaleString()} buildable LEGO records`);
 
   if (dryRun) {
     console.log("Dry run complete; no database writes were made.");
@@ -185,6 +197,20 @@ async function main() {
   const supabase = createClient(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
+
+  if (!limit) {
+    const { error: deactivateError } = await supabase
+      .from("lego_sets")
+      .update({ is_active: false, updated_at: importedAt })
+      .eq("external_source", "rebrickable")
+      .eq("is_active", true);
+
+    if (deactivateError) {
+      throw new Error(`Could not deactivate the previous catalogue: ${deactivateError.message}`);
+    }
+
+    console.log("Marked the previous Rebrickable catalogue inactive before rebuilding it.");
+  }
 
   let processed = 0;
   for (let start = 0; start < catalogueRows.length; start += BATCH_SIZE) {
@@ -201,7 +227,7 @@ async function main() {
     console.log(`Imported ${processed.toLocaleString()} / ${catalogueRows.length.toLocaleString()}`);
   }
 
-  console.log(`Atlas catalogue import complete: ${processed.toLocaleString()} records upserted.`);
+  console.log(`Atlas catalogue import complete: ${processed.toLocaleString()} buildable LEGO records active.`);
 }
 
 main().catch((error) => {
