@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { legoCatalogue } from "@/lib/lego/catalog";
+import { isCollectorCatalogueRecord, normalizeCatalogueTheme } from "@/lib/lego/catalogue-visibility";
 
 type AtlasSearchRow = {
   id: string;
@@ -16,6 +17,7 @@ type AtlasSearchRow = {
 
 const atlasSelect = "id, set_number, name, theme, subtheme, year_released, piece_count, minifigure_count, image_url";
 const MAX_RESULTS = 40;
+const QUERY_LIMIT = 120;
 
 function normalize(value: string | null | undefined) {
   return (value ?? "").trim().toLocaleLowerCase();
@@ -26,7 +28,6 @@ function rankResult(set: AtlasSearchRow, query: string) {
   const name = normalize(set.name);
   const theme = normalize(set.theme);
   const subtheme = normalize(set.subtheme);
-
   if (setNumber === query) return 0;
   if (theme === query) return 1;
   if (subtheme === query) return 2;
@@ -43,8 +44,9 @@ function rankResult(set: AtlasSearchRow, query: string) {
 
 function dedupeAndRank(rows: AtlasSearchRow[], query: string) {
   const unique = new Map<string, AtlasSearchRow>();
-  for (const row of rows) unique.set(row.id, row);
-
+  for (const row of rows) {
+    if (isCollectorCatalogueRecord(row)) unique.set(row.id, row);
+  }
   return [...unique.values()]
     .sort((a, b) => {
       const rankDifference = rankResult(a, query) - rankResult(b, query);
@@ -59,7 +61,7 @@ function toClientSet(set: AtlasSearchRow) {
     id: set.id,
     setNumber: set.set_number,
     name: set.name,
-    theme: set.theme ?? "LEGO",
+    theme: normalizeCatalogueTheme(set.theme) ?? "LEGO",
     subtheme: set.subtheme,
     year: set.year_released,
     pieces: set.piece_count,
@@ -70,19 +72,15 @@ function toClientSet(set: AtlasSearchRow) {
 
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get("q")?.trim() ?? "";
-
-  if (query.length < 2) {
-    return NextResponse.json({ results: [] });
-  }
+  if (query.length < 2) return NextResponse.json({ results: [] });
 
   const supabase = await createClient();
   const pattern = `%${query.replaceAll("%", "\\%").replaceAll("_", "\\_")}%`;
-
   const [numberResult, nameResult, themeResult, subthemeResult] = await Promise.all([
-    supabase.from("lego_sets").select(atlasSelect).ilike("set_number", pattern).limit(MAX_RESULTS),
-    supabase.from("lego_sets").select(atlasSelect).ilike("name", pattern).limit(MAX_RESULTS),
-    supabase.from("lego_sets").select(atlasSelect).ilike("theme", pattern).limit(MAX_RESULTS),
-    supabase.from("lego_sets").select(atlasSelect).ilike("subtheme", pattern).limit(MAX_RESULTS),
+    supabase.from("lego_sets").select(atlasSelect).eq("is_active", true).ilike("set_number", pattern).limit(QUERY_LIMIT),
+    supabase.from("lego_sets").select(atlasSelect).eq("is_active", true).ilike("name", pattern).limit(QUERY_LIMIT),
+    supabase.from("lego_sets").select(atlasSelect).eq("is_active", true).ilike("theme", pattern).limit(QUERY_LIMIT),
+    supabase.from("lego_sets").select(atlasSelect).eq("is_active", true).ilike("subtheme", pattern).limit(QUERY_LIMIT),
   ]);
 
   const errors = [numberResult.error, nameResult.error, themeResult.error, subthemeResult.error].filter(Boolean);
@@ -98,7 +96,6 @@ export async function GET(request: NextRequest) {
     const results = dedupeAndRank(rows, cleanQuery);
     const exactTheme = results.find((set) => normalize(set.theme) === cleanQuery)?.theme ?? null;
     const exactSubtheme = results.find((set) => normalize(set.subtheme) === cleanQuery)?.subtheme ?? null;
-
     return NextResponse.json({
       source: "atlas",
       matchType: exactTheme ? "theme" : exactSubtheme ? "subtheme" : "sets",
@@ -109,22 +106,12 @@ export async function GET(request: NextRequest) {
 
   const cleanQuery = normalize(query);
   const fallback = legoCatalogue
-    .filter(
-      (set) =>
-        normalize(set.setNumber).includes(cleanQuery) ||
-        normalize(set.name).includes(cleanQuery) ||
-        normalize(set.theme).includes(cleanQuery),
+    .filter((set) =>
+      (normalize(set.setNumber).includes(cleanQuery) || normalize(set.name).includes(cleanQuery) || normalize(set.theme).includes(cleanQuery)) &&
+      isCollectorCatalogueRecord({ name: set.name, theme: set.theme, piece_count: set.pieces ?? null }),
     )
-    .sort((a, b) => {
-      const aThemeExact = normalize(a.theme) === cleanQuery ? 0 : 1;
-      const bThemeExact = normalize(b.theme) === cleanQuery ? 0 : 1;
-      return aThemeExact - bThemeExact || (b.year ?? 0) - (a.year ?? 0);
-    })
+    .sort((a, b) => (normalize(a.theme) === cleanQuery ? 0 : 1) - (normalize(b.theme) === cleanQuery ? 0 : 1) || (b.year ?? 0) - (a.year ?? 0))
     .slice(0, MAX_RESULTS);
 
-  return NextResponse.json({
-    source: "starter",
-    results: fallback,
-    warning: errors.map((error) => error?.message).filter(Boolean).join("; ") || undefined,
-  });
+  return NextResponse.json({ source: "starter", results: fallback, warning: errors.map((error) => error?.message).filter(Boolean).join("; ") || undefined });
 }

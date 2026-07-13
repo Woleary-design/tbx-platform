@@ -1,6 +1,7 @@
 import { BookOpen, Sparkles } from "lucide-react";
 import { AtlasLiveSearch } from "@/components/atlas/atlas-live-search";
 import { createClient } from "@/lib/supabase/server";
+import { isCollectorCatalogueRecord, normalizeCatalogueTheme } from "@/lib/lego/catalogue-visibility";
 
 type AtlasSet = {
   id: string;
@@ -14,9 +15,7 @@ type AtlasSet = {
   image_url: string | null;
 };
 
-type AtlasDirectoryPageProps = {
-  searchParams?: Promise<{ theme?: string }>;
-};
+type AtlasDirectoryPageProps = { searchParams?: Promise<{ theme?: string }> };
 
 export default async function AtlasDirectoryPage({ searchParams }: AtlasDirectoryPageProps) {
   const params = searchParams ? await searchParams : undefined;
@@ -27,39 +26,39 @@ export default async function AtlasDirectoryPage({ searchParams }: AtlasDirector
     .select("id, set_number, name, theme, subtheme, year_released, piece_count, minifigure_count, image_url")
     .eq("is_active", true)
     .order("year_released", { ascending: false, nullsFirst: false })
-    .limit(60);
+    .limit(240);
 
-  const initialResults = ((data ?? []) as AtlasSet[]).map((set) => ({
-    id: set.id,
-    setNumber: set.set_number,
-    name: set.name,
-    theme: set.theme ?? "LEGO",
-    subtheme: set.subtheme,
-    year: set.year_released,
-    pieces: set.piece_count,
-    minifigures: set.minifigure_count,
-    imageUrl: set.image_url,
-  }));
+  const initialResults = ((data ?? []) as AtlasSet[])
+    .filter(isCollectorCatalogueRecord)
+    .slice(0, 60)
+    .map((set) => ({
+      id: set.id,
+      setNumber: set.set_number,
+      name: set.name,
+      theme: normalizeCatalogueTheme(set.theme) ?? "LEGO",
+      subtheme: set.subtheme,
+      year: set.year_released,
+      pieces: set.piece_count,
+      minifigures: set.minifigure_count,
+      imageUrl: set.image_url,
+    }));
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">
       <section className="overflow-hidden rounded-[2rem] border border-[#eadfce] bg-slate-950 text-white shadow-[0_28px_100px_rgba(15,23,42,0.16)]">
         <div className="grid gap-8 p-7 md:p-10 lg:grid-cols-[1fr_340px] lg:items-end">
           <div>
-            <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-medium text-yellow-300">
-              <BookOpen className="h-4 w-4" /> Atlas
-            </p>
+            <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-medium text-yellow-300"><BookOpen className="h-4 w-4" /> Atlas</p>
             <h1 className="mt-6 max-w-3xl text-4xl font-semibold tracking-tight md:text-6xl">The LEGO directory for serious collectors.</h1>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-white/70">Find official set records, understand what belongs with each set, and add the right item to your collection without re-entering catalogue data.</p>
+            <p className="mt-5 max-w-2xl text-base leading-7 text-white/70">Find official buildable set records without merchandise, books or catalogue clutter.</p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/8 p-5">
             <Sparkles className="h-6 w-6 text-yellow-300" />
-            <p className="mt-4 font-semibold">Atlas is the reference layer.</p>
-            <p className="mt-2 text-sm leading-6 text-white/65">Collection Records, evidence requirements and future market intelligence will all connect back to one trusted set record.</p>
+            <p className="mt-4 font-semibold">Collector catalogue view</p>
+            <p className="mt-2 text-sm leading-6 text-white/65">Odd merchandise stays out of normal browsing while Atlas retains the source record for future admin review.</p>
           </div>
         </div>
       </section>
-
       <AtlasLiveSearch initialResults={initialResults} initialQuery={initialTheme} />
     </div>
   );
