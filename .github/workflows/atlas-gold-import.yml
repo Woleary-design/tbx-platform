@@ -1,0 +1,76 @@
+name: Atlas Gold Import
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Run mode"
+        required: true
+        default: "dry-run"
+        type: choice
+        options:
+          - dry-run
+          - live
+
+permissions:
+  contents: read
+
+jobs:
+  import-atlas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check required secrets
+        shell: bash
+        run: |
+          if [ -z "$SUPABASE_URL" ]; then
+            echo "Missing GitHub Actions secret: SUPABASE_URL"
+            exit 1
+          fi
+          if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "Missing GitHub Actions secret: SUPABASE_SERVICE_ROLE_KEY"
+            exit 1
+          fi
+
+      - name: Download current Rebrickable catalogue
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p rebrickable
+          curl --fail --location --retry 3 \
+            https://cdn.rebrickable.com/media/downloads/sets.csv.gz \
+            --output rebrickable/sets.csv.gz
+          curl --fail --location --retry 3 \
+            https://cdn.rebrickable.com/media/downloads/themes.csv.gz \
+            --output rebrickable/themes.csv.gz
+          gunzip rebrickable/sets.csv.gz
+          gunzip rebrickable/themes.csv.gz
+          test -s rebrickable/sets.csv
+          test -s rebrickable/themes.csv
+          echo "Downloaded catalogue files:"
+          wc -l rebrickable/sets.csv rebrickable/themes.csv
+
+      - name: Run Atlas importer
+        shell: bash
+        run: |
+          if [ "${{ inputs.mode }}" = "live" ]; then
+            node scripts/atlas/import-rebrickable.mjs ./rebrickable
+          else
+            node scripts/atlas/import-rebrickable.mjs ./rebrickable --dry-run
+          fi
