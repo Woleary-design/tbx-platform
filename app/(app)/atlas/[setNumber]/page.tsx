@@ -31,6 +31,23 @@ export default async function AtlasSetPage({ params }: { params: Promise<{ setNu
   ]);
 
   const availableCount = liveListingCount ?? 0;
+  const isWishlisted = Boolean(existingWishlistItem);
+  const relatedSetsHref = set.theme ? `/atlas?theme=${encodeURIComponent(set.theme)}` : "/atlas";
+  const signInHref = `/auth?next=${encodeURIComponent(`/atlas/${set.set_number}`)}`;
+
+  const informationFields = [
+    { label: "Set number", value: set.set_number },
+    set.theme ? { label: "Theme", value: set.theme } : null,
+    set.subtheme ? { label: "Subtheme", value: set.subtheme } : null,
+    set.year_released ? { label: "Released", value: String(set.year_released) } : null,
+    set.piece_count ? { label: "Pieces", value: Number(set.piece_count).toLocaleString("en-ZA") } : null,
+    set.minifigure_count ? { label: "Minifigures", value: String(set.minifigure_count) } : null,
+    set.year_retired ? { label: "Retired", value: String(set.year_retired) } : null,
+    set.retail_price_zar
+      ? { label: "Original retail price", value: `R${Number(set.retail_price_zar).toLocaleString("en-ZA")}` }
+      : null,
+    set.barcode ? { label: "Barcode", value: set.barcode } : null,
+  ].filter((field): field is { label: string; value: string } => Boolean(field));
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">
@@ -57,7 +74,7 @@ export default async function AtlasSetPage({ params }: { params: Promise<{ setNu
               <Button asChild className="h-12 rounded-xl bg-yellow-400 px-6 font-semibold text-slate-950 hover:bg-yellow-300">
                 <Link href={`/collection/add?set=${encodeURIComponent(set.set_number)}`}><PackagePlus className="h-4 w-4" /> Add to My Collection</Link>
               </Button>
-              {user ? <WishlistSetButton legoSetId={set.id} initialWishlisted={Boolean(existingWishlistItem)} /> : null}
+              {user ? <WishlistSetButton legoSetId={set.id} initialWishlisted={isWishlisted} /> : null}
               {availableCount > 0 ? (
                 <Button asChild variant="outline" className="h-12 rounded-xl border-white/20 bg-white/5 px-6 text-white hover:bg-white/10 hover:text-white">
                   <Link href={`/marketplace?q=${encodeURIComponent(set.set_number)}`}><ShoppingBag className="h-4 w-4" /> View {availableCount} listing{availableCount === 1 ? "" : "s"}</Link>
@@ -73,29 +90,44 @@ export default async function AtlasSetPage({ params }: { params: Promise<{ setNu
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-600">Official reference</p>
           <h2 className="mt-2 text-2xl font-semibold text-slate-950">Set information</h2>
           <dl className="mt-6 grid gap-4 sm:grid-cols-2">
-            {[
-              ["Theme", set.theme || "Not recorded"],
-              ["Subtheme", set.subtheme || "Not recorded"],
-              ["Year retired", set.year_retired ?? "Not recorded"],
-              ["Original retail price", set.retail_price_zar ? `R${Number(set.retail_price_zar).toLocaleString("en-ZA")}` : "Not recorded"],
-              ["Barcode", set.barcode || "Not recorded"],
-              ["Instructions", set.instructions_url ? "Available" : "Not linked yet"],
-            ].map(([label, value]) => <div key={String(label)} className="rounded-2xl bg-slate-50 p-4"><dt className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">{label}</dt><dd className="mt-2 font-semibold text-slate-950">{String(value)}</dd></div>)}
+            {informationFields.map(({ label, value }) => (
+              <div key={label} className="rounded-2xl bg-slate-50 p-4">
+                <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">{label}</dt>
+                <dd className="mt-2 font-semibold text-slate-950">{value}</dd>
+              </div>
+            ))}
+            {set.instructions_url ? (
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Instructions</dt>
+                <dd className="mt-2 font-semibold text-slate-950">
+                  <a href={set.instructions_url} target="_blank" rel="noreferrer" className="underline decoration-yellow-400 underline-offset-4">View official instructions</a>
+                </dd>
+              </div>
+            ) : null}
           </dl>
+          <p className="mt-5 text-sm leading-6 text-slate-500">Atlas only shows verified details here. Additional official data will appear automatically as each record is enriched.</p>
         </div>
 
         <div className="rounded-[2rem] border border-[#eadfce] bg-slate-950 p-6 text-white shadow-[0_20px_65px_rgba(15,23,42,0.12)]">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-300">Marketplace availability</p>
-          <h2 className="mt-3 text-2xl font-semibold">{availableCount > 0 ? `${availableCount} available now.` : "None available right now."}</h2>
+          <h2 className="mt-3 text-2xl font-semibold">{availableCount > 0 ? `${availableCount} listing${availableCount === 1 ? "" : "s"} available.` : "0 listings available."}</h2>
           <p className="mt-3 text-sm leading-6 text-white/65">
             {availableCount > 0
               ? "These are live, fixed-price TBX listings for this exact LEGO set."
-              : "Keep it on your Wishlist and TBX can notify you when a matching listing goes live."}
+              : isWishlisted
+                ? "You are tracking this set. TBX will surface a match when a collector lists one."
+                : "Add this set to your Wishlist to track future marketplace availability."}
           </p>
           {availableCount > 0 ? (
             <Button asChild className="mt-6 h-12 w-full rounded-xl bg-white font-semibold text-slate-950 hover:bg-slate-100"><Link href={`/marketplace?q=${encodeURIComponent(set.set_number)}`}>View available listings</Link></Button>
+          ) : user && !isWishlisted ? (
+            <div className="mt-6 [&_button]:w-full [&_button]:justify-center [&_button]:border-white [&_button]:bg-white [&_button]:text-slate-950 [&_button]:hover:bg-slate-100">
+              <WishlistSetButton legoSetId={set.id} initialWishlisted={false} />
+            </div>
+          ) : isWishlisted ? (
+            <Button asChild className="mt-6 h-12 w-full rounded-xl bg-white font-semibold text-slate-950 hover:bg-slate-100"><Link href={relatedSetsHref}>Browse similar {set.theme || "LEGO"} sets</Link></Button>
           ) : (
-            <Button asChild className="mt-6 h-12 w-full rounded-xl bg-white font-semibold text-slate-950 hover:bg-slate-100"><Link href="/wishlist">View my Wishlist</Link></Button>
+            <Button asChild className="mt-6 h-12 w-full rounded-xl bg-white font-semibold text-slate-950 hover:bg-slate-100"><Link href={signInHref}>Sign in to track this set</Link></Button>
           )}
         </div>
       </section>
