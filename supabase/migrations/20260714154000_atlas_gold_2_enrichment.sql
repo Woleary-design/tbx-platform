@@ -17,7 +17,11 @@ create index if not exists lego_sets_enrichment_version_idx
 create index if not exists lego_sets_enrichment_conflicts_idx
   on public.lego_sets using gin(enrichment_conflicts);
 
-create or replace view public.atlas_review_queue as
+-- PostgreSQL cannot change an existing view's column order with
+-- CREATE OR REPLACE VIEW, so recreate it explicitly.
+drop view if exists public.atlas_review_queue;
+
+create view public.atlas_review_queue as
 select
   id,
   set_number,
@@ -55,3 +59,5 @@ comment on column public.lego_sets.enrichment_conflicts is
   'Structured source disagreements or suspicious values requiring Atlas review.';
 comment on column public.lego_sets.enrichment_version is
   'Importer/enrichment release that most recently processed this record.';
+comment on view public.atlas_review_queue is
+  'Internal Atlas records requiring enrichment, classification, duplicate resolution or source-conflict review.';
