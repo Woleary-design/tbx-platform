@@ -40,18 +40,29 @@ function FourDotLogo() {
 
 export default async function HomePage() {
   const supabase = await createClient();
-  const [{ data }, { data: userData }] = await Promise.all([
-    supabase
+  let data: unknown[] = [];
+  let user: { id: string } | null = null;
+
+  try {
+    const listingsResult = await supabase
       .from("marketplace_listings")
       .select("id, price_zar, condition, dispatch_days, lego_sets(set_number, name, theme, image_url)")
       .eq("status", "live")
       .order("published_at", { ascending: false })
-      .limit(3),
-    supabase.auth.getUser(),
-  ]);
+      .limit(3);
+    data = listingsResult.data ?? [];
+  } catch {
+    data = [];
+  }
 
-  const user = userData.user;
-  const listings: LandingListing[] = ((data ?? []) as unknown as ListingRow[]).flatMap((listing) => {
+  try {
+    const userResult = await supabase.auth.getUser();
+    user = userResult.data.user;
+  } catch {
+    user = null;
+  }
+
+  const listings: LandingListing[] = (data as ListingRow[]).flatMap((listing) => {
     const legoSet = listing.lego_sets?.[0];
     if (!legoSet) return [];
     const { lego_sets, ...listingFields } = listing;
