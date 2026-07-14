@@ -13,8 +13,14 @@ function getSiteUrl() {
   return url.endsWith("/") ? url.slice(0, -1) : url;
 }
 
-export function SignInForm() {
+function safeNextPath(nextPath?: string) {
+  if (!nextPath || !nextPath.startsWith("/") || nextPath.startsWith("//")) return "/";
+  return nextPath;
+}
+
+export function SignInForm({ nextPath }: { nextPath?: string }) {
   const router = useRouter();
+  const destination = safeNextPath(nextPath);
   const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,7 +32,6 @@ export function SignInForm() {
   async function handlePasswordReset() {
     setMessage(null);
     setError(null);
-
     if (!email.trim()) {
       setError("Enter the account email address first.");
       return;
@@ -43,7 +48,6 @@ export function SignInForm() {
       setError(resetError.message);
       return;
     }
-
     setMessage("Password reset email sent. Use the newest link in your inbox.");
   }
 
@@ -55,7 +59,6 @@ export function SignInForm() {
 
     try {
       const supabase = createClient();
-
       if (mode === "sign-up") {
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
@@ -65,13 +68,13 @@ export function SignInForm() {
               display_name: displayName || email.split("@")[0],
               username: email.split("@")[0],
             },
-            emailRedirectTo: `${getSiteUrl()}/dashboard`,
+            emailRedirectTo: `${getSiteUrl()}/auth/callback?next=${encodeURIComponent(destination)}`,
           },
         });
 
         if (signUpError) throw signUpError;
         if (data.session) {
-          router.push("/dashboard");
+          router.push(destination);
           router.refresh();
           return;
         }
@@ -79,7 +82,7 @@ export function SignInForm() {
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) throw signInError;
-        router.push("/dashboard");
+        router.push(destination);
         router.refresh();
       }
     } catch (caughtError) {
