@@ -78,7 +78,6 @@ async function main() {
     loadCsv("inventory_minifigs.csv"),
   ]);
 
-  const inventoriesById = new Map();
   const bestInventoryBySet = new Map();
 
   for (const row of inventoryRows) {
@@ -87,7 +86,6 @@ async function main() {
     const setNumber = row.set_num?.trim();
     if (!id || !setNumber) continue;
 
-    inventoriesById.set(id, { setNumber, version });
     const current = bestInventoryBySet.get(setNumber);
     if (!current || version > current.version) bestInventoryBySet.set(setNumber, { id, version });
   }
@@ -114,7 +112,6 @@ async function main() {
       instructions_url: `https://www.lego.com/service/buildinginstructions/${encodeURIComponent(baseSetNumber(setNumber))}`,
       instructions_source: "lego",
       enrichment_version: enrichmentVersion,
-      enrichment_conflicts: [],
       last_inventory_sync_at: now,
       last_instructions_sync_at: now,
       enriched_at: now,
