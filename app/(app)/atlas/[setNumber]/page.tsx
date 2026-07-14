@@ -34,7 +34,7 @@ export default async function AtlasSetPage({ params }: { params: Promise<{ setNu
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">
-      <Link href="/atlas" className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-950"><ArrowLeft className="h-4 w-4" /> Back to Atlas</Link>
+      <Link href="/atlas" className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-950"><ArrowLeft className="h-4 w-4" /> Back to LEGO Directory</Link>
 
       <section className="overflow-hidden rounded-[2rem] border border-[#eadfce] bg-white shadow-[0_28px_100px_rgba(43,30,18,0.10)]">
         <div className="grid lg:grid-cols-[0.9fr_1.1fr]">
@@ -42,7 +42,7 @@ export default async function AtlasSetPage({ params }: { params: Promise<{ setNu
             {set.image_url ? <img src={set.image_url} alt={set.name} className="max-h-[520px] w-full object-contain" /> : <Boxes className="h-24 w-24 text-yellow-500" />}
           </div>
           <div className="bg-slate-950 p-7 text-white md:p-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-300">Atlas Record · LEGO {set.set_number}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-300">Official LEGO Set · {set.set_number}</p>
             <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-6xl">{set.name}</h1>
             <p className="mt-4 text-lg text-white/60">{[set.theme, set.subtheme].filter(Boolean).join(" · ") || "Uncategorised"}</p>
 
@@ -71,7 +71,7 @@ export default async function AtlasSetPage({ params }: { params: Promise<{ setNu
       <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
         <div className="rounded-[2rem] border border-[#eadfce] bg-white p-6 shadow-[0_20px_65px_rgba(43,30,18,0.07)]">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-600">Official reference</p>
-          <h2 className="mt-2 text-2xl font-semibold text-slate-950">What Atlas knows</h2>
+          <h2 className="mt-2 text-2xl font-semibold text-slate-950">Set information</h2>
           <dl className="mt-6 grid gap-4 sm:grid-cols-2">
             {[
               ["Theme", set.theme || "Not recorded"],
@@ -89,7 +89,7 @@ export default async function AtlasSetPage({ params }: { params: Promise<{ setNu
           <h2 className="mt-3 text-2xl font-semibold">{availableCount > 0 ? `${availableCount} available now.` : "None available right now."}</h2>
           <p className="mt-3 text-sm leading-6 text-white/65">
             {availableCount > 0
-              ? "These are live, fixed-price TBX listings for this exact Atlas set."
+              ? "These are live, fixed-price TBX listings for this exact LEGO set."
               : "Keep it on your Wishlist and TBX can notify you when a matching listing goes live."}
           </p>
           {availableCount > 0 ? (
