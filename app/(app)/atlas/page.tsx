@@ -48,14 +48,14 @@ export default async function AtlasDirectoryPage({ searchParams }: AtlasDirector
       <section className="overflow-hidden rounded-[2rem] border border-[#eadfce] bg-slate-950 text-white shadow-[0_28px_100px_rgba(15,23,42,0.16)]">
         <div className="grid gap-8 p-7 md:p-10 lg:grid-cols-[1fr_340px] lg:items-end">
           <div>
-            <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-medium text-yellow-300"><BookOpen className="h-4 w-4" /> Atlas</p>
-            <h1 className="mt-6 max-w-3xl text-4xl font-semibold tracking-tight md:text-6xl">The LEGO directory for serious collectors.</h1>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-white/70">Find official buildable set records without merchandise, books or catalogue clutter.</p>
+            <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-medium text-yellow-300"><BookOpen className="h-4 w-4" /> LEGO Directory</p>
+            <h1 className="mt-6 max-w-3xl text-4xl font-semibold tracking-tight md:text-6xl">Find the right LEGO set.</h1>
+            <p className="mt-5 max-w-2xl text-base leading-7 text-white/70">Search official buildable sets by number, name, theme or subtheme without merchandise, books or catalogue clutter.</p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/8 p-5">
             <Sparkles className="h-6 w-6 text-yellow-300" />
-            <p className="mt-4 font-semibold">Collector catalogue view</p>
-            <p className="mt-2 text-sm leading-6 text-white/65">Odd merchandise stays out of normal browsing while Atlas retains the source record for future admin review.</p>
+            <p className="mt-4 font-semibold">Built for collectors</p>
+            <p className="mt-2 text-sm leading-6 text-white/65">Find a set, add it to your Collection or Wishlist, or check whether one is currently available to buy.</p>
           </div>
         </div>
       </section>
