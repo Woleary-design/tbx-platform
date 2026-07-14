@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
 import { SignInForm } from "@/components/auth/sign-in-form";
 
@@ -12,7 +13,13 @@ function FourDotLogo() {
   );
 }
 
-export default function SignInPage() {
+type SignInPageProps = {
+  searchParams?: Promise<{ next?: string }>;
+};
+
+export default async function SignInPage({ searchParams }: SignInPageProps) {
+  const params = searchParams ? await searchParams : undefined;
+
   return (
     <main className="min-h-screen bg-[#f6f9fc] text-slate-950">
       <div className="mx-auto grid min-h-screen max-w-7xl gap-10 px-6 py-8 lg:grid-cols-[1fr_460px] lg:items-center lg:px-8">
@@ -22,7 +29,7 @@ export default function SignInPage() {
             <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/50 to-transparent" />
           </div>
           <div className="relative max-w-xl">
-            <FourDotLogo />
+            <Link href="/" aria-label="Return to TBX home"><FourDotLogo /></Link>
             <p className="mt-8 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-medium text-yellow-300">
               <ShieldCheck className="h-4 w-4" /> TBX Secure access
             </p>
@@ -39,18 +46,18 @@ export default function SignInPage() {
         </section>
 
         <section className="rounded-[2rem] border border-slate-200 bg-white p-7 shadow-[0_24px_90px_rgba(15,23,42,0.08)]">
-          <div className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3" aria-label="Return to TBX home">
             <FourDotLogo />
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-yellow-600">The</p>
               <h2 className="text-xl font-semibold">Block Exchange</h2>
             </div>
-          </div>
+          </Link>
           <h3 className="mt-8 text-3xl font-semibold tracking-tight">Welcome to TBX.</h3>
           <p className="mt-2 text-sm leading-6 text-slate-600">Sign in to an existing collector account or create your passport and vault.</p>
 
           <div className="mt-7">
-            <SignInForm />
+            <SignInForm nextPath={params?.next} />
           </div>
 
           <div className="mt-6 grid gap-3 text-sm text-slate-600">
