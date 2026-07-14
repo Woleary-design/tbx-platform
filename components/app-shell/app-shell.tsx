@@ -3,18 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { Bell, ChevronDown, Compass, Heart, Home, LibraryBig, ShoppingBag, Sparkles, Tag } from "lucide-react";
+import { Bell, BookOpen, ChevronDown, Heart, Home, LibraryBig, ShoppingBag, Sparkles, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { CatalogueSearch } from "@/components/catalogue/catalogue-search";
 import { cn } from "@/lib/utils";
 
 const navigation = [
-  { href: "/dashboard", label: "Home", icon: Home },
+  { href: "/", label: "Home", icon: Home },
   { href: "/collection", label: "My Collection", icon: LibraryBig },
-  { href: "/wants", label: "Wishlist", icon: Heart },
+  { href: "/wishlist", label: "Wishlist", icon: Heart },
   { href: "/marketplace", label: "Marketplace", icon: ShoppingBag },
-  { href: "/insights", label: "Discover", icon: Compass },
+  { href: "/atlas", label: "Atlas", icon: BookOpen },
 ];
 
 type CollectorIdentity = {
@@ -51,7 +51,7 @@ export function AppShell({ children, collector }: AppShellProps) {
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 border-r bg-white/90 backdrop-blur-xl lg:block">
         <div className="flex h-full flex-col">
           <div className="border-b px-6 py-7">
-            <Link href="/dashboard" className="flex items-center gap-3">
+            <Link href="/" aria-label="Go to Home" className="flex items-center gap-3">
               <FourDotLogo />
               <span className="leading-tight">
                 <span className="block text-[10px] font-semibold uppercase tracking-[0.32em] text-yellow-600">The</span>
@@ -69,7 +69,7 @@ export function AppShell({ children, collector }: AppShellProps) {
 
           <nav className="flex-1 space-y-1.5 p-4">
             {navigation.map((item) => {
-              const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+              const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(`${item.href}/`));
               const Icon = item.icon;
               return (
                 <Link key={item.href} href={item.href} className={cn("group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all duration-200", isActive ? "bg-slate-950 text-white shadow-[0_16px_44px_rgba(15,23,42,0.16)]" : "text-slate-500 hover:bg-slate-100 hover:text-slate-950")}>
@@ -106,7 +106,7 @@ export function AppShell({ children, collector }: AppShellProps) {
         <header className="sticky top-0 z-20 border-b bg-white/90 backdrop-blur-xl">
           <div className="flex min-h-16 flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between lg:px-8">
             <div className="flex items-center justify-between gap-3">
-              <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-slate-950 lg:hidden"><FourDotLogo small /> TBX</Link>
+              <Link href="/" aria-label="Go to Home" className="flex items-center gap-2 font-semibold text-slate-950 lg:hidden"><FourDotLogo small /> TBX</Link>
             </div>
 
             <div className="flex flex-1 items-center gap-3 sm:max-w-3xl">
@@ -119,7 +119,7 @@ export function AppShell({ children, collector }: AppShellProps) {
 
           <nav className="flex gap-2 overflow-x-auto border-t px-4 py-2 lg:hidden">
             {navigation.map((item) => {
-              const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+              const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(`${item.href}/`));
               return <Link key={item.href} href={item.href} className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium", isActive ? "bg-slate-950 text-white" : "text-slate-500")}>{item.label}</Link>;
             })}
           </nav>
