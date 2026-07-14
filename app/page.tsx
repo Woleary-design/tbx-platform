@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 
 const trustReasons = [
-  { title: "Guest checkout", detail: "Browse the catalogue, view live listings and purchase without creating an account.", icon: LockKeyhole },
+  { title: "Guest browsing", detail: "Browse Atlas and live listings without creating an account.", icon: LockKeyhole },
   { title: "Collection-backed listings", detail: "Every item for sale starts from a private Collection Record rather than a blank advert.", icon: ShieldCheck },
   { title: "Fixed-price marketplace", detail: "The listed price is the price. No offers, counters or buyer-seller chat.", icon: Sparkles },
   { title: "Private by design", detail: "Registration is required to collect, wishlist or sell, while ownership remains private.", icon: BadgeCheck },
@@ -40,17 +40,22 @@ function FourDotLogo() {
 
 export default async function HomePage() {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("marketplace_listings")
-    .select("id, price_zar, condition, dispatch_days, lego_sets(set_number, name, theme, image_url)")
-    .eq("status", "live")
-    .order("published_at", { ascending: false })
-    .limit(3);
+  const [{ data }, { data: userData }] = await Promise.all([
+    supabase
+      .from("marketplace_listings")
+      .select("id, price_zar, condition, dispatch_days, lego_sets(set_number, name, theme, image_url)")
+      .eq("status", "live")
+      .order("published_at", { ascending: false })
+      .limit(3),
+    supabase.auth.getUser(),
+  ]);
 
+  const user = userData.user;
   const listings: LandingListing[] = ((data ?? []) as unknown as ListingRow[]).flatMap((listing) => {
     const legoSet = listing.lego_sets?.[0];
     if (!legoSet) return [];
-    const { lego_sets: _legoSets, ...listingFields } = listing;
+    const { lego_sets, ...listingFields } = listing;
+    void lego_sets;
     return [{ ...listingFields, legoSet }];
   });
 
@@ -68,15 +73,15 @@ export default async function HomePage() {
 
           <div className="hidden items-center gap-9 text-sm font-medium text-slate-600 md:flex">
             <Link href="/marketplace" className="hover:text-slate-950">Marketplace</Link>
-            <Link href="/collection" className="hover:text-slate-950">Collection</Link>
-            <Link href="/wants" className="hover:text-slate-950">Wishlist</Link>
-            <Link href="/insights" className="hover:text-slate-950">Discover</Link>
+            <Link href="/atlas" className="hover:text-slate-950">Atlas</Link>
+            <Link href={user ? "/collection" : "/sign-in?next=/collection"} className="hover:text-slate-950">Collection</Link>
+            <Link href={user ? "/wishlist" : "/sign-in?next=/wishlist"} className="hover:text-slate-950">Wishlist</Link>
           </div>
 
           <div className="flex items-center gap-3 text-sm">
-            <Link href="/dashboard" className="hidden text-slate-600 hover:text-slate-950 sm:inline">Sign in</Link>
+            <Link href={user ? "/dashboard" : "/sign-in"} className="hidden text-slate-600 hover:text-slate-950 sm:inline">{user ? "My TBX" : "Sign in"}</Link>
             <Button asChild className="h-11 rounded-xl bg-yellow-400 px-5 font-semibold text-slate-950 hover:bg-yellow-300">
-              <Link href="/sell">Sell</Link>
+              <Link href={user ? "/sell" : "/sign-in?next=/sell"}>Sell</Link>
             </Button>
           </div>
         </nav>
@@ -91,7 +96,7 @@ export default async function HomePage() {
                 A trusted exchange for collectors
               </div>
               <h1 className="mt-6 text-balance text-5xl font-semibold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
-                Discover it. Collect it. Trade it securely.
+                {user ? "Welcome back to your collecting home." : "Discover it. Collect it. Trade it securely."}
               </h1>
               <p className="mt-7 text-pretty text-lg leading-relaxed text-slate-600">
                 TBX is building a trusted home for collectibles. LEGO is our launch category, with more collector markets to follow.
@@ -101,10 +106,10 @@ export default async function HomePage() {
                   <Link href="/marketplace">Browse Marketplace <ArrowRight className="h-4 w-4" /></Link>
                 </Button>
                 <Button asChild variant="outline" className="h-12 rounded-xl border-slate-200 bg-white px-6">
-                  <Link href="/dashboard">Explore LEGO</Link>
+                  <Link href="/atlas">Explore LEGO</Link>
                 </Button>
               </div>
-              <p className="mt-4 text-sm text-slate-500">Browse and buy as a guest. Register only when you want to collect, wishlist or sell.</p>
+              <p className="mt-4 text-sm text-slate-500">Browse freely. Sign in only when you want to collect, wishlist or sell.</p>
             </div>
 
             <div className="relative">
@@ -166,7 +171,7 @@ export default async function HomePage() {
               <PackageOpen className="mx-auto h-10 w-10 text-yellow-600" />
               <h3 className="mt-4 text-2xl font-semibold">No items are listed yet.</h3>
               <p className="mx-auto mt-2 max-w-xl text-slate-600">TBX never invents listings. Registered collectors can be the first to list.</p>
-              <Button asChild className="mt-6 rounded-xl bg-yellow-400 font-semibold text-slate-950 hover:bg-yellow-300"><Link href="/sell">Sell</Link></Button>
+              <Button asChild className="mt-6 rounded-xl bg-yellow-400 font-semibold text-slate-950 hover:bg-yellow-300"><Link href={user ? "/sell" : "/sign-in?next=/sell"}>Sell</Link></Button>
             </div>
           )}
         </section>
