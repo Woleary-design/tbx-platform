@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Boxes, CalendarDays, PackagePlus, Puzzle, Users } from "lucide-react";
+import { ArrowLeft, Boxes, CalendarDays, PackagePlus, Puzzle, ShoppingBag, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WishlistSetButton } from "@/components/atlas/wishlist-set-button";
 import { getAtlasSetByNumber } from "@/lib/atlas/service";
@@ -18,16 +18,23 @@ export default async function AtlasSetPage({ params }: { params: Promise<{ setNu
   if (!set) notFound();
 
   const user = userData.user;
-  const [{ data: wishlistCount }, { data: existingWishlistItem }] = await Promise.all([
+  const [{ data: wishlistCount }, { data: existingWishlistItem }, { count: liveListingCount }] = await Promise.all([
     supabase.rpc("atlas_wishlist_count", { target_set_id: set.id }),
     user
       ? supabase.from("wishlist_items").select("id").eq("collector_id", user.id).eq("lego_set_id", set.id).maybeSingle()
       : Promise.resolve({ data: null }),
+    supabase
+      .from("marketplace_listings")
+      .select("id", { count: "exact", head: true })
+      .eq("lego_set_id", set.id)
+      .eq("status", "live"),
   ]);
+
+  const availableCount = liveListingCount ?? 0;
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">
-      <Link href="/atlas" className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-950"><ArrowLeft className="h-4 w-4" /> Back to Atlas</Link>
+      <Link href="/atlas" className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-950"><ArrowLeft className="h-4 w-4" /> Back to LEGO Directory</Link>
 
       <section className="overflow-hidden rounded-[2rem] border border-[#eadfce] bg-white shadow-[0_28px_100px_rgba(43,30,18,0.10)]">
         <div className="grid lg:grid-cols-[0.9fr_1.1fr]">
@@ -35,14 +42,15 @@ export default async function AtlasSetPage({ params }: { params: Promise<{ setNu
             {set.image_url ? <img src={set.image_url} alt={set.name} className="max-h-[520px] w-full object-contain" /> : <Boxes className="h-24 w-24 text-yellow-500" />}
           </div>
           <div className="bg-slate-950 p-7 text-white md:p-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-300">Atlas Record · LEGO {set.set_number}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-300">Official LEGO Set · {set.set_number}</p>
             <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-6xl">{set.name}</h1>
             <p className="mt-4 text-lg text-white/60">{[set.theme, set.subtheme].filter(Boolean).join(" · ") || "Uncategorised"}</p>
 
-            <div className="mt-8 grid gap-3 sm:grid-cols-3">
+            <div className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4"><CalendarDays className="h-5 w-5 text-yellow-300" /><p className="mt-3 text-2xl font-semibold">{set.year_released ?? "—"}</p><p className="mt-1 text-xs uppercase tracking-wide text-white/45">Released</p></div>
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4"><Puzzle className="h-5 w-5 text-yellow-300" /><p className="mt-3 text-2xl font-semibold">{set.piece_count ?? "—"}</p><p className="mt-1 text-xs uppercase tracking-wide text-white/45">Pieces</p></div>
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4"><Users className="h-5 w-5 text-yellow-300" /><p className="mt-3 text-2xl font-semibold">{Number(wishlistCount ?? 0)}</p><p className="mt-1 text-xs uppercase tracking-wide text-white/45">Collectors wishlisted</p></div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4"><ShoppingBag className="h-5 w-5 text-yellow-300" /><p className="mt-3 text-2xl font-semibold">{availableCount}</p><p className="mt-1 text-xs uppercase tracking-wide text-white/45">Available now</p></div>
             </div>
 
             <div className="mt-8 flex flex-wrap gap-3">
@@ -50,6 +58,11 @@ export default async function AtlasSetPage({ params }: { params: Promise<{ setNu
                 <Link href={`/collection/add?set=${encodeURIComponent(set.set_number)}`}><PackagePlus className="h-4 w-4" /> Add to My Collection</Link>
               </Button>
               {user ? <WishlistSetButton legoSetId={set.id} initialWishlisted={Boolean(existingWishlistItem)} /> : null}
+              {availableCount > 0 ? (
+                <Button asChild variant="outline" className="h-12 rounded-xl border-white/20 bg-white/5 px-6 text-white hover:bg-white/10 hover:text-white">
+                  <Link href={`/marketplace?q=${encodeURIComponent(set.set_number)}`}><ShoppingBag className="h-4 w-4" /> View {availableCount} listing{availableCount === 1 ? "" : "s"}</Link>
+                </Button>
+              ) : null}
             </div>
           </div>
         </div>
@@ -58,7 +71,7 @@ export default async function AtlasSetPage({ params }: { params: Promise<{ setNu
       <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
         <div className="rounded-[2rem] border border-[#eadfce] bg-white p-6 shadow-[0_20px_65px_rgba(43,30,18,0.07)]">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-600">Official reference</p>
-          <h2 className="mt-2 text-2xl font-semibold text-slate-950">What Atlas knows</h2>
+          <h2 className="mt-2 text-2xl font-semibold text-slate-950">Set information</h2>
           <dl className="mt-6 grid gap-4 sm:grid-cols-2">
             {[
               ["Theme", set.theme || "Not recorded"],
@@ -72,10 +85,18 @@ export default async function AtlasSetPage({ params }: { params: Promise<{ setNu
         </div>
 
         <div className="rounded-[2rem] border border-[#eadfce] bg-slate-950 p-6 text-white shadow-[0_20px_65px_rgba(15,23,42,0.12)]">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-300">Collector intent</p>
-          <h2 className="mt-3 text-2xl font-semibold">Own it or wishlist it.</h2>
-          <p className="mt-3 text-sm leading-6 text-white/65">Add the set to My Collection when you own a copy. Add it to your Wishlist when you are looking for one, so TBX can match future marketplace listings.</p>
-          <Button asChild className="mt-6 h-12 w-full rounded-xl bg-white font-semibold text-slate-950 hover:bg-slate-100"><Link href={`/collection/add?set=${encodeURIComponent(set.set_number)}`}>Add this set</Link></Button>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-300">Marketplace availability</p>
+          <h2 className="mt-3 text-2xl font-semibold">{availableCount > 0 ? `${availableCount} available now.` : "None available right now."}</h2>
+          <p className="mt-3 text-sm leading-6 text-white/65">
+            {availableCount > 0
+              ? "These are live, fixed-price TBX listings for this exact LEGO set."
+              : "Keep it on your Wishlist and TBX can notify you when a matching listing goes live."}
+          </p>
+          {availableCount > 0 ? (
+            <Button asChild className="mt-6 h-12 w-full rounded-xl bg-white font-semibold text-slate-950 hover:bg-slate-100"><Link href={`/marketplace?q=${encodeURIComponent(set.set_number)}`}>View available listings</Link></Button>
+          ) : (
+            <Button asChild className="mt-6 h-12 w-full rounded-xl bg-white font-semibold text-slate-950 hover:bg-slate-100"><Link href="/wishlist">View my Wishlist</Link></Button>
+          )}
         </div>
       </section>
     </div>

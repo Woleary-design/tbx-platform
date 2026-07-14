@@ -16,8 +16,8 @@ type Listing = {
   imageUrl: string | null;
 };
 
-export function BuyLegoBrowser({ listings }: { listings: Listing[] }) {
-  const [query, setQuery] = useState("");
+export function BuyLegoBrowser({ listings, initialQuery = "" }: { listings: Listing[]; initialQuery?: string }) {
+  const [query, setQuery] = useState(initialQuery);
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
     if (!term) return listings;
@@ -82,8 +82,8 @@ export function BuyLegoBrowser({ listings }: { listings: Listing[] }) {
           <div className="mt-6 rounded-[2rem] border border-dashed border-[#d9c9af] bg-white p-10 text-center">
             <Heart className="mx-auto h-9 w-9 text-yellow-600" />
             <h3 className="mt-4 text-2xl font-semibold text-slate-950">No matching sets are for sale.</h3>
-            <p className="mt-2 text-slate-600">Add the set to My Wants and TBX will notify you when a matching listing appears.</p>
-            <Link href="/wants" className="mt-5 inline-flex rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white">Search all LEGO for My Wants</Link>
+            <p className="mt-2 text-slate-600">Add the set to your Wishlist and TBX will notify you when a matching listing appears.</p>
+            <Link href="/wishlist" className="mt-5 inline-flex rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white">Open Wishlist</Link>
           </div>
         )}
       </section>

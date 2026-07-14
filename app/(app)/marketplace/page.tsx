@@ -17,7 +17,13 @@ type ListingRow = {
   lego_sets: JoinedSet[];
 };
 
-export default async function MarketplacePage() {
+type MarketplacePageProps = {
+  searchParams?: Promise<{ set?: string }>;
+};
+
+export default async function MarketplacePage({ searchParams }: MarketplacePageProps) {
+  const params = searchParams ? await searchParams : undefined;
+  const initialQuery = params?.set?.trim() ?? "";
   const supabase = await createClient();
   const { data } = await supabase
     .from("marketplace_listings")
@@ -42,5 +48,5 @@ export default async function MarketplacePage() {
     }];
   });
 
-  return <BuyLegoBrowser listings={listings} />;
+  return <BuyLegoBrowser listings={listings} initialQuery={initialQuery} />;
 }

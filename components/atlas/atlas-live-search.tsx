@@ -97,7 +97,7 @@ export function AtlasLiveSearch({ initialResults, initialQuery = "" }: AtlasLive
         <div className="flex items-end justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">LEGO Directory</p>
-            <h2 className="mt-2 text-3xl font-semibold text-slate-950">{query.trim() ? `Results for “${query.trim()}”` : "Browse Atlas"}</h2>
+            <h2 className="mt-2 text-3xl font-semibold text-slate-950">{query.trim() ? `Results for “${query.trim()}”` : "Browse LEGO sets"}</h2>
           </div>
           <p className="text-sm text-slate-500">{results.length} set{results.length === 1 ? "" : "s"}</p>
         </div>
@@ -105,7 +105,7 @@ export function AtlasLiveSearch({ initialResults, initialQuery = "" }: AtlasLive
         {results.length === 0 ? (
           <div className="mt-6 rounded-[2rem] border border-dashed border-[#d9c9af] bg-white p-10 text-center">
             <Boxes className="mx-auto h-9 w-9 text-yellow-600" />
-            <h3 className="mt-4 text-2xl font-semibold text-slate-950">No Atlas match yet.</h3>
+            <h3 className="mt-4 text-2xl font-semibold text-slate-950">No matching LEGO sets found.</h3>
             <p className="mt-2 text-slate-600">Try the set number or a broader theme name.</p>
           </div>
         ) : (
@@ -124,7 +124,7 @@ export function AtlasLiveSearch({ initialResults, initialQuery = "" }: AtlasLive
                     <div className="rounded-xl bg-slate-50 p-2">{set.pieces ?? "—"}<span className="mt-1 block text-[10px] uppercase tracking-wide text-slate-400">Pieces</span></div>
                     <div className="rounded-xl bg-slate-50 p-2">{set.minifigures ?? "—"}<span className="mt-1 block text-[10px] uppercase tracking-wide text-slate-400">Minifigs</span></div>
                   </div>
-                  <p className="mt-5 flex items-center justify-between text-sm font-semibold text-slate-700 group-hover:text-yellow-700">View Atlas record <ArrowRight className="h-4 w-4" /></p>
+                  <p className="mt-5 flex items-center justify-between text-sm font-semibold text-slate-700 group-hover:text-yellow-700">View set details <ArrowRight className="h-4 w-4" /></p>
                 </div>
               </Link>
             ))}
