@@ -1,16 +1,19 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  BadgeCheck,
+  Bell,
+  BookOpen,
   Boxes,
-  CarFront,
-  CircleDollarSign,
+  Heart,
+  Home,
   PackageOpen,
   Search,
   ShieldCheck,
   Sparkles,
+  Store,
+  TrendingUp,
+  UserRound,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 
 type LegoSetJoin = {
@@ -24,230 +27,215 @@ type ListingRow = {
   id: string;
   price_zar: number | string;
   condition: string;
-  dispatch_days: number;
   lego_sets: LegoSetJoin[] | null;
 };
 
-type LandingListing = Omit<ListingRow, "lego_sets"> & { legoSet: LegoSetJoin };
-
 type FeaturedSet = {
-  id: string;
   set_number: string;
   name: string;
   theme: string | null;
-  subtheme: string | null;
   image_url: string | null;
   year_released: number | null;
   piece_count: number | null;
   completeness_score: number | null;
 };
 
-function TbxWordmark() {
+function Brand() {
   return (
-    <span className="relative inline-flex items-end text-2xl font-black tracking-[-0.08em] text-white" aria-label="TBX">
-      <span>T</span>
-      <span>B</span>
-      <span className="text-[#ff6a00]">X</span>
-      <span className="absolute -bottom-1.5 left-[1.1rem] h-1.5 w-6 rounded-sm bg-yellow-400 shadow-[0_0_14px_rgba(250,204,21,0.45)]" />
-    </span>
+    <Link href="/" className="group flex items-center gap-3" aria-label="TBX home">
+      <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[#ffd84d]/30 bg-[#ffd84d]/10 shadow-[0_0_30px_rgba(255,216,77,0.08)]">
+        <Boxes className="h-6 w-6 text-[#ffd84d]" />
+      </span>
+      <span>
+        <span className="block text-xl font-black tracking-[-0.055em] text-white">TBX</span>
+        <span className="block text-[9px] font-bold uppercase tracking-[0.22em] text-[#ffd84d]">The Block Exchange</span>
+      </span>
+    </Link>
   );
 }
 
-const categories = [
-  { name: "LEGO", detail: "27,000+ Atlas records", active: true, icon: Boxes, accent: "bg-yellow-400 text-slate-950" },
-  { name: "Hot Wheels", detail: "Coming soon", active: false, icon: CarFront, accent: "bg-[#ff6a00] text-white" },
-  { name: "Trading Cards", detail: "Coming soon", active: false, icon: Sparkles, accent: "bg-slate-200 text-slate-700" },
-  { name: "Coins", detail: "Coming soon", active: false, icon: CircleDollarSign, accent: "bg-slate-200 text-slate-700" },
+const navItems = [
+  { label: "Home", href: "/", icon: Home },
+  { label: "Collection", href: "/collection", icon: Boxes },
+  { label: "Atlas", href: "/atlas", icon: BookOpen },
+  { label: "Market", href: "/marketplace", icon: Store },
+  { label: "Profile", href: "/dashboard", icon: UserRound },
 ];
 
 export default async function HomePage() {
   const supabase = await createClient();
-  let listings: LandingListing[] = [];
   let user: { id: string } | null = null;
   let featuredSet: FeaturedSet | null = null;
+  let listings: Array<Omit<ListingRow, "lego_sets"> & { legoSet: LegoSetJoin }> = [];
 
   try {
-    const listingResult = await supabase
-      .from("marketplace_listings")
-      .select("id, price_zar, condition, dispatch_days, lego_sets(set_number, name, theme, image_url)")
-      .eq("status", "live")
-      .order("published_at", { ascending: false })
-      .limit(4);
-
-    listings = ((listingResult.data ?? []) as ListingRow[]).flatMap((listing) => {
-      const legoSet = listing.lego_sets?.[0];
-      if (!legoSet) return [];
-      const { lego_sets, ...listingFields } = listing;
-      void lego_sets;
-      return [{ ...listingFields, legoSet }];
-    });
+    user = (await supabase.auth.getUser()).data.user;
   } catch {
-    listings = [];
+    user = null;
   }
 
   try {
-    const featuredResult = await supabase
+    const result = await supabase
       .from("lego_sets")
-      .select("id, set_number, name, theme, subtheme, image_url, year_released, piece_count, completeness_score")
+      .select("set_number, name, theme, image_url, year_released, piece_count, completeness_score")
       .eq("set_number", "10317-1")
       .maybeSingle();
-    featuredSet = (featuredResult.data as FeaturedSet | null) ?? null;
+    featuredSet = (result.data as FeaturedSet | null) ?? null;
   } catch {
     featuredSet = null;
   }
 
   try {
-    const userResult = await supabase.auth.getUser();
-    user = userResult.data.user;
+    const result = await supabase
+      .from("marketplace_listings")
+      .select("id, price_zar, condition, lego_sets(set_number, name, theme, image_url)")
+      .eq("status", "live")
+      .order("published_at", { ascending: false })
+      .limit(4);
+
+    listings = ((result.data ?? []) as ListingRow[]).flatMap((listing) => {
+      const legoSet = listing.lego_sets?.[0];
+      if (!legoSet) return [];
+      const { lego_sets, ...rest } = listing;
+      void lego_sets;
+      return [{ ...rest, legoSet }];
+    });
   } catch {
-    user = null;
+    listings = [];
   }
 
   return (
-    <div className="min-h-screen bg-[#080b10] text-white">
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#080b10]/90 backdrop-blur-xl">
-        <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 lg:px-8">
-          <Link href="/" className="flex items-center gap-4">
-            <TbxWordmark />
-            <span className="hidden text-[10px] font-semibold uppercase tracking-[0.28em] text-white/45 sm:block">Discover · Collect · Trade</span>
-          </Link>
-
-          <div className="hidden items-center gap-8 text-sm font-medium text-white/65 md:flex">
-            <Link href="/" className="text-white">Discover</Link>
-            <Link href="/marketplace" className="hover:text-white">Marketplace</Link>
-            <Link href="/atlas" className="hover:text-white">Atlas</Link>
-            <Link href={user ? "/collection" : "/sign-in?next=/collection"} className="hover:text-white">Vault</Link>
-            <Link href={user ? "/wishlist" : "/sign-in?next=/wishlist"} className="hover:text-white">Watchlist</Link>
+    <div className="min-h-screen bg-[#050915] pb-24 text-white md:pb-0">
+      <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#050915]/88 backdrop-blur-2xl">
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 lg:px-8">
+          <Brand />
+          <nav className="hidden items-center gap-1 rounded-2xl border border-white/[0.07] bg-white/[0.035] p-1.5 md:flex">
+            {navItems.slice(0, 4).map(({ label, href, icon: Icon }, index) => (
+              <Link key={href} href={href} className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold ${index === 0 ? "bg-[#ffd84d] text-[#050915]" : "text-white/60 hover:bg-white/[0.06] hover:text-white"}`}>
+                <Icon className="h-4 w-4" /> {label}
+              </Link>
+            ))}
+          </nav>
+          <div className="flex items-center gap-2">
+            <button aria-label="Notifications" className="grid h-11 w-11 place-items-center rounded-2xl border border-white/[0.08] bg-white/[0.04] text-white/75 hover:border-[#ffd84d]/30 hover:text-[#ffd84d]">
+              <Bell className="h-5 w-5" />
+            </button>
+            <Link href={user ? "/dashboard" : "/sign-in"} className="grid h-11 w-11 place-items-center rounded-2xl border border-[#ffd84d]/25 bg-[#ffd84d]/10 font-bold text-[#ffd84d]">
+              {user ? "W" : <UserRound className="h-5 w-5" />}
+            </Link>
           </div>
-
-          <div className="flex items-center gap-3 text-sm">
-            <Link href={user ? "/dashboard" : "/sign-in"} className="hidden text-white/60 hover:text-white sm:inline">{user ? "My TBX" : "Sign in"}</Link>
-            <Button asChild className="h-11 rounded-xl bg-yellow-400 px-5 font-semibold text-slate-950 hover:bg-yellow-300">
-              <Link href="/sell">Sell</Link>
-            </Button>
-          </div>
-        </nav>
+        </div>
       </header>
 
       <main>
-        <section className="relative overflow-hidden border-b border-white/10">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_25%,rgba(255,106,0,0.16),transparent_32%),radial-gradient(circle_at_20%_30%,rgba(250,204,21,0.12),transparent_28%)]" />
-          <div className="relative mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-28">
-            <div className="max-w-4xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-yellow-300">
-                <ShieldCheck className="h-3.5 w-3.5" /> Built for collectors
+        <section className="relative overflow-hidden border-b border-white/[0.06]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_18%,rgba(255,216,77,0.13),transparent_25rem),radial-gradient(circle_at_12%_18%,rgba(50,90,170,0.18),transparent_30rem)]" />
+          <div className="relative mx-auto max-w-7xl px-5 py-10 lg:px-8 lg:py-20">
+            <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#ffd84d]/20 bg-[#ffd84d]/[0.07] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-[#ffd84d]">
+                  <ShieldCheck className="h-3.5 w-3.5" /> Built for serious collectors
+                </div>
+                <h1 className="mt-7 max-w-3xl text-5xl font-black leading-[0.94] tracking-[-0.065em] sm:text-7xl lg:text-[5.4rem]">
+                  Your collection. <span className="text-[#ffd84d]">Known.</span><br />Valued. Ready.
+                </h1>
+                <p className="mt-6 max-w-xl text-base leading-7 text-white/55 sm:text-lg">
+                  Document every set, understand its value, protect what matters and trade with confidence.
+                </p>
+                <form action="/atlas" method="get" className="mt-8 flex max-w-2xl items-center gap-2 rounded-2xl border border-white/[0.09] bg-[#0b1223]/90 p-2 shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
+                  <Search className="ml-3 h-5 w-5 shrink-0 text-white/35" />
+                  <input name="q" aria-label="Search Atlas" placeholder="Search LEGO by name or set number" className="min-w-0 flex-1 border-0 bg-transparent px-2 py-3 text-sm text-white outline-none placeholder:text-white/35 focus:shadow-none" />
+                  <button type="submit" className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#ffd84d] text-[#050915] hover:bg-[#ffe16f]" aria-label="Search">
+                    <ArrowRight className="h-5 w-5" />
+                  </button>
+                </form>
               </div>
-              <h1 className="mt-7 text-balance text-5xl font-black leading-[0.95] tracking-[-0.055em] sm:text-7xl lg:text-8xl">
-                Discover what belongs in your <span className="text-yellow-400">vault.</span>
-              </h1>
-              <p className="mt-7 max-w-2xl text-lg leading-8 text-white/60">
-                TBX is the trusted home for collectibles. LEGO is first. Hot Wheels, trading cards and more are next.
-              </p>
 
-              <form action="/atlas" method="get" className="mt-9 flex max-w-3xl gap-2 rounded-2xl border border-white/10 bg-white p-2 shadow-2xl shadow-black/30">
-                <Search className="ml-3 mt-3 h-5 w-5 shrink-0 text-slate-400" />
-                <input name="q" aria-label="Search Atlas" placeholder="Search 27,000+ LEGO sets..." className="min-w-0 flex-1 bg-transparent px-2 text-slate-950 outline-none placeholder:text-slate-400" />
-                <Button type="submit" className="h-12 rounded-xl bg-slate-950 px-6 font-semibold text-white hover:bg-slate-800">Search Atlas</Button>
-              </form>
+              <div className="relative">
+                <div className="tbx-surface overflow-hidden rounded-[2rem] p-5 sm:p-7">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/35">Collection snapshot</p>
+                      <p className="mt-3 text-4xl font-black tracking-[-0.05em]">Your TBX home</p>
+                    </div>
+                    <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#ffd84d] text-[#050915]"><Sparkles className="h-6 w-6" /></span>
+                  </div>
+                  <div className="mt-8 grid grid-cols-2 gap-3">
+                    <Link href={user ? "/collection" : "/sign-in?next=/collection"} className="rounded-2xl border border-white/[0.07] bg-white/[0.035] p-5 hover:border-[#ffd84d]/30 hover:bg-[#ffd84d]/[0.05]">
+                      <Boxes className="h-5 w-5 text-[#ffd84d]" />
+                      <p className="mt-8 text-2xl font-bold">Collection</p>
+                      <p className="mt-1 text-sm text-white/40">Document and protect</p>
+                    </Link>
+                    <Link href={user ? "/wishlist" : "/sign-in?next=/wishlist"} className="rounded-2xl border border-white/[0.07] bg-white/[0.035] p-5 hover:border-[#ffd84d]/30 hover:bg-[#ffd84d]/[0.05]">
+                      <Heart className="h-5 w-5 text-[#ffd84d]" />
+                      <p className="mt-8 text-2xl font-bold">Wishlist</p>
+                      <p className="mt-1 text-sm text-white/40">Watch what matters</p>
+                    </Link>
+                  </div>
+                  <Link href="/sell" className="mt-3 flex items-center justify-between rounded-2xl bg-[#ffd84d] px-5 py-4 font-bold text-[#050915] hover:bg-[#ffe16f]">
+                    List a set for sale <ArrowRight className="h-5 w-5" />
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
-          <div className="mb-7 flex items-end justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-400">Featured LEGO set</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">This week in Atlas</h2>
-            </div>
-            <Link href="/atlas" className="hidden items-center gap-2 text-sm font-semibold text-white/65 hover:text-white sm:inline-flex">Explore Atlas <ArrowRight className="h-4 w-4" /></Link>
+        <section className="mx-auto max-w-7xl px-5 py-14 lg:px-8 lg:py-20">
+          <div className="flex items-end justify-between gap-4">
+            <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#ffd84d]">Atlas spotlight</p><h2 className="mt-3 text-3xl font-black tracking-[-0.04em] sm:text-4xl">A collector icon</h2></div>
+            <Link href="/atlas" className="hidden items-center gap-2 text-sm font-semibold text-white/50 hover:text-[#ffd84d] sm:flex">Explore Atlas <ArrowRight className="h-4 w-4" /></Link>
           </div>
 
-          {featuredSet ? (
-            <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#11151d] shadow-2xl shadow-black/20">
-              <div className="grid lg:grid-cols-[1.05fr_0.95fr]">
-                <div className="flex min-h-[360px] items-center justify-center bg-[#f8f1df] p-8 lg:min-h-[500px]">
-                  {featuredSet.image_url ? <img src={featuredSet.image_url} alt={featuredSet.name} className="max-h-[430px] w-full object-contain" /> : <Boxes className="h-24 w-24 text-yellow-500" />}
+          <div className="mt-7 overflow-hidden rounded-[2rem] border border-white/[0.07] bg-[#0b1223]">
+            {featuredSet ? (
+              <div className="grid lg:grid-cols-[0.92fr_1.08fr]">
+                <div className="relative grid min-h-[300px] place-items-center overflow-hidden bg-[radial-gradient(circle_at_center,rgba(255,216,77,0.13),transparent_55%)] p-8 lg:min-h-[470px]">
+                  {featuredSet.image_url ? <img src={featuredSet.image_url} alt={featuredSet.name} className="max-h-[390px] w-full object-contain drop-shadow-[0_30px_35px_rgba(0,0,0,0.45)]" /> : <Boxes className="h-24 w-24 text-[#ffd84d]" />}
                 </div>
-                <div className="flex flex-col justify-center p-7 sm:p-10 lg:p-12">
-                  <div className="inline-flex w-fit items-center gap-2 rounded-full border border-yellow-300/20 bg-yellow-300/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-yellow-300">
-                    <BadgeCheck className="h-4 w-4" /> Atlas verified
-                  </div>
-                  <p className="mt-7 text-sm font-semibold uppercase tracking-[0.22em] text-white/45">{featuredSet.theme ?? "LEGO"} · {featuredSet.set_number}</p>
-                  <h3 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">{featuredSet.name}</h3>
-                  <p className="mt-4 text-white/55">A standout collector build selected from the TBX Atlas.</p>
-
+                <div className="flex flex-col justify-center border-t border-white/[0.06] p-7 sm:p-10 lg:border-l lg:border-t-0 lg:p-14">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[#ffd84d]"><ShieldCheck className="h-4 w-4" /> Atlas verified</div>
+                  <p className="mt-7 text-sm font-semibold text-white/35">{featuredSet.theme ?? "LEGO"} · {featuredSet.set_number}</p>
+                  <h3 className="mt-2 text-4xl font-black tracking-[-0.045em] sm:text-5xl">{featuredSet.name}</h3>
                   <div className="mt-8 grid grid-cols-3 gap-3">
-                    <div className="rounded-2xl border border-white/10 bg-white/5 p-4"><p className="text-2xl font-bold">{featuredSet.year_released ?? "—"}</p><p className="mt-1 text-xs uppercase tracking-wide text-white/40">Released</p></div>
-                    <div className="rounded-2xl border border-white/10 bg-white/5 p-4"><p className="text-2xl font-bold">{featuredSet.piece_count?.toLocaleString() ?? "—"}</p><p className="mt-1 text-xs uppercase tracking-wide text-white/40">Pieces</p></div>
-                    <div className="rounded-2xl border border-white/10 bg-white/5 p-4"><p className="text-2xl font-bold">{featuredSet.completeness_score ?? 0}%</p><p className="mt-1 text-xs uppercase tracking-wide text-white/40">Atlas score</p></div>
+                    {[['Released', featuredSet.year_released ?? '—'], ['Pieces', featuredSet.piece_count?.toLocaleString() ?? '—'], ['Atlas score', `${featuredSet.completeness_score ?? 0}%`]].map(([label, value]) => (
+                      <div key={label} className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-4"><p className="text-xl font-bold sm:text-2xl">{value}</p><p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-white/30">{label}</p></div>
+                    ))}
                   </div>
-
                   <div className="mt-8 flex flex-wrap gap-3">
-                    <Button asChild className="h-12 rounded-xl bg-yellow-400 px-6 font-semibold text-slate-950 hover:bg-yellow-300"><Link href={`/atlas/${encodeURIComponent(featuredSet.set_number)}`}>View in Atlas <ArrowRight className="h-4 w-4" /></Link></Button>
-                    <Button asChild variant="outline" className="h-12 rounded-xl border-white/15 bg-white/5 px-6 text-white hover:bg-white/10 hover:text-white"><Link href={`/marketplace?q=${encodeURIComponent(featuredSet.set_number)}`}>Find one</Link></Button>
+                    <Link href={`/atlas/${encodeURIComponent(featuredSet.set_number)}`} className="inline-flex h-12 items-center gap-2 rounded-xl bg-[#ffd84d] px-5 font-bold text-[#050915] hover:bg-[#ffe16f]">View record <ArrowRight className="h-4 w-4" /></Link>
+                    <Link href={`/marketplace?q=${encodeURIComponent(featuredSet.set_number)}`} className="inline-flex h-12 items-center rounded-xl border border-white/[0.09] bg-white/[0.035] px-5 font-semibold text-white/75 hover:border-[#ffd84d]/25 hover:text-white">Find one</Link>
                   </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            <div className="rounded-[2rem] border border-dashed border-white/15 bg-white/5 p-10 text-center text-white/60">Featured set is being prepared.</div>
-          )}
+            ) : <div className="p-12 text-center text-white/45">Atlas spotlight is being prepared.</div>}
+          </div>
         </section>
 
         <section className="mx-auto max-w-7xl px-5 pb-20 lg:px-8">
-          <div className="mb-7 flex items-end justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#ff8a3d]">Marketplace</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Just listed</h2>
-            </div>
-            <Link href="/marketplace" className="inline-flex items-center gap-2 text-sm font-semibold text-white/65 hover:text-white">View all <ArrowRight className="h-4 w-4" /></Link>
-          </div>
-
-          {listings.length > 0 ? (
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="flex items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#ffd84d]">Marketplace</p><h2 className="mt-3 text-3xl font-black tracking-[-0.04em] sm:text-4xl">Recently listed</h2></div><Link href="/marketplace" className="flex items-center gap-2 text-sm font-semibold text-white/50 hover:text-[#ffd84d]">View all <ArrowRight className="h-4 w-4" /></Link></div>
+          {listings.length ? (
+            <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {listings.map((listing) => (
-                <Link key={listing.id} href={`/marketplace/${listing.id}`} className="group overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#11151d] transition hover:-translate-y-1 hover:border-white/20">
-                  <div className="grid aspect-[4/3] place-items-center bg-[#f8f1df] p-5">
-                    {listing.legoSet.image_url ? <img src={listing.legoSet.image_url} alt={listing.legoSet.name} className="h-full w-full object-contain transition group-hover:scale-105" /> : <PackageOpen className="h-12 w-12 text-slate-300" />}
-                  </div>
-                  <div className="p-5">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-yellow-400">{listing.legoSet.set_number}</p>
-                    <h3 className="mt-2 line-clamp-2 min-h-12 text-lg font-semibold">{listing.legoSet.name}</h3>
-                    <div className="mt-4 flex items-center justify-between gap-3"><span className="text-sm text-white/45">{listing.condition}</span><span className="font-bold">R{Number(listing.price_zar).toLocaleString("en-ZA")}</span></div>
-                  </div>
+                <Link key={listing.id} href={`/marketplace/${listing.id}`} className="group overflow-hidden rounded-3xl border border-white/[0.07] bg-[#0b1223] hover:-translate-y-1 hover:border-[#ffd84d]/25">
+                  <div className="grid aspect-[4/3] place-items-center bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.07),transparent_65%)] p-5">{listing.legoSet.image_url ? <img src={listing.legoSet.image_url} alt={listing.legoSet.name} className="h-full w-full object-contain transition duration-300 group-hover:scale-105" /> : <PackageOpen className="h-12 w-12 text-white/20" />}</div>
+                  <div className="border-t border-white/[0.06] p-5"><p className="text-xs font-bold uppercase tracking-wider text-[#ffd84d]">{listing.legoSet.set_number}</p><h3 className="mt-2 line-clamp-2 min-h-12 font-bold">{listing.legoSet.name}</h3><div className="mt-5 flex items-center justify-between"><span className="text-xs text-white/40">{listing.condition}</span><span className="font-black">R{Number(listing.price_zar).toLocaleString("en-ZA")}</span></div></div>
                 </Link>
               ))}
             </div>
           ) : (
-            <div className="rounded-[2rem] border border-dashed border-white/15 bg-white/5 p-10 text-center">
-              <PackageOpen className="mx-auto h-10 w-10 text-yellow-400" />
-              <h3 className="mt-4 text-2xl font-semibold">The next listing could be yours.</h3>
-              <p className="mt-2 text-white/55">TBX only displays real collector listings.</p>
-              <Button asChild className="mt-6 rounded-xl bg-yellow-400 font-semibold text-slate-950 hover:bg-yellow-300"><Link href="/sell">Quick Sell</Link></Button>
-            </div>
+            <div className="mt-7 rounded-3xl border border-dashed border-white/[0.1] bg-white/[0.025] p-10 text-center"><TrendingUp className="mx-auto h-8 w-8 text-[#ffd84d]" /><p className="mt-4 font-semibold">The market is getting ready.</p></div>
           )}
         </section>
-
-        <section className="border-t border-white/10 bg-[#0d1118]">
-          <div className="mx-auto max-w-7xl px-5 py-20 lg:px-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-400">Choose your world</p>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">One TBX. Every collection.</h2>
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {categories.map((category) => {
-                const Icon = category.icon;
-                const content = (
-                  <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-6 transition hover:border-white/20 hover:bg-white/[0.07]">
-                    <div className={`grid h-11 w-11 place-items-center rounded-xl ${category.accent}`}><Icon className="h-5 w-5" /></div>
-                    <h3 className="mt-5 text-xl font-semibold">{category.name}</h3>
-                    <p className="mt-2 text-sm text-white/45">{category.detail}</p>
-                  </div>
-                );
-                return category.active ? <Link key={category.name} href="/atlas">{content}</Link> : <div key={category.name} aria-disabled="true">{content}</div>;
-              })}
-            </div>
-          </div>
-        </section>
       </main>
+
+      <nav className="fixed inset-x-3 bottom-3 z-50 grid grid-cols-5 rounded-[1.4rem] border border-white/[0.09] bg-[#080e1d]/95 p-1.5 shadow-[0_20px_60px_rgba(0,0,0,0.55)] backdrop-blur-2xl md:hidden">
+        {navItems.map(({ label, href, icon: Icon }, index) => (
+          <Link key={href} href={href} className={`flex min-w-0 flex-col items-center gap-1 rounded-2xl px-1 py-2 text-[10px] font-semibold ${index === 0 ? "bg-[#ffd84d] text-[#050915]" : "text-white/45 hover:bg-white/[0.05] hover:text-white"}`}>
+            <Icon className="h-5 w-5" /><span className="truncate">{label}</span>
+          </Link>
+        ))}
+      </nav>
     </div>
   );
 }
