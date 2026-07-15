@@ -10,9 +10,6 @@
  * Expected files in the directory:
  *   sets.csv
  *   themes.csv
- *
- * Download the official bulk CSV files from Rebrickable before running.
- * The importer enriches lego_sets in place and never touches collector-owned tables.
  */
 
 import { readFile } from "node:fs/promises";
@@ -75,19 +72,19 @@ function integerOrNull(value) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function normalizeSetNumber(value) {
+  const setNumber = String(value ?? "").trim();
+  return /^\d+-1$/.test(setNumber) ? setNumber.slice(0, -2) : setNumber;
+}
+
 function buildThemePath(themeId, themes) {
   const current = themes.get(themeId);
   if (!current) return { theme: null, subtheme: null };
-
-  if (!current.parentId) {
-    return { theme: current.name, subtheme: null };
-  }
+  if (!current.parentId) return { theme: current.name, subtheme: null };
 
   const parent = themes.get(current.parentId);
   if (!parent) return { theme: current.name, subtheme: null };
 
-  // Rebrickable can nest themes more than one level deep. Atlas keeps the
-  // highest meaningful parent as theme and the selected leaf as subtheme.
   let root = parent;
   while (root.parentId && themes.has(root.parentId)) root = themes.get(root.parentId);
 
@@ -119,34 +116,45 @@ async function main() {
   );
 
   const now = new Date().toISOString();
-  const records = setRows
-    .filter((row) => row.set_num && row.name)
-    .map((row) => {
-      const { theme, subtheme } = buildThemePath(String(row.theme_id), themes);
-      return {
-        set_number: row.set_num.trim(),
-        name: row.name.trim(),
-        year_released: integerOrNull(row.year),
-        piece_count: integerOrNull(row.num_parts),
-        theme,
-        subtheme,
-        image_url: row.img_url?.trim() || null,
-        image_source: row.img_url ? "rebrickable" : null,
-        data_source: "rebrickable",
-        source_record_id: row.set_num.trim(),
-        source_data: {
-          rebrickable_theme_id: integerOrNull(row.theme_id),
-          imported_from: "sets.csv",
-        },
-        source_updated_at: now,
-        enriched_at: now,
-        is_active: true,
-      };
-    });
+  const recordsByNumber = new Map();
 
+  for (const row of setRows) {
+    if (!row.set_num || !row.name) continue;
+
+    const sourceSetNumber = row.set_num.trim();
+    const setNumber = normalizeSetNumber(sourceSetNumber);
+    const { theme, subtheme } = buildThemePath(String(row.theme_id), themes);
+
+    recordsByNumber.set(setNumber, {
+      set_number: setNumber,
+      name: row.name.trim(),
+      year_released: integerOrNull(row.year),
+      piece_count: integerOrNull(row.num_parts),
+      theme,
+      subtheme,
+      image_url: row.img_url?.trim() || null,
+      image_source: row.img_url ? "rebrickable" : null,
+      data_source: "rebrickable",
+      source_record_id: sourceSetNumber,
+      source_data: {
+        rebrickable_set_number: sourceSetNumber,
+        rebrickable_theme_id: integerOrNull(row.theme_id),
+        imported_from: "sets.csv",
+      },
+      source_updated_at: now,
+      enriched_at: now,
+      is_active: true,
+    });
+  }
+
+  const records = [...recordsByNumber.values()];
+  const normalizedCount = setRows.filter((row) => /^\d+-1$/.test(row.set_num?.trim() ?? "")).length;
   const missingImages = records.filter((record) => !record.image_url).length;
   const missingThemes = records.filter((record) => !record.theme).length;
-  console.log(`Parsed ${records.length.toLocaleString()} sets.`);
+
+  console.log(`Parsed ${setRows.length.toLocaleString()} source rows.`);
+  console.log(`Prepared ${records.length.toLocaleString()} canonical sets.`);
+  console.log(`Normalized ${normalizedCount.toLocaleString()} numeric -1 set numbers.`);
   console.log(`Missing images: ${missingImages.toLocaleString()}`);
   console.log(`Missing themes: ${missingThemes.toLocaleString()}`);
 
