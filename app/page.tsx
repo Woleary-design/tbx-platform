@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 
 const trustReasons = [
-  { title: "Guest browsing", detail: "Browse Atlas and live listings without creating an account.", icon: LockKeyhole },
+  { title: "Guest browsing", detail: "Browse Explore and live listings without creating an account.", icon: LockKeyhole },
   { title: "Collection-backed listings", detail: "Every item for sale starts from a private Collection Record rather than a blank advert.", icon: ShieldCheck },
   { title: "Fixed-price marketplace", detail: "The listed price is the price. No offers, counters or buyer-seller chat.", icon: Sparkles },
-  { title: "Private by design", detail: "Registration is required to collect, wishlist or sell, while ownership remains private.", icon: BadgeCheck },
+  { title: "Private by design", detail: "Your collection remains private while you decide what to keep or sell.", icon: BadgeCheck },
 ];
 
 type LegoSetJoin = {
@@ -39,27 +39,35 @@ function FourDotLogo() {
 }
 
 export default async function HomePage() {
-  const supabase = await createClient();
+  let supabase: Awaited<ReturnType<typeof createClient>> | null = null;
   let data: unknown[] = [];
   let user: { id: string } | null = null;
 
   try {
-    const listingsResult = await supabase
-      .from("marketplace_listings")
-      .select("id, price_zar, condition, dispatch_days, lego_sets(set_number, name, theme, image_url)")
-      .eq("status", "live")
-      .order("published_at", { ascending: false })
-      .limit(3);
-    data = listingsResult.data ?? [];
+    supabase = await createClient();
   } catch {
-    data = [];
+    supabase = null;
   }
 
-  try {
-    const userResult = await supabase.auth.getUser();
-    user = userResult.data.user;
-  } catch {
-    user = null;
+  if (supabase) {
+    try {
+      const listingsResult = await supabase
+        .from("marketplace_listings")
+        .select("id, price_zar, condition, dispatch_days, lego_sets(set_number, name, theme, image_url)")
+        .eq("status", "live")
+        .order("published_at", { ascending: false })
+        .limit(3);
+      data = listingsResult.data ?? [];
+    } catch {
+      data = [];
+    }
+
+    try {
+      const userResult = await supabase.auth.getUser();
+      user = userResult.data.user;
+    } catch {
+      user = null;
+    }
   }
 
   const listings: LandingListing[] = (data as ListingRow[]).flatMap((listing) => {
@@ -77,22 +85,22 @@ export default async function HomePage() {
           <Link href="/" className="flex items-center gap-3 font-semibold text-slate-950">
             <FourDotLogo />
             <span className="leading-tight">
-              <span className="block text-[10px] font-semibold uppercase tracking-[0.32em] text-yellow-600">The</span>
-              <span className="block text-lg font-semibold">Block Exchange</span>
+              <span className="block text-[10px] font-semibold uppercase tracking-[0.32em] text-yellow-600">TBX</span>
+              <span className="block text-lg font-semibold">The Block Exchange</span>
             </span>
           </Link>
 
           <div className="hidden items-center gap-9 text-sm font-medium text-slate-600 md:flex">
+            <Link href="/" className="text-slate-950">Home</Link>
+            <Link href="/atlas" className="hover:text-slate-950">Explore</Link>
             <Link href="/marketplace" className="hover:text-slate-950">Marketplace</Link>
-            <Link href="/atlas" className="hover:text-slate-950">Atlas</Link>
             <Link href={user ? "/collection" : "/sign-in?next=/collection"} className="hover:text-slate-950">Collection</Link>
-            <Link href={user ? "/wishlist" : "/sign-in?next=/wishlist"} className="hover:text-slate-950">Wishlist</Link>
           </div>
 
           <div className="flex items-center gap-3 text-sm">
             <Link href={user ? "/dashboard" : "/sign-in"} className="hidden text-slate-600 hover:text-slate-950 sm:inline">{user ? "My TBX" : "Sign in"}</Link>
             <Button asChild className="h-11 rounded-xl bg-yellow-400 px-5 font-semibold text-slate-950 hover:bg-yellow-300">
-              <Link href={user ? "/sell" : "/sign-in?next=/sell"}>Sell</Link>
+              <Link href="/sell">Sell</Link>
             </Button>
           </div>
         </nav>
@@ -117,10 +125,10 @@ export default async function HomePage() {
                   <Link href="/marketplace">Browse Marketplace <ArrowRight className="h-4 w-4" /></Link>
                 </Button>
                 <Button asChild variant="outline" className="h-12 rounded-xl border-slate-200 bg-white px-6">
-                  <Link href="/atlas">Explore LEGO</Link>
+                  <Link href="/atlas">Explore Collectibles</Link>
                 </Button>
               </div>
-              <p className="mt-4 text-sm text-slate-500">Browse freely. Sign in only when you want to collect, wishlist or sell.</p>
+              <p className="mt-4 text-sm text-slate-500">Browse freely. Start selling before creating an account.</p>
             </div>
 
             <div className="relative">
@@ -181,8 +189,8 @@ export default async function HomePage() {
             <div className="rounded-[2rem] border border-dashed border-slate-300 bg-white p-10 text-center">
               <PackageOpen className="mx-auto h-10 w-10 text-yellow-600" />
               <h3 className="mt-4 text-2xl font-semibold">No items are listed yet.</h3>
-              <p className="mx-auto mt-2 max-w-xl text-slate-600">TBX never invents listings. Registered collectors can be the first to list.</p>
-              <Button asChild className="mt-6 rounded-xl bg-yellow-400 font-semibold text-slate-950 hover:bg-yellow-300"><Link href={user ? "/sell" : "/sign-in?next=/sell"}>Sell</Link></Button>
+              <p className="mx-auto mt-2 max-w-xl text-slate-600">TBX never invents listings. Be the first to start a listing.</p>
+              <Button asChild className="mt-6 rounded-xl bg-yellow-400 font-semibold text-slate-950 hover:bg-yellow-300"><Link href="/sell">Start selling</Link></Button>
             </div>
           )}
         </section>
