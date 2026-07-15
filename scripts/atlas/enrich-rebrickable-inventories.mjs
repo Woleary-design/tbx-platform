@@ -7,7 +7,7 @@ import { createClient } from "@supabase/supabase-js";
 const sourceDirectory = resolve(process.argv[2] ?? ".");
 const dryRun = process.argv.includes("--dry-run");
 const batchSize = 300;
-const enrichmentVersion = "atlas-gold-2.0";
+const enrichmentVersion = "atlas-gold-2.1";
 
 const supabaseUrl = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -65,6 +65,11 @@ function numberOrNull(value) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function normalizeSetNumber(value) {
+  const setNumber = String(value ?? "").trim();
+  return /^\d+-1$/.test(setNumber) ? setNumber.slice(0, -2) : setNumber;
+}
+
 function baseSetNumber(setNumber) {
   return String(setNumber).replace(/-\d+$/, "");
 }
@@ -83,11 +88,14 @@ async function main() {
   for (const row of inventoryRows) {
     const id = numberOrNull(row.id);
     const version = numberOrNull(row.version) ?? 1;
-    const setNumber = row.set_num?.trim();
-    if (!id || !setNumber) continue;
+    const sourceSetNumber = row.set_num?.trim();
+    if (!id || !sourceSetNumber) continue;
 
+    const setNumber = normalizeSetNumber(sourceSetNumber);
     const current = bestInventoryBySet.get(setNumber);
-    if (!current || version > current.version) bestInventoryBySet.set(setNumber, { id, version });
+    if (!current || version > current.version) {
+      bestInventoryBySet.set(setNumber, { id, version, sourceSetNumber });
+    }
   }
 
   const countsByInventory = new Map();
@@ -118,10 +126,12 @@ async function main() {
     });
   }
 
+  const normalizedCount = inventoryRows.filter((row) => /^\d+-1$/.test(row.set_num?.trim() ?? "")).length;
   const withMinifigures = records.filter((record) => record.minifigure_count > 0).length;
   console.log(`Parsed ${inventoryRows.length.toLocaleString()} inventories.`);
   console.log(`Parsed ${minifigureRows.length.toLocaleString()} inventory minifigure rows.`);
-  console.log(`Prepared ${records.length.toLocaleString()} set enrichments.`);
+  console.log(`Prepared ${records.length.toLocaleString()} canonical set enrichments.`);
+  console.log(`Normalized ${normalizedCount.toLocaleString()} numeric -1 set numbers.`);
   console.log(`Sets containing minifigures: ${withMinifigures.toLocaleString()}`);
 
   if (dryRun) return;
