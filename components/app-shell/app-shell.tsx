@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { Bell, BookOpen, ChevronDown, Heart, Home, LibraryBig, ShoppingBag, Sparkles, Tag } from "lucide-react";
+import { Bell, ChevronDown, Compass, Home, LibraryBig, ShoppingBag, Sparkles, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { CatalogueSearch } from "@/components/catalogue/catalogue-search";
@@ -11,10 +11,10 @@ import { cn } from "@/lib/utils";
 
 const navigation = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/collection", label: "My Collection", icon: LibraryBig },
-  { href: "/wishlist", label: "Wishlist", icon: Heart },
+  { href: "/atlas", label: "Explore", icon: Compass },
   { href: "/marketplace", label: "Marketplace", icon: ShoppingBag },
-  { href: "/atlas", label: "Atlas", icon: BookOpen },
+  { href: "/collection", label: "Collection", icon: LibraryBig },
+  { href: "/sell", label: "Sell", icon: Tag },
 ];
 
 type CollectorIdentity = {
@@ -54,8 +54,8 @@ export function AppShell({ children, collector }: AppShellProps) {
             <Link href="/" aria-label="Go to Home" className="flex items-center gap-3">
               <FourDotLogo />
               <span className="leading-tight">
-                <span className="block text-[10px] font-semibold uppercase tracking-[0.32em] text-yellow-600">The</span>
-                <span className="block text-lg font-semibold tracking-normal text-slate-950">Block Exchange</span>
+                <span className="block text-[10px] font-semibold uppercase tracking-[0.32em] text-yellow-600">TBX</span>
+                <span className="block text-lg font-semibold tracking-normal text-slate-950">The Block Exchange</span>
                 <span className="block text-xs text-slate-500">Discover. Collect. Trade.</span>
               </span>
             </Link>
@@ -63,7 +63,7 @@ export function AppShell({ children, collector }: AppShellProps) {
 
           <div className="p-4 pb-0">
             <Button asChild className="h-12 w-full rounded-2xl bg-yellow-400 font-semibold text-slate-950 hover:bg-yellow-300">
-              <Link href="/sell"><Tag className="h-4 w-4" /> Sell</Link>
+              <Link href="/sell"><Tag className="h-4 w-4" /> Start selling</Link>
             </Button>
           </div>
 
