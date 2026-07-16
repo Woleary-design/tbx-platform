@@ -15,6 +15,7 @@ type AtlasSearchRow = {
   image_url: string | null;
   relevance?: number | string | null;
   match_reason?: string | null;
+  atlas_visibility?: string | null;
 };
 
 const MAX_RESULTS = 40;
@@ -67,10 +68,26 @@ export async function GET(request: NextRequest) {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("atlas_search", {
     search_query: query,
-    result_limit: Math.min(limit * 2, 100),
+    result_limit: Math.min(limit * 3, 100),
   });
 
-  const visibleRows = ((data ?? []) as AtlasSearchRow[])
+  const candidateRows = (data ?? []) as AtlasSearchRow[];
+  const candidateIds = candidateRows.map((row) => row.id);
+  let publicIds = new Set<string>();
+
+  if (candidateIds.length > 0) {
+    const { data: curatedRows } = await supabase
+      .from("lego_sets")
+      .select("id")
+      .in("id", candidateIds)
+      .eq("is_active", true)
+      .eq("atlas_visibility", "public");
+    publicIds = new Set((curatedRows ?? []).map((row) => row.id as string));
+  }
+
+  const visibleRows = candidateRows
+    .filter((row) => publicIds.has(row.id))
+    .map((row) => ({ ...row, atlas_visibility: "public" }))
     .filter((row) => isCollectorCatalogueRecord(row))
     .slice(0, limit);
 

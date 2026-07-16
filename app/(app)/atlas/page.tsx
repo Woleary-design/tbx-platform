@@ -13,6 +13,7 @@ type AtlasSet = {
   piece_count: number | null;
   minifigure_count: number | null;
   image_url: string | null;
+  atlas_visibility: string | null;
 };
 
 type AtlasDirectoryPageProps = { searchParams?: Promise<{ theme?: string }> };
@@ -23,8 +24,9 @@ export default async function AtlasDirectoryPage({ searchParams }: AtlasDirector
   const supabase = await createClient();
   const { data } = await supabase
     .from("lego_sets")
-    .select("id, set_number, name, theme, subtheme, year_released, piece_count, minifigure_count, image_url")
+    .select("id, set_number, name, theme, subtheme, year_released, piece_count, minifigure_count, image_url, atlas_visibility")
     .eq("is_active", true)
+    .eq("atlas_visibility", "public")
     .order("year_released", { ascending: false, nullsFirst: false })
     .limit(240);
 
@@ -50,12 +52,12 @@ export default async function AtlasDirectoryPage({ searchParams }: AtlasDirector
           <div>
             <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-medium text-yellow-300"><BookOpen className="h-4 w-4" /> LEGO Directory</p>
             <h1 className="mt-6 max-w-3xl text-4xl font-semibold tracking-tight md:text-6xl">Find the right LEGO set.</h1>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-white/70">Search official buildable sets by number, name, theme or subtheme without merchandise, books or catalogue clutter.</p>
+            <p className="mt-5 max-w-2xl text-base leading-7 text-white/70">Search approved collectible sets by number, name, theme or subtheme without merchandise, adapters or catalogue clutter.</p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/8 p-5">
             <Sparkles className="h-6 w-6 text-yellow-300" />
-            <p className="mt-4 font-semibold">Built for collectors</p>
-            <p className="mt-2 text-sm leading-6 text-white/65">Find a set, add it to your Collection or Wishlist, or check whether one is currently available to buy.</p>
+            <p className="mt-4 font-semibold">Curated for collectors</p>
+            <p className="mt-2 text-sm leading-6 text-white/65">Imported records are classified and quality checked before they appear in the public Atlas.</p>
           </div>
         </div>
       </section>
