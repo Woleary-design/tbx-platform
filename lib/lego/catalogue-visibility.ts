@@ -9,6 +9,7 @@ export type CatalogueVisibilityRecord = {
 const EXCLUDED_THEMES = new Set(["books", "gear"]);
 const EXCLUDED_NAME_PATTERNS = [
   /\b(pencil case|backpack|rucksack|wallet|key chain|keychain|luggage tag|storage box|watch|clock|magnet set|notebook|journal|sticker book|activity book|colouring book|coloring book|calendar|poster|shirt|t-shirt|hoodie|cap|hat|costume|mask|plush|cushion|duvet|bedding|lunch box|lunchbox|water bottle|mug|cup|plate|bowl|cutlery|umbrella)\b/i,
+  /\b(usb power adapter|power adapter)\b/i,
 ];
 
 export function isCollectorCatalogueRecord(record: CatalogueVisibilityRecord) {
