@@ -4,13 +4,13 @@ import {
   Bell,
   BookOpen,
   Boxes,
-  Heart,
+  Camera,
   Home,
   PackageOpen,
   Search,
   ShieldCheck,
-  Sparkles,
   Store,
+  Tag,
   TrendingUp,
   UserRound,
 } from "lucide-react";
@@ -56,10 +56,32 @@ function Brand() {
 
 const navItems = [
   { label: "Home", href: "/", icon: Home },
-  { label: "Collection", href: "/collection", icon: Boxes },
+  { label: "Sell", href: "/sell", icon: Tag },
+  { label: "Marketplace", href: "/marketplace", icon: Store },
   { label: "Atlas", href: "/atlas", icon: BookOpen },
-  { label: "Market", href: "/marketplace", icon: Store },
-  { label: "Profile", href: "/dashboard", icon: UserRound },
+  { label: "Collection", href: "/collection", icon: Boxes },
+];
+
+const journeyCards = [
+  {
+    title: "Sell LEGO",
+    description: "Take photos or search for your set. We will guide you from there.",
+    href: "/sell",
+    icon: Camera,
+    primary: true,
+  },
+  {
+    title: "Browse Marketplace",
+    description: "Find trusted listings from collectors and casual sellers.",
+    href: "/marketplace",
+    icon: Store,
+  },
+  {
+    title: "Explore Atlas",
+    description: "Research sets, details and availability in one place.",
+    href: "/atlas",
+    icon: BookOpen,
+  },
 ];
 
 export default async function HomePage() {
@@ -110,8 +132,8 @@ export default async function HomePage() {
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 lg:px-8">
           <Brand />
           <nav className="hidden items-center gap-1 rounded-2xl border border-white/[0.07] bg-white/[0.035] p-1.5 md:flex">
-            {navItems.slice(0, 4).map(({ label, href, icon: Icon }, index) => (
-              <Link key={href} href={href} className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold ${index === 0 ? "bg-[#ffd84d] text-[#050915]" : "text-white/60 hover:bg-white/[0.06] hover:text-white"}`}>
+            {navItems.map(({ label, href, icon: Icon }, index) => (
+              <Link key={href} href={href} className={`flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-sm font-semibold ${index === 0 ? "bg-[#ffd84d] text-[#050915]" : "text-white/60 hover:bg-white/[0.06] hover:text-white"}`}>
                 <Icon className="h-4 w-4" /> {label}
               </Link>
             ))}
@@ -130,52 +152,59 @@ export default async function HomePage() {
       <main>
         <section className="relative overflow-hidden border-b border-white/[0.06]">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_18%,rgba(255,216,77,0.13),transparent_25rem),radial-gradient(circle_at_12%_18%,rgba(50,90,170,0.18),transparent_30rem)]" />
-          <div className="relative mx-auto max-w-7xl px-5 py-10 lg:px-8 lg:py-20">
+          <div className="relative mx-auto max-w-7xl px-5 py-12 lg:px-8 lg:py-20">
             <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-[#ffd84d]/20 bg-[#ffd84d]/[0.07] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-[#ffd84d]">
-                  <ShieldCheck className="h-3.5 w-3.5" /> Built for serious collectors
+                  <ShieldCheck className="h-3.5 w-3.5" /> The home of LEGO
                 </div>
-                <h1 className="mt-7 max-w-3xl text-5xl font-black leading-[0.94] tracking-[-0.065em] sm:text-7xl lg:text-[5.4rem]">
-                  Your collection. <span className="text-[#ffd84d]">Known.</span><br />Valued. Ready.
+                <h1 className="mt-7 max-w-3xl text-5xl font-black leading-[0.94] tracking-[-0.065em] sm:text-7xl lg:text-[5rem]">
+                  Know what you have.<br />
+                  <span className="text-[#ffd84d]">Discover what it is worth.</span><br />
+                  Buy and sell with confidence.
                 </h1>
                 <p className="mt-6 max-w-xl text-base leading-7 text-white/55 sm:text-lg">
-                  Document every set, understand its value, protect what matters and trade with confidence.
+                  Identify, value, buy, sell and collect LEGO without needing to be an expert.
                 </p>
-                <form action="/atlas" method="get" className="mt-8 flex max-w-2xl items-center gap-2 rounded-2xl border border-white/[0.09] bg-[#0b1223]/90 p-2 shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Link href="/sell" className="inline-flex h-13 items-center gap-2 rounded-2xl bg-[#ffd84d] px-6 py-4 font-bold text-[#050915] hover:bg-[#ffe16f]">
+                    <Camera className="h-5 w-5" /> Sell LEGO <ArrowRight className="h-5 w-5" />
+                  </Link>
+                  <Link href="/marketplace" className="inline-flex h-13 items-center gap-2 rounded-2xl border border-white/[0.1] bg-white/[0.04] px-6 py-4 font-semibold text-white/80 hover:border-[#ffd84d]/30 hover:text-white">
+                    Browse Marketplace
+                  </Link>
+                </div>
+                <form action="/atlas" method="get" className="mt-5 flex max-w-2xl items-center gap-2 rounded-2xl border border-white/[0.09] bg-[#0b1223]/90 p-2 shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
                   <Search className="ml-3 h-5 w-5 shrink-0 text-white/35" />
-                  <input name="q" aria-label="Search Atlas" placeholder="Search LEGO by name or set number" className="min-w-0 flex-1 border-0 bg-transparent px-2 py-3 text-sm text-white outline-none placeholder:text-white/35 focus:shadow-none" />
-                  <button type="submit" className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#ffd84d] text-[#050915] hover:bg-[#ffe16f]" aria-label="Search">
+                  <input name="q" aria-label="Search Atlas" placeholder="Search Rivendell, Millennium Falcon or 10316" className="min-w-0 flex-1 border-0 bg-transparent px-2 py-3 text-sm text-white outline-none placeholder:text-white/35" />
+                  <button type="submit" className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white/[0.06] text-[#ffd84d] hover:bg-[#ffd84d] hover:text-[#050915]" aria-label="Search">
                     <ArrowRight className="h-5 w-5" />
                   </button>
                 </form>
               </div>
 
-              <div className="relative">
-                <div className="tbx-surface overflow-hidden rounded-[2rem] p-5 sm:p-7">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/35">Collection snapshot</p>
-                      <p className="mt-3 text-4xl font-black tracking-[-0.05em]">Your TBX home</p>
-                    </div>
-                    <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#ffd84d] text-[#050915]"><Sparkles className="h-6 w-6" /></span>
-                  </div>
-                  <div className="mt-8 grid grid-cols-2 gap-3">
-                    <Link href={user ? "/collection" : "/sign-in?next=/collection"} className="rounded-2xl border border-white/[0.07] bg-white/[0.035] p-5 hover:border-[#ffd84d]/30 hover:bg-[#ffd84d]/[0.05]">
-                      <Boxes className="h-5 w-5 text-[#ffd84d]" />
-                      <p className="mt-8 text-2xl font-bold">Collection</p>
-                      <p className="mt-1 text-sm text-white/40">Document and protect</p>
-                    </Link>
-                    <Link href={user ? "/wishlist" : "/sign-in?next=/wishlist"} className="rounded-2xl border border-white/[0.07] bg-white/[0.035] p-5 hover:border-[#ffd84d]/30 hover:bg-[#ffd84d]/[0.05]">
-                      <Heart className="h-5 w-5 text-[#ffd84d]" />
-                      <p className="mt-8 text-2xl font-bold">Wishlist</p>
-                      <p className="mt-1 text-sm text-white/40">Watch what matters</p>
-                    </Link>
-                  </div>
-                  <Link href="/sell" className="mt-3 flex items-center justify-between rounded-2xl bg-[#ffd84d] px-5 py-4 font-bold text-[#050915] hover:bg-[#ffe16f]">
-                    List a set for sale <ArrowRight className="h-5 w-5" />
-                  </Link>
+              <div className="tbx-surface overflow-hidden rounded-[2rem] p-5 sm:p-7">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/35">Start your journey</p>
+                  <p className="mt-3 text-4xl font-black tracking-[-0.05em]">What would you like to do?</p>
                 </div>
+                <div className="mt-7 space-y-3">
+                  {journeyCards.map(({ title, description, href, icon: Icon, primary }) => (
+                    <Link key={title} href={href} className={`group flex items-center gap-4 rounded-2xl border p-5 transition ${primary ? "border-[#ffd84d]/25 bg-[#ffd84d] text-[#050915]" : "border-white/[0.07] bg-white/[0.035] hover:border-[#ffd84d]/30 hover:bg-[#ffd84d]/[0.05]"}`}>
+                      <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${primary ? "bg-[#050915] text-[#ffd84d]" : "bg-[#ffd84d]/10 text-[#ffd84d]"}`}><Icon className="h-5 w-5" /></span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-lg font-bold">{title}</span>
+                        <span className={`mt-1 block text-sm ${primary ? "text-[#050915]/65" : "text-white/42"}`}>{description}</span>
+                      </span>
+                      <ArrowRight className="h-5 w-5 shrink-0 transition group-hover:translate-x-1" />
+                    </Link>
+                  ))}
+                </div>
+                {user ? (
+                  <Link href="/collection" className="mt-3 flex items-center justify-between rounded-2xl border border-white/[0.07] bg-white/[0.025] px-5 py-4 font-semibold text-white/70 hover:border-[#ffd84d]/25 hover:text-white">
+                    Go to My Collection <ArrowRight className="h-5 w-5" />
+                  </Link>
+                ) : null}
               </div>
             </div>
           </div>
@@ -183,7 +212,7 @@ export default async function HomePage() {
 
         <section className="mx-auto max-w-7xl px-5 py-14 lg:px-8 lg:py-20">
           <div className="flex items-end justify-between gap-4">
-            <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#ffd84d]">Atlas spotlight</p><h2 className="mt-3 text-3xl font-black tracking-[-0.04em] sm:text-4xl">A collector icon</h2></div>
+            <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#ffd84d]">Atlas spotlight</p><h2 className="mt-3 text-3xl font-black tracking-[-0.04em] sm:text-4xl">Discover a collector icon</h2></div>
             <Link href="/atlas" className="hidden items-center gap-2 text-sm font-semibold text-white/50 hover:text-[#ffd84d] sm:flex">Explore Atlas <ArrowRight className="h-4 w-4" /></Link>
           </div>
 
@@ -198,7 +227,7 @@ export default async function HomePage() {
                   <p className="mt-7 text-sm font-semibold text-white/35">{featuredSet.theme ?? "LEGO"} · {featuredSet.set_number}</p>
                   <h3 className="mt-2 text-4xl font-black tracking-[-0.045em] sm:text-5xl">{featuredSet.name}</h3>
                   <div className="mt-8 grid grid-cols-3 gap-3">
-                    {[['Released', featuredSet.year_released ?? '—'], ['Pieces', featuredSet.piece_count?.toLocaleString() ?? '—'], ['Atlas score', `${featuredSet.completeness_score ?? 0}%`]].map(([label, value]) => (
+                    {[["Released", featuredSet.year_released ?? "—"], ["Pieces", featuredSet.piece_count?.toLocaleString() ?? "—"], ["Atlas score", `${featuredSet.completeness_score ?? 0}%`]].map(([label, value]) => (
                       <div key={label} className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-4"><p className="text-xl font-bold sm:text-2xl">{value}</p><p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-white/30">{label}</p></div>
                     ))}
                   </div>
