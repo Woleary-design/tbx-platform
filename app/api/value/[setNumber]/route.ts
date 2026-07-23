@@ -49,6 +49,35 @@ const accessoryTerms = [
   "poster",
 ];
 
+const cloneTerms = [
+  "building blocks",
+  "building block",
+  "model bricks",
+  "brick model",
+  "compatible bricks",
+  "compatible blocks",
+  "construction blocks",
+  "construction bricks",
+  "block set",
+  "blocks set",
+  "moc set",
+  "moc model",
+  "custom bricks",
+  "unbranded",
+  "clone",
+  "replica",
+  "alternative bricks",
+  "lepin",
+  "mould king",
+  "mouldking",
+  "cada",
+  "reobrix",
+  "joytoy",
+  "gobricks",
+  "jiestar",
+  "king building blocks",
+];
+
 const stopWords = new Set(["lego", "icons", "classic", "the", "and", "with", "set"]);
 
 function conditionFactor(condition: string) {
@@ -77,31 +106,51 @@ function exactSetMatch(title: string, setNumber: string) {
   return new RegExp(`(^|\\D)${escaped}(\\D|$)`, "i").test(title);
 }
 
-function isAccessory(title: string) {
+function containsAnyTerm(title: string, terms: string[]) {
   const clean = normalise(title);
-  return accessoryTerms.some((term) => clean.includes(term));
+  return terms.some((term) => clean.includes(term));
 }
 
-function relevanceScore(title: string, setNumber: string, name: string) {
+function isAuthenticLegoProduct(title: string, setNumber: string, name: string) {
   const cleanTitle = normalise(title);
-  if (!exactSetMatch(title, setNumber) || isAccessory(title)) return 0;
 
-  let score = 0.55;
-  if (cleanTitle.includes("lego")) score += 0.15;
+  if (!exactSetMatch(title, setNumber)) return false;
+  if (!cleanTitle.includes("lego")) return false;
+  if (containsAnyTerm(title, accessoryTerms) || containsAnyTerm(title, cloneTerms)) return false;
 
   const meaningfulNameTokens = normalise(name)
     .split(" ")
     .filter((token) => token.length > 2 && !stopWords.has(token));
   const matchedTokens = meaningfulNameTokens.filter((token) => cleanTitle.includes(token)).length;
   const tokenCoverage = meaningfulNameTokens.length ? matchedTokens / meaningfulNameTokens.length : 0;
-  score += tokenCoverage * 0.3;
 
-  return Math.min(score, 1);
+  return tokenCoverage >= 0.6;
+}
+
+function relevanceScore(title: string, setNumber: string, name: string) {
+  if (!isAuthenticLegoProduct(title, setNumber, name)) return 0;
+
+  const cleanTitle = normalise(title);
+  const meaningfulNameTokens = normalise(name)
+    .split(" ")
+    .filter((token) => token.length > 2 && !stopWords.has(token));
+  const matchedTokens = meaningfulNameTokens.filter((token) => cleanTitle.includes(token)).length;
+  const tokenCoverage = meaningfulNameTokens.length ? matchedTokens / meaningfulNameTokens.length : 0;
+
+  return Math.min(0.7 + tokenCoverage * 0.3, 1);
+}
+
+function rejectPriceOutliers<T extends { price: number }>(listings: T[]) {
+  if (listings.length < 3) return listings;
+  const centre = median(listings.map((listing) => listing.price));
+  if (centre == null) return listings;
+
+  return listings.filter((listing) => listing.price >= centre * 0.5 && listing.price <= centre * 2);
 }
 
 async function getExternalRetailMarket(setNumber: string, name: string, condition: string) {
   const apiKey = process.env.SERPAPI_KEY;
-  const query = `LEGO set ${setNumber} ${name} -light -lighting -LED -kit -stand -mount -case -instructions -stickers`;
+  const query = `LEGO set ${setNumber} ${name} -light -lighting -LED -kit -stand -mount -case -instructions -stickers -compatible -blocks -bricks -MOC`;
   const searchUrl = `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(query)}`;
 
   const emptyResult = (status: string) => ({
@@ -136,13 +185,13 @@ async function getExternalRetailMarket(setNumber: string, name: string, conditio
     if (!response.ok) throw new Error("External shopping search failed");
 
     const payload = (await response.json()) as { shopping_results?: ShoppingResult[] };
-    const listings = (payload.shopping_results ?? [])
+    const matchedListings = (payload.shopping_results ?? [])
       .map((result, index) => ({
         result,
         index,
         score: result.title ? relevanceScore(result.title, setNumber, name) : 0,
       }))
-      .filter(({ result, score }) => Boolean(result.title) && score >= 0.82)
+      .filter(({ result, score }) => Boolean(result.title) && score >= 0.88)
       .map(({ result, index, score }) => ({
         id: `external-${result.position ?? index}`,
         title: result.title ?? `${setNumber} listing`,
@@ -154,9 +203,9 @@ async function getExternalRetailMarket(setNumber: string, name: string, conditio
         relevance: score,
       }))
       .filter((listing) => Number.isFinite(listing.price) && listing.price >= 1000)
-      .sort((a, b) => a.price - b.price)
-      .slice(0, 8);
+      .sort((a, b) => a.price - b.price);
 
+    const listings = rejectPriceOutliers(matchedListings).slice(0, 8);
     const prices = listings.map((listing) => listing.price);
     const retailLow = prices.length ? Math.min(...prices) : null;
     const retailHigh = prices.length ? Math.max(...prices) : null;
