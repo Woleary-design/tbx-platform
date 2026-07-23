@@ -82,24 +82,22 @@ export function MarketSnapshot({ data, loading }: { data: MarketSnapshotData | n
     <section className="overflow-hidden rounded-[1.75rem] border border-[#e8c86a]/20 bg-[#08101c]">
       <div className="flex flex-col gap-4 border-b border-white/[0.07] p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#e8c86a]">
-            {external ? "External market snapshot" : "Live market snapshot"}
-          </p>
-          <h3 className="mt-2 text-2xl font-black tracking-[-0.035em]">See the market before choosing your price.</h3>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#e8c86a]">Market intelligence</p>
+          <h3 className="mt-2 text-2xl font-black tracking-[-0.035em]">What is this collectible worth today?</h3>
         </div>
         <div className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/[0.08] px-3 py-1.5 text-xs font-semibold text-emerald-200">
           {external ? <ShoppingBag className="h-4 w-4" /> : <BadgeCheck className="h-4 w-4" />}
           {external
-            ? `${external.listings.length} exact retail match${external.listings.length === 1 ? "" : "es"}`
+            ? `${external.listings.length} verified retail match${external.listings.length === 1 ? "" : "es"}`
             : `${data.market.activeListingCount} live listing${data.market.activeListingCount === 1 ? "" : "s"}`}
         </div>
       </div>
 
       <div className="grid gap-px bg-white/[0.07] sm:grid-cols-3">
         {[
-          [external ? "Condition-adjusted low" : "Lowest asking", money(lowest)],
-          ["TBX recommended", money(recommended)],
-          [external ? "Condition-adjusted high" : "Highest asking", money(highest)],
+          [external ? "Estimated low" : "Lowest asking", money(lowest)],
+          ["TBX value", money(recommended)],
+          [external ? "Estimated high" : "Highest asking", money(highest)],
         ].map(([label, value]) => (
           <div key={label} className="bg-[#08101c] p-5">
             <p className="text-xs text-white/35">{label}</p>
@@ -118,7 +116,7 @@ export function MarketSnapshot({ data, loading }: { data: MarketSnapshotData | n
           </div>
           <p className="max-w-sm text-xs leading-5 text-white/32">
             {external
-              ? "Estimated from exact-match South African retail asking prices, adjusted for the selected condition. Retail anchors are not verified used sale prices."
+              ? "Derived from high-confidence exact-product South African retail anchors, adjusted for the selected condition. Retail asking prices are not verified used sales."
               : "Based on current asking prices, verified sales and the selected condition. Asking prices are not guaranteed sale prices."}
           </p>
         </div>
@@ -129,7 +127,7 @@ export function MarketSnapshot({ data, loading }: { data: MarketSnapshotData | n
           <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
               <ShoppingBag className="h-4 w-4 text-[#e8c86a]" />
-              <h4 className="font-bold">Exact-match retail listings</h4>
+              <h4 className="font-bold">Retail market</h4>
             </div>
             <span className="text-xs text-white/30">
               New retail range: {money(external.retailLow)} — {money(external.retailHigh)}
@@ -170,7 +168,7 @@ export function MarketSnapshot({ data, loading }: { data: MarketSnapshotData | n
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-[#e8c86a]" />
-              <h4 className="font-bold">Current listings</h4>
+              <h4 className="font-bold">Collector market</h4>
             </div>
             <span className="text-xs text-white/30">Lowest price first</span>
           </div>
@@ -195,7 +193,7 @@ export function MarketSnapshot({ data, loading }: { data: MarketSnapshotData | n
         </div>
       ) : (
         <div className="border-t border-white/[0.07] p-5 text-sm leading-6 text-white/40">
-          No live TBX listings or exact external retail matches are available yet. Configure the external shopping provider to turn this into a live fallback.
+          No reliable exact-product matches are available yet. TBX has rejected accessory, lighting, stand, case and instruction results rather than showing a misleading price.
           {data.externalMarket?.searchUrl ? (
             <a href={data.externalMarket.searchUrl} target="_blank" rel="noreferrer" className="ml-2 font-bold text-[#e8c86a]">
               Check Google Shopping manually.
