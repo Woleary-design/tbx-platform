@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, Check, Loader2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AddSetForm } from "@/components/collection/add-set-form";
+import { MarketSnapshot, type MarketSnapshotData } from "@/components/market/market-snapshot";
 import { legoCatalogue, type LegoCatalogueSet } from "@/lib/lego/catalog";
 import { createClient } from "@/lib/supabase/client";
 
@@ -41,6 +42,8 @@ export function QuickAddSetForm({ initialSetNumber, intent = "collect" }: { init
   const [condition, setCondition] = useState("Used Complete");
   const [searching, setSearching] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [marketLoading, setMarketLoading] = useState(false);
+  const [marketData, setMarketData] = useState<MarketSnapshotData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   function selectSet(set: AtlasSet) {
@@ -102,6 +105,36 @@ export function QuickAddSetForm({ initialSetNumber, intent = "collect" }: { init
       controller.abort();
     };
   }, [query, selectedSet]);
+
+  useEffect(() => {
+    if (intent !== "sell" || !selectedSet) {
+      setMarketData(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    void (async () => {
+      setMarketLoading(true);
+      try {
+        const response = await fetch(
+          `/api/value/${encodeURIComponent(selectedSet.setNumber)}?condition=${encodeURIComponent(condition)}`,
+          { signal: controller.signal },
+        );
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error ?? "Market pricing is not available yet.");
+        setMarketData(payload as MarketSnapshotData);
+      } catch (caughtError) {
+        if (!controller.signal.aborted) {
+          setMarketData(null);
+          setError(caughtError instanceof Error ? caughtError.message : "Market pricing is not available yet.");
+        }
+      } finally {
+        if (!controller.signal.aborted) setMarketLoading(false);
+      }
+    })();
+
+    return () => controller.abort();
+  }, [condition, intent, selectedSet]);
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     if (!matches.length) return;
@@ -187,7 +220,7 @@ export function QuickAddSetForm({ initialSetNumber, intent = "collect" }: { init
     <form onSubmit={handleQuickAdd} className="space-y-6">
       <div className="rounded-2xl border border-[#eadfce] bg-[#fffaf1] p-5">
         <p className="font-semibold text-slate-950">{intent === "sell" ? "Quick Sell" : "Quick Add"}</p>
-        <p className="mt-1 text-sm text-slate-600">{intent === "sell" ? "Choose the set and condition. TBX reuses an existing Collection Record or creates a private draft before listing." : "Choose the set and condition. Complete photos and documentation later."}</p>
+        <p className="mt-1 text-sm text-slate-600">{intent === "sell" ? "Choose the set and condition. TBX then shows the current market before you choose your listing price." : "Choose the set and condition. Complete photos and documentation later."}</p>
       </div>
 
       <div className="relative">
@@ -195,7 +228,7 @@ export function QuickAddSetForm({ initialSetNumber, intent = "collect" }: { init
           <span className="text-sm font-medium text-slate-700">Search all LEGO sets</span>
           <div className="relative mt-2">
             <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-            <input value={query} onChange={(event) => { setQuery(event.target.value); setSelectedSet(null); }} onKeyDown={handleKeyDown} placeholder="Try 75192, Millennium Falcon or Star Wars" autoComplete="off" aria-autocomplete="list" className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-12 pr-12 text-base outline-none transition focus:border-slate-400 focus:bg-white focus:ring-4 focus:ring-slate-100" />
+            <input value={query} onChange={(event) => { setQuery(event.target.value); setSelectedSet(null); setMarketData(null); setError(null); }} onKeyDown={handleKeyDown} placeholder="Try 75192, Millennium Falcon or Star Wars" autoComplete="off" aria-autocomplete="list" className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-12 pr-12 text-base outline-none transition focus:border-slate-400 focus:bg-white focus:ring-4 focus:ring-slate-100" />
             {searching ? <Loader2 className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 animate-spin text-slate-400" /> : null}
           </div>
         </label>
@@ -221,9 +254,12 @@ export function QuickAddSetForm({ initialSetNumber, intent = "collect" }: { init
         </div>
       ) : null}
 
-      <label className="block"><span className="text-sm font-medium text-slate-700">Condition</span><select value={condition} onChange={(event) => setCondition(event.target.value)} className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm">{conditions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
+      <label className="block"><span className="text-sm font-medium text-slate-700">Condition</span><select value={condition} onChange={(event) => { setCondition(event.target.value); setError(null); }} className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm">{conditions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
+
+      {intent === "sell" && selectedSet ? <MarketSnapshot data={marketData} loading={marketLoading} /> : null}
+
       {error ? <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}
-      <Button disabled={saving || !selectedSet} className="h-12 w-full rounded-xl bg-yellow-400 font-semibold text-slate-950 hover:bg-yellow-300">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}{intent === "sell" ? "Continue to price and delivery" : "Add to My Collection"}{!saving ? <ArrowRight className="h-4 w-4" /> : null}</Button>
+      <Button disabled={saving || !selectedSet} className="h-12 w-full rounded-xl bg-yellow-400 font-semibold text-slate-950 hover:bg-yellow-300">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}{intent === "sell" ? "Continue with this valuation" : "Add to My Collection"}{!saving ? <ArrowRight className="h-4 w-4" /> : null}</Button>
       {intent === "collect" ? <button type="button" onClick={() => setShowFullForm(true)} className="w-full text-sm font-semibold text-slate-600 underline hover:text-slate-950">Add with photos, pricing and documentation instead</button> : null}
     </form>
   );
