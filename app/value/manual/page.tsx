@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
+import { FormEvent } from "react";
 import { ArrowLeft, ArrowRight, Boxes, Check, PackageOpen, Scale } from "lucide-react";
 
 const itemTypes = [
@@ -14,13 +15,31 @@ const itemTypes = [
 ];
 
 export default function ManualValuePage() {
-  const [submitted, setSubmitted] = useState(false);
+  const router = useRouter();
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    window.localStorage.setItem("tbx-manual-lego-draft", JSON.stringify(Object.fromEntries(data.entries())));
-    setSubmitted(true);
+    const data = Object.fromEntries(new FormData(event.currentTarget).entries());
+
+    window.localStorage.setItem("tbx-manual-lego-draft", JSON.stringify(data));
+    window.localStorage.setItem(
+      "tbx-listing-draft",
+      JSON.stringify({
+        title: `${data.itemType}${data.weight ? ` - ${data.weight} ${data.weightUnit}` : ""}`,
+        condition:
+          data.condition === "Not sure"
+            ? "Not sure"
+            : data.itemType === "Mixed box of LEGO" || data.itemType === "Loose bricks and parts"
+              ? "Loose or mixed"
+              : "Incomplete",
+        included: String(data.itemType ?? "LEGO collection"),
+        description: String(data.description ?? ""),
+        price: "",
+        delivery: "Seller ships",
+      }),
+    );
+
+    router.push("/sell/create?source=manual");
   }
 
   return (
@@ -43,27 +62,18 @@ export default function ManualValuePage() {
           </div>
 
           <div className="rounded-[2rem] border border-white/[0.09] bg-[#09111f]/95 p-5 shadow-[0_40px_120px_rgba(0,0,0,0.48)] sm:p-8">
-            {submitted ? (
-              <div className="flex min-h-[500px] flex-col items-center justify-center text-center">
-                <span className="grid h-16 w-16 place-items-center rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.08] text-emerald-300"><Check className="h-8 w-8" /></span>
-                <h2 className="mt-6 text-3xl font-black tracking-[-0.04em]">Description saved</h2>
-                <p className="mt-3 max-w-md leading-7 text-white/45">Your valuation draft has been saved on this device. A later step can connect it to manual review or bulk pricing.</p>
-                <div className="mt-8 flex flex-col gap-3 sm:flex-row"><button type="button" onClick={() => setSubmitted(false)} className="inline-flex h-12 items-center justify-center rounded-xl border border-white/12 px-5 font-bold text-white/75">Edit description</button><Link href="/value" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#e8c86a] px-5 font-bold text-[#050912]">Return to Value <ArrowRight className="h-4 w-4" /></Link></div>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#e8c86a]">Manual intake</p><h2 className="mt-2 text-3xl font-black tracking-[-0.045em]">Tell us what you have</h2></div>
+              <label className="block"><span className="text-sm font-bold text-white/70">What best describes it?</span><select name="itemType" required className="mt-2 h-13 w-full rounded-xl border border-white/10 bg-[#050912] px-4 text-white">{itemTypes.map((item) => <option key={item}>{item}</option>)}</select></label>
+              <div className="grid gap-5 sm:grid-cols-2">
+                <label className="block"><span className="flex items-center gap-2 text-sm font-bold text-white/70"><Scale className="h-4 w-4 text-[#e8c86a]" /> Approximate weight</span><div className="mt-2 flex"><input name="weight" type="number" min="0" step="0.1" placeholder="e.g. 8" className="h-13 min-w-0 flex-1 rounded-l-xl border border-white/10 bg-[#050912] px-4 text-white" /><select name="weightUnit" className="h-13 rounded-r-xl border border-l-0 border-white/10 bg-[#050912] px-3 text-white"><option>kg</option><option>g</option></select></div></label>
+                <label className="block"><span className="text-sm font-bold text-white/70">Overall condition</span><select name="condition" className="mt-2 h-13 w-full rounded-xl border border-white/10 bg-[#050912] px-4 text-white"><option>Mostly clean and usable</option><option>Mixed condition</option><option>Needs cleaning or sorting</option><option>Not sure</option></select></label>
               </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#e8c86a]">Manual intake</p><h2 className="mt-2 text-3xl font-black tracking-[-0.045em]">Tell us what you have</h2></div>
-                <label className="block"><span className="text-sm font-bold text-white/70">What best describes it?</span><select name="itemType" required className="mt-2 h-13 w-full rounded-xl border border-white/10 bg-[#050912] px-4 text-white">{itemTypes.map((item) => <option key={item}>{item}</option>)}</select></label>
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <label className="block"><span className="flex items-center gap-2 text-sm font-bold text-white/70"><Scale className="h-4 w-4 text-[#e8c86a]" /> Approximate weight</span><div className="mt-2 flex"><input name="weight" type="number" min="0" step="0.1" placeholder="e.g. 8" className="h-13 min-w-0 flex-1 rounded-l-xl border border-white/10 bg-[#050912] px-4 text-white" /><select name="weightUnit" className="h-13 rounded-r-xl border border-l-0 border-white/10 bg-[#050912] px-3 text-white"><option>kg</option><option>g</option></select></div></label>
-                  <label className="block"><span className="text-sm font-bold text-white/70">Overall condition</span><select name="condition" className="mt-2 h-13 w-full rounded-xl border border-white/10 bg-[#050912] px-4 text-white"><option>Mostly clean and usable</option><option>Mixed condition</option><option>Needs cleaning or sorting</option><option>Not sure</option></select></label>
-                </div>
-                <label className="block"><span className="text-sm font-bold text-white/70">Anything notable?</span><textarea name="description" rows={5} placeholder="For example: mostly Technic pieces, around 40 minifigures, several instruction books..." className="mt-2 w-full rounded-xl border border-white/10 bg-[#050912] px-4 py-3 text-white placeholder:text-white/22" /></label>
-                <label className="block"><span className="text-sm font-bold text-white/70">What would you like to do?</span><select name="intent" className="mt-2 h-13 w-full rounded-xl border border-white/10 bg-[#050912] px-4 text-white"><option>Get a cash offer</option><option>Sell it for me</option><option>Add it to my collection</option><option>I am only checking the value</option></select></label>
-                <button type="submit" className="inline-flex h-14 w-full items-center justify-center gap-3 rounded-2xl bg-[#e8c86a] px-7 font-bold text-[#050912]">Save and continue <ArrowRight className="h-5 w-5" /></button>
-                <p className="text-center text-xs leading-5 text-white/30">This flow does not require a catalogue match or photo upload.</p>
-              </form>
-            )}
+              <label className="block"><span className="text-sm font-bold text-white/70">Anything notable?</span><textarea name="description" rows={5} placeholder="For example: mostly Technic pieces, around 40 minifigures, several instruction books..." className="mt-2 w-full rounded-xl border border-white/10 bg-[#050912] px-4 py-3 text-white placeholder:text-white/22" /></label>
+              <label className="block"><span className="text-sm font-bold text-white/70">What would you like to do?</span><select name="intent" className="mt-2 h-13 w-full rounded-xl border border-white/10 bg-[#050912] px-4 text-white"><option>Get a cash offer</option><option>Sell it for me</option><option>Add it to my collection</option><option>I am only checking the value</option></select></label>
+              <button type="submit" className="inline-flex h-14 w-full items-center justify-center gap-3 rounded-2xl bg-[#e8c86a] px-7 font-bold text-[#050912]">Continue to listing <ArrowRight className="h-5 w-5" /></button>
+              <p className="text-center text-xs leading-5 text-white/30">Your details are saved on this device. An account is only required when you publish.</p>
+            </form>
           </div>
         </div>
       </section>
