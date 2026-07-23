@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-type RouteContext = {
-  params: Promise<{ setNumber: string }>;
-};
+type RouteContext = { params: Promise<{ setNumber: string }> };
 
 type MarketplaceListing = {
   id: string;
@@ -17,18 +15,48 @@ type ShoppingResult = {
   title?: string;
   source?: string;
   extracted_price?: number;
-  price?: string;
   product_link?: string;
   link?: string;
   thumbnail?: string;
 };
 
+const accessoryTerms = [
+  "light kit",
+  "lighting kit",
+  "led kit",
+  "light set",
+  "nameplate",
+  "display plaque",
+  "display stand",
+  "wall mount",
+  "display case",
+  "instructions",
+  "instruction manual",
+  "replacement",
+  "sticker",
+  "stickers",
+  "minifigure only",
+  "compatible with",
+  "for lego",
+  "motorize",
+  "motorised",
+  "motorized",
+  "dust cover",
+  "acrylic case",
+  "frame",
+  "keyring",
+  "keychain",
+  "poster",
+];
+
+const stopWords = new Set(["lego", "icons", "classic", "the", "and", "with", "set"]);
+
 function conditionFactor(condition: string) {
   const value = condition.toLowerCase();
   if (value.includes("sealed")) return 1;
   if (value.includes("open box")) return 0.9;
-  if (value.includes("complete")) return 0.72;
   if (value.includes("incomplete")) return 0.45;
+  if (value.includes("complete")) return 0.72;
   return 0.7;
 }
 
@@ -39,41 +67,69 @@ function median(values: number[]) {
   return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
 }
 
+function normalise(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
 function exactSetMatch(title: string, setNumber: string) {
   const baseNumber = setNumber.split("-")[0];
   const escaped = baseNumber.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return new RegExp(`(^|\\D)${escaped}(\\D|$)`, "i").test(title);
 }
 
+function isAccessory(title: string) {
+  const clean = normalise(title);
+  return accessoryTerms.some((term) => clean.includes(term));
+}
+
+function relevanceScore(title: string, setNumber: string, name: string) {
+  const cleanTitle = normalise(title);
+  if (!exactSetMatch(title, setNumber) || isAccessory(title)) return 0;
+
+  let score = 0.55;
+  if (cleanTitle.includes("lego")) score += 0.15;
+
+  const meaningfulNameTokens = normalise(name)
+    .split(" ")
+    .filter((token) => token.length > 2 && !stopWords.has(token));
+  const matchedTokens = meaningfulNameTokens.filter((token) => cleanTitle.includes(token)).length;
+  const tokenCoverage = meaningfulNameTokens.length ? matchedTokens / meaningfulNameTokens.length : 0;
+  score += tokenCoverage * 0.3;
+
+  return Math.min(score, 1);
+}
+
 async function getExternalRetailMarket(setNumber: string, name: string, condition: string) {
   const apiKey = process.env.SERPAPI_KEY;
-  const searchUrl = `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(`LEGO ${setNumber} ${name}`)}`;
+  const query = `LEGO set ${setNumber} ${name} -light -lighting -LED -kit -stand -mount -case -instructions -stickers`;
+  const searchUrl = `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(query)}`;
 
-  if (!apiKey) {
-    return {
-      provider: "google_shopping",
-      status: "not_configured",
-      searchUrl,
-      retailLow: null,
-      retailMedian: null,
-      retailHigh: null,
-      adjustedLow: null,
-      adjustedRecommended: null,
-      adjustedHigh: null,
-      listings: [],
-    };
-  }
+  const emptyResult = (status: string) => ({
+    provider: "google_shopping",
+    status,
+    searchUrl,
+    retailLow: null,
+    retailMedian: null,
+    retailHigh: null,
+    adjustedLow: null,
+    adjustedRecommended: null,
+    adjustedHigh: null,
+    listings: [],
+  });
+
+  if (!apiKey) return emptyResult("not_configured");
 
   try {
     const params = new URLSearchParams({
       engine: "google_shopping",
-      q: `LEGO ${setNumber} ${name}`,
+      q: query,
       gl: "za",
       hl: "en",
       location: "Johannesburg, Gauteng, South Africa",
       api_key: apiKey,
-      num: "20",
+      num: "40",
     });
+
     const response = await fetch(`https://serpapi.com/search.json?${params.toString()}`, {
       next: { revalidate: 21600 },
     });
@@ -81,8 +137,13 @@ async function getExternalRetailMarket(setNumber: string, name: string, conditio
 
     const payload = (await response.json()) as { shopping_results?: ShoppingResult[] };
     const listings = (payload.shopping_results ?? [])
-      .filter((result) => result.title && exactSetMatch(result.title, setNumber))
       .map((result, index) => ({
+        result,
+        index,
+        score: result.title ? relevanceScore(result.title, setNumber, name) : 0,
+      }))
+      .filter(({ result, score }) => Boolean(result.title) && score >= 0.82)
+      .map(({ result, index, score }) => ({
         id: `external-${result.position ?? index}`,
         title: result.title ?? `${setNumber} listing`,
         source: result.source ?? "Online retailer",
@@ -90,8 +151,9 @@ async function getExternalRetailMarket(setNumber: string, name: string, conditio
         href: result.product_link ?? result.link ?? searchUrl,
         thumbnail: result.thumbnail ?? null,
         condition: "New retail",
+        relevance: score,
       }))
-      .filter((listing) => Number.isFinite(listing.price) && listing.price > 0)
+      .filter((listing) => Number.isFinite(listing.price) && listing.price >= 1000)
       .sort((a, b) => a.price - b.price)
       .slice(0, 8);
 
@@ -114,18 +176,7 @@ async function getExternalRetailMarket(setNumber: string, name: string, conditio
       listings,
     };
   } catch {
-    return {
-      provider: "google_shopping",
-      status: "unavailable",
-      searchUrl,
-      retailLow: null,
-      retailMedian: null,
-      retailHigh: null,
-      adjustedLow: null,
-      adjustedRecommended: null,
-      adjustedHigh: null,
-      listings: [],
-    };
+    return emptyResult("unavailable");
   }
 }
 
@@ -176,9 +227,7 @@ export async function GET(request: Request, { params }: RouteContext) {
   const quote = Array.isArray(data) ? data[0] : data;
   const listings = listingError ? [] : ((listingData ?? []) as MarketplaceListing[]);
   const prices = listings.map((listing) => Number(listing.price_zar)).filter(Number.isFinite);
-  const externalMarket = prices.length
-    ? null
-    : await getExternalRetailMarket(set.set_number, set.name, condition);
+  const externalMarket = prices.length ? null : await getExternalRetailMarket(set.set_number, set.name, condition);
 
   return NextResponse.json({
     set: {
@@ -192,7 +241,7 @@ export async function GET(request: Request, { params }: RouteContext) {
       quick_sale: externalMarket?.adjustedLow ?? null,
       recommended: externalMarket?.adjustedRecommended ?? null,
       premium: externalMarket?.adjustedHigh ?? null,
-      confidence: externalMarket?.status === "available" ? 45 : 0,
+      confidence: externalMarket?.status === "available" ? 55 : 0,
       verified_sales: 0,
       active_listings: listings.length,
       last_sale: null,
