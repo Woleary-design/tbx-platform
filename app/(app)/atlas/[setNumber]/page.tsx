@@ -52,7 +52,7 @@ export default async function AtlasSetPage({ params }: { params: Promise<{ setNu
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">
-      <Link href="/atlas" className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-950"><ArrowLeft className="h-4 w-4" /> Back to LEGO Directory</Link>
+      <Link href="/atlas" className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-950"><ArrowLeft className="h-4 w-4" /> Back to Atlas Catalogue</Link>
 
       <section className="overflow-hidden rounded-[2rem] border border-[#eadfce] bg-white shadow-[0_28px_100px_rgba(43,30,18,0.10)]">
         <div className="grid lg:grid-cols-[0.9fr_1.1fr]">
@@ -60,7 +60,7 @@ export default async function AtlasSetPage({ params }: { params: Promise<{ setNu
             {set.image_url ? <img src={set.image_url} alt={set.name} className="max-h-[520px] w-full object-contain" /> : <Boxes className="h-24 w-24 text-yellow-500" />}
           </div>
           <div className="bg-slate-950 p-7 text-white md:p-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-300">Official LEGO Set · {set.set_number}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-300">Verified Atlas Record · LEGO {set.set_number}</p>
             <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-6xl">{set.name}</h1>
             <p className="mt-4 text-lg text-white/60">{[set.theme, set.subtheme].filter(Boolean).join(" · ") || "Uncategorised"}</p>
 
@@ -86,12 +86,12 @@ export default async function AtlasSetPage({ params }: { params: Promise<{ setNu
         </div>
       </section>
 
-      <AtlasMarketValue setNumber={set.set_number} />
+      <AtlasMarketValue identity={{ category: "LEGO", identifier: set.set_number, name: set.name }} />
 
       <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
         <div className="rounded-[2rem] border border-[#eadfce] bg-white p-6 shadow-[0_20px_65px_rgba(43,30,18,0.07)]">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-600">Official reference</p>
-          <h2 className="mt-2 text-2xl font-semibold text-slate-950">Set information</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-600">Verified catalogue data</p>
+          <h2 className="mt-2 text-2xl font-semibold text-slate-950">Record information</h2>
           <dl className="mt-6 grid gap-4 sm:grid-cols-2">
             {informationFields.map(({ label, value }) => (
               <div key={label} className="rounded-2xl bg-slate-50 p-4">
@@ -108,7 +108,7 @@ export default async function AtlasSetPage({ params }: { params: Promise<{ setNu
               </div>
             ) : null}
           </dl>
-          <p className="mt-5 text-sm leading-6 text-slate-500">Atlas only shows verified details here. Additional official data will appear automatically as each record is enriched.</p>
+          <p className="mt-5 text-sm leading-6 text-slate-500">Atlas shows verified identity and specification data consistently across every collectible category.</p>
         </div>
 
         <div className="rounded-[2rem] border border-[#eadfce] bg-slate-950 p-6 text-white shadow-[0_20px_65px_rgba(15,23,42,0.12)]">
@@ -116,10 +116,10 @@ export default async function AtlasSetPage({ params }: { params: Promise<{ setNu
           <h2 className="mt-3 text-2xl font-semibold">{availableCount > 0 ? `${availableCount} listing${availableCount === 1 ? "" : "s"} available.` : "0 listings available."}</h2>
           <p className="mt-3 text-sm leading-6 text-white/65">
             {availableCount > 0
-              ? "These are live, fixed-price TBX listings for this exact LEGO set."
+              ? "These are live, fixed-price TBX listings tied to this exact Atlas record."
               : isWishlisted
-                ? "You are tracking this set. TBX will surface a match when a collector lists one."
-                : "Add this set to your Wishlist to track future marketplace availability."}
+                ? "You are tracking this record. TBX will surface a match when a collector lists one."
+                : "Add this record to your Wishlist to track future marketplace availability."}
           </p>
           {availableCount > 0 ? (
             <Button asChild className="mt-6 h-12 w-full rounded-xl bg-white font-semibold text-slate-950 hover:bg-slate-100"><Link href={`/marketplace?q=${encodeURIComponent(set.set_number)}`}>View available listings</Link></Button>
@@ -128,9 +128,9 @@ export default async function AtlasSetPage({ params }: { params: Promise<{ setNu
               <WishlistSetButton legoSetId={set.id} initialWishlisted={false} />
             </div>
           ) : isWishlisted ? (
-            <Button asChild className="mt-6 h-12 w-full rounded-xl bg-white font-semibold text-slate-950 hover:bg-slate-100"><Link href={relatedSetsHref}>Browse similar {set.theme || "LEGO"} sets</Link></Button>
+            <Button asChild className="mt-6 h-12 w-full rounded-xl bg-white font-semibold text-slate-950 hover:bg-slate-100"><Link href={relatedSetsHref}>Browse similar {set.theme || "LEGO"} records</Link></Button>
           ) : (
-            <Button asChild className="mt-6 h-12 w-full rounded-xl bg-white font-semibold text-slate-950 hover:bg-slate-100"><Link href={signInHref}>Sign in to track this set</Link></Button>
+            <Button asChild className="mt-6 h-12 w-full rounded-xl bg-white font-semibold text-slate-950 hover:bg-slate-100"><Link href={signInHref}>Sign in to track this record</Link></Button>
           )}
         </div>
       </section>
