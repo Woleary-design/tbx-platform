@@ -16,13 +16,12 @@ export function MobileSellNow() {
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[70] border-t border-[#e8c86a]/20 bg-[#050912]/92 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-18px_55px_rgba(0,0,0,0.55)] backdrop-blur-xl md:hidden">
-      <Link
-        href="/sell/create"
-        className="mx-auto flex h-14 w-full max-w-xl items-center justify-center gap-2 rounded-2xl bg-[#e8c86a] px-6 text-base font-black text-[#050912] shadow-[0_12px_35px_rgba(232,200,106,0.2)] transition active:scale-[0.99]"
-      >
-        Sell Now <ArrowRight className="h-5 w-5" />
-      </Link>
-    </div>
+    <Link
+      href="/sell/create"
+      aria-label="Sell now"
+      className="fixed bottom-[calc(env(safe-area-inset-bottom)+1rem)] right-4 z-[70] flex h-12 items-center justify-center gap-2 rounded-full bg-[#e8c86a] px-5 text-sm font-black text-[#050912] shadow-[0_12px_35px_rgba(0,0,0,0.45)] transition active:scale-95 md:hidden"
+    >
+      Sell Now <ArrowRight className="h-4 w-4" />
+    </Link>
   );
 }
