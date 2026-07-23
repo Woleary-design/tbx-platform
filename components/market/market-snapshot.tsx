@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, ExternalLink, Loader2, TrendingUp } from "lucide-react";
+import { ArrowRight, BadgeCheck, ExternalLink, Loader2, ShoppingBag, TrendingUp } from "lucide-react";
 
 type MarketListing = {
   id: string;
@@ -9,6 +9,16 @@ type MarketListing = {
   condition: string;
   publishedAt: string | null;
   href: string;
+};
+
+type ExternalListing = {
+  id: string;
+  title: string;
+  source: string;
+  price: number;
+  href: string;
+  thumbnail: string | null;
+  condition: string;
 };
 
 type ValueQuote = {
@@ -31,6 +41,18 @@ export type MarketSnapshotData = {
     activeListingCount: number;
     listings: MarketListing[];
   };
+  externalMarket?: {
+    provider: string;
+    status: string;
+    searchUrl: string;
+    retailLow: number | null;
+    retailMedian: number | null;
+    retailHigh: number | null;
+    adjustedLow: number | null;
+    adjustedRecommended: number | null;
+    adjustedHigh: number | null;
+    listings: ExternalListing[];
+  } | null;
 };
 
 function money(value: number | null | undefined) {
@@ -48,26 +70,36 @@ export function MarketSnapshot({ data, loading }: { data: MarketSnapshotData | n
 
   if (!data) return null;
 
-  const recommendedLow = data.quote.quick_sale ?? data.market.lowestAsking;
-  const recommendedHigh = data.quote.premium ?? data.market.highestAsking;
+  const external = data.externalMarket?.status === "available" ? data.externalMarket : null;
+  const lowest = data.market.lowestAsking ?? external?.adjustedLow ?? null;
+  const recommended = data.quote.recommended ?? data.quote.estimated_value ?? external?.adjustedRecommended ?? null;
+  const highest = data.market.highestAsking ?? external?.adjustedHigh ?? null;
+  const recommendedLow = data.quote.quick_sale ?? external?.adjustedLow ?? data.market.lowestAsking;
+  const recommendedHigh = data.quote.premium ?? external?.adjustedHigh ?? data.market.highestAsking;
+  const hasValuation = recommendedLow != null || recommended != null || recommendedHigh != null;
 
   return (
     <section className="overflow-hidden rounded-[1.75rem] border border-[#e8c86a]/20 bg-[#08101c]">
       <div className="flex flex-col gap-4 border-b border-white/[0.07] p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#e8c86a]">Live market snapshot</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#e8c86a]">
+            {external ? "External market snapshot" : "Live market snapshot"}
+          </p>
           <h3 className="mt-2 text-2xl font-black tracking-[-0.035em]">See the market before choosing your price.</h3>
         </div>
         <div className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/[0.08] px-3 py-1.5 text-xs font-semibold text-emerald-200">
-          <BadgeCheck className="h-4 w-4" /> {data.market.activeListingCount} live listing{data.market.activeListingCount === 1 ? "" : "s"}
+          {external ? <ShoppingBag className="h-4 w-4" /> : <BadgeCheck className="h-4 w-4" />}
+          {external
+            ? `${external.listings.length} exact retail match${external.listings.length === 1 ? "" : "es"}`
+            : `${data.market.activeListingCount} live listing${data.market.activeListingCount === 1 ? "" : "s"}`}
         </div>
       </div>
 
       <div className="grid gap-px bg-white/[0.07] sm:grid-cols-3">
         {[
-          ["Lowest asking", money(data.market.lowestAsking)],
-          ["TBX recommended", money(data.quote.recommended ?? data.quote.estimated_value)],
-          ["Highest asking", money(data.market.highestAsking)],
+          [external ? "Condition-adjusted low" : "Lowest asking", money(lowest)],
+          ["TBX recommended", money(recommended)],
+          [external ? "Condition-adjusted high" : "Highest asking", money(highest)],
         ].map(([label, value]) => (
           <div key={label} className="bg-[#08101c] p-5">
             <p className="text-xs text-white/35">{label}</p>
@@ -81,16 +113,59 @@ export function MarketSnapshot({ data, loading }: { data: MarketSnapshotData | n
           <div>
             <p className="text-xs font-semibold text-white/45">Suggested listing range</p>
             <p className="mt-1 text-3xl font-black tracking-[-0.045em] text-[#e8c86a]">
-              {money(recommendedLow)} — {money(recommendedHigh)}
+              {hasValuation ? `${money(recommendedLow)} — ${money(recommendedHigh)}` : "Market data building"}
             </p>
           </div>
           <p className="max-w-sm text-xs leading-5 text-white/32">
-            Based on current asking prices, verified sales and the selected condition. Asking prices are not guaranteed sale prices.
+            {external
+              ? "Estimated from exact-match South African retail asking prices, adjusted for the selected condition. Retail anchors are not verified used sale prices."
+              : "Based on current asking prices, verified sales and the selected condition. Asking prices are not guaranteed sale prices."}
           </p>
         </div>
       </div>
 
-      {data.market.listings.length ? (
+      {external ? (
+        <div className="border-t border-white/[0.07] p-5">
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <ShoppingBag className="h-4 w-4 text-[#e8c86a]" />
+              <h4 className="font-bold">Exact-match retail listings</h4>
+            </div>
+            <span className="text-xs text-white/30">
+              New retail range: {money(external.retailLow)} — {money(external.retailHigh)}
+            </span>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {external.listings.slice(0, 6).map((listing) => (
+              <a
+                key={listing.id}
+                href={listing.href}
+                target="_blank"
+                rel="noreferrer"
+                className="group flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.025] p-3 transition hover:border-[#e8c86a]/25 hover:bg-white/[0.045]"
+              >
+                <span className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-xl bg-white/[0.05]">
+                  {listing.thumbnail ? <img src={listing.thumbnail} alt="" className="h-full w-full object-contain" /> : <ShoppingBag className="h-5 w-5 text-white/25" />}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-lg font-black">{money(listing.price)}</span>
+                  <span className="mt-0.5 block truncate text-xs text-white/45">{listing.source}</span>
+                  <span className="mt-1 block truncate text-[11px] text-white/28">{listing.title}</span>
+                </span>
+                <ExternalLink className="h-4 w-4 shrink-0 text-white/25 transition group-hover:text-[#e8c86a]" />
+              </a>
+            ))}
+          </div>
+          <a
+            href={external.searchUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-[#e8c86a]"
+          >
+            View the wider Google Shopping search <ExternalLink className="h-4 w-4" />
+          </a>
+        </div>
+      ) : data.market.listings.length ? (
         <div className="border-t border-white/[0.07] p-5">
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -120,7 +195,12 @@ export function MarketSnapshot({ data, loading }: { data: MarketSnapshotData | n
         </div>
       ) : (
         <div className="border-t border-white/[0.07] p-5 text-sm leading-6 text-white/40">
-          There are no live TBX listings for this item yet. The TBX value guide is based on the available market record and will improve as verified activity grows.
+          No live TBX listings or exact external retail matches are available yet. Configure the external shopping provider to turn this into a live fallback.
+          {data.externalMarket?.searchUrl ? (
+            <a href={data.externalMarket.searchUrl} target="_blank" rel="noreferrer" className="ml-2 font-bold text-[#e8c86a]">
+              Check Google Shopping manually.
+            </a>
+          ) : null}
         </div>
       )}
     </section>
