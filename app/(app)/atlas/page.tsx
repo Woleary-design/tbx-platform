@@ -1,4 +1,4 @@
-import { BookOpen, Sparkles } from "lucide-react";
+import { BookOpen, Layers3, Sparkles } from "lucide-react";
 import { AtlasLiveSearch } from "@/components/atlas/atlas-live-search";
 import { createClient } from "@/lib/supabase/server";
 import { isCollectorCatalogueRecord, normalizeCatalogueTheme } from "@/lib/lego/catalogue-visibility";
@@ -48,16 +48,26 @@ export default async function AtlasDirectoryPage({ searchParams }: AtlasDirector
   return (
     <div className="mx-auto max-w-7xl space-y-8">
       <section className="overflow-hidden rounded-[2rem] border border-[#eadfce] bg-slate-950 text-white shadow-[0_28px_100px_rgba(15,23,42,0.16)]">
-        <div className="grid gap-8 p-7 md:p-10 lg:grid-cols-[1fr_340px] lg:items-end">
+        <div className="grid gap-8 p-7 md:p-10 lg:grid-cols-[1fr_360px] lg:items-end">
           <div>
-            <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-medium text-yellow-300"><BookOpen className="h-4 w-4" /> LEGO Directory</p>
-            <h1 className="mt-6 max-w-3xl text-4xl font-semibold tracking-tight md:text-6xl">Find the right LEGO set.</h1>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-white/70">Search approved collectible sets by number, name, theme or subtheme without merchandise, adapters or catalogue clutter.</p>
+            <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-medium text-yellow-300">
+              <BookOpen className="h-4 w-4" /> Atlas Catalogue
+            </p>
+            <h1 className="mt-6 max-w-3xl text-4xl font-semibold tracking-tight md:text-6xl">One trusted record for every collectible.</h1>
+            <p className="mt-5 max-w-2xl text-base leading-7 text-white/70">
+              Search verified identities, specifications and market intelligence. LEGO is the first live category; the same Atlas record system will power every category that follows.
+            </p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/8 p-5">
-            <Sparkles className="h-6 w-6 text-yellow-300" />
-            <p className="mt-4 font-semibold">Curated for collectors</p>
-            <p className="mt-2 text-sm leading-6 text-white/65">Imported records are classified and quality checked before they appear in the public Atlas.</p>
+          <div className="space-y-3">
+            <div className="rounded-2xl border border-white/10 bg-white/8 p-5">
+              <Sparkles className="h-6 w-6 text-yellow-300" />
+              <p className="mt-4 font-semibold">Curated for collectors</p>
+              <p className="mt-2 text-sm leading-6 text-white/65">Records are classified and quality checked before they appear publicly.</p>
+            </div>
+            <div className="flex items-center gap-3 rounded-2xl border border-white/10 px-4 py-3 text-sm text-white/60">
+              <Layers3 className="h-4 w-4 text-yellow-300" />
+              Shared identity, valuation and marketplace standards across Atlas.
+            </div>
           </div>
         </div>
       </section>
