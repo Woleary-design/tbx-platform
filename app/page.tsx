@@ -116,7 +116,7 @@ export default async function HomePage() {
                 <span className="block text-[#e8c86a]">collection is worth.</span>
               </h1>
               <p className="mt-8 max-w-2xl text-lg leading-8 text-white/55 sm:text-xl">
-                Start with a complete set, a mixed box, loose parts, minifigures or an unknown collection. Photos are not required.
+                Start with a complete set, a mixed box, loose parts, minifigures or an unknown collection. Photos are only required when you publish an item for sale.
               </p>
               <div className="mt-10 flex flex-col gap-3 sm:flex-row">
                 <Link href="/value" className="group inline-flex h-14 items-center justify-center gap-3 rounded-2xl bg-[#e8c86a] px-7 font-bold text-[#050912] shadow-[0_16px_50px_rgba(232,200,106,0.16)] transition hover:-translate-y-0.5 hover:bg-[#f1d478]">
@@ -127,7 +127,7 @@ export default async function HomePage() {
                 </Link>
               </div>
               <div className="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/38">
-                {["No photo upload required", "No catalogue match required", "Powered by Atlas"].map((item) => (
+                {["No photos needed for valuation", "No catalogue match required", "Powered by Atlas"].map((item) => (
                   <span key={item} className="inline-flex items-center gap-2"><Check className="h-4 w-4 text-[#e8c86a]" />{item}</span>
                 ))}
               </div>
