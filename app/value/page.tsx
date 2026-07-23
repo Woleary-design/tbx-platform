@@ -48,7 +48,7 @@ const valuePaths = [
 
 export default function ValuePage() {
   return (
-    <main className="min-h-screen bg-[#050912] text-white">
+    <main className="min-h-screen bg-[#050912] pb-28 text-white sm:pb-0">
       <header className="border-b border-white/[0.06] bg-[#050912]/90 backdrop-blur-xl">
         <div className="mx-auto flex h-20 max-w-[1280px] items-center justify-between px-5 lg:px-10">
           <Link href="/" className="flex items-center gap-3 font-black tracking-[-0.04em]">
@@ -100,6 +100,17 @@ export default function ValuePage() {
           </div>
         </div>
       </section>
+
+      <aside className="fixed inset-x-4 bottom-4 z-40 sm:inset-x-auto sm:bottom-6 sm:right-6 sm:w-[360px]">
+        <div className="flex items-center gap-4 rounded-2xl border border-[#e8c86a]/25 bg-[#09111f]/95 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#e8c86a]/10 text-[#e8c86a]"><CircleDollarSign className="h-5 w-5" /></span>
+          <div className="min-w-0 flex-1">
+            <p className="font-black tracking-[-0.025em]">Ready to sell?</p>
+            <p className="mt-1 text-xs leading-5 text-white/42">Build the listing now. Sign up only when you publish.</p>
+          </div>
+          <Link href="/sell/create" className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[#e8c86a] px-4 py-3 text-sm font-black text-[#050912] transition hover:bg-[#f1d478]">Sell Now <ArrowRight className="h-4 w-4" /></Link>
+        </div>
+      </aside>
     </main>
   );
 }
