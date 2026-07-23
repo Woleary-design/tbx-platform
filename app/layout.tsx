@@ -12,7 +12,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
   return (
     <html lang="en">
       <body>
-        <div className="pb-24 md:pb-0">{children}</div>
+        {children}
         <MobileSellNow />
       </body>
     </html>
