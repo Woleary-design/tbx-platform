@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Boxes, Check, PackageOpen, Scale } from "lucide-react";
 
 const itemTypes = [
@@ -13,13 +14,52 @@ const itemTypes = [
   "Other LEGO collection",
 ];
 
+type ManualDraft = {
+  itemType?: string;
+  weight?: string;
+  weightUnit?: string;
+  condition?: string;
+  description?: string;
+  intent?: string;
+};
+
 export default function ManualValuePage() {
+  const router = useRouter();
   const [submitted, setSubmitted] = useState(false);
+  const [savedIntent, setSavedIntent] = useState("");
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    window.localStorage.setItem("tbx-manual-lego-draft", JSON.stringify(Object.fromEntries(data.entries())));
+    const data = Object.fromEntries(new FormData(event.currentTarget).entries()) as ManualDraft;
+    window.localStorage.setItem("tbx-manual-lego-draft", JSON.stringify(data));
+    setSavedIntent(data.intent ?? "");
+
+    if (data.intent === "List it on the Marketplace") {
+      const weight = data.weight ? `${data.weight} ${data.weightUnit ?? "kg"}` : "";
+      const listingTitle = [data.itemType, weight].filter(Boolean).join(" · ");
+      const listingDescription = [
+        data.description,
+        data.condition ? `Overall condition: ${data.condition}` : "",
+        weight ? `Approximate weight: ${weight}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n\n");
+
+      window.localStorage.setItem(
+        "tbx-listing-draft",
+        JSON.stringify({
+          title: listingTitle,
+          condition: data.condition ?? "Not sure",
+          included: data.itemType ?? "Mixed LEGO collection",
+          description: listingDescription,
+          price: "",
+          delivery: "Seller ships",
+        }),
+      );
+      router.push("/sell/create?source=manual");
+      return;
+    }
+
     setSubmitted(true);
   }
 
@@ -38,7 +78,7 @@ export default function ManualValuePage() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-[#e8c86a]/20 bg-[#e8c86a]/[0.06] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-[#e8c86a]"><PackageOpen className="h-3.5 w-3.5" /> Manual valuation</div>
             <h1 className="mt-7 text-5xl font-black leading-[0.94] tracking-[-0.065em] sm:text-6xl">No set number?<span className="block text-[#e8c86a]">No problem.</span></h1>
-            <p className="mt-6 max-w-lg text-lg leading-8 text-white/52">Describe what you have using simple details such as the type of LEGO, approximate weight and overall condition. Photos are not required.</p>
+            <p className="mt-6 max-w-lg text-lg leading-8 text-white/52">Describe what you have using simple details such as the type of LEGO, approximate weight and overall condition. Photos are not required for valuation.</p>
             <div className="mt-8 space-y-3 text-sm text-white/48">{["Suitable for mixed boxes and spare parts", "A rough weight is enough to begin", "No catalogue match is required"].map((item) => <div key={item} className="flex items-center gap-3"><Check className="h-4 w-4 text-[#e8c86a]" />{item}</div>)}</div>
           </div>
 
@@ -47,8 +87,8 @@ export default function ManualValuePage() {
               <div className="flex min-h-[500px] flex-col items-center justify-center text-center">
                 <span className="grid h-16 w-16 place-items-center rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.08] text-emerald-300"><Check className="h-8 w-8" /></span>
                 <h2 className="mt-6 text-3xl font-black tracking-[-0.04em]">Description saved</h2>
-                <p className="mt-3 max-w-md leading-7 text-white/45">Your valuation draft has been saved on this device. A later step can connect it to manual review or bulk pricing.</p>
-                <div className="mt-8 flex flex-col gap-3 sm:flex-row"><button type="button" onClick={() => setSubmitted(false)} className="inline-flex h-12 items-center justify-center rounded-xl border border-white/12 px-5 font-bold text-white/75">Edit description</button><Link href="/value" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#e8c86a] px-5 font-bold text-[#050912]">Return to Value <ArrowRight className="h-4 w-4" /></Link></div>
+                <p className="mt-3 max-w-md leading-7 text-white/45">{savedIntent === "Add it to my Collection" ? "Your description is ready to be added to your Collection." : "Your description has been saved while you check the value."}</p>
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row"><button type="button" onClick={() => setSubmitted(false)} className="inline-flex h-12 items-center justify-center rounded-xl border border-white/12 px-5 font-bold text-white/75">Edit description</button><Link href={savedIntent === "Add it to my Collection" ? "/collection" : "/value"} className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#e8c86a] px-5 font-bold text-[#050912]">{savedIntent === "Add it to my Collection" ? "Open Collection" : "Return to Value"} <ArrowRight className="h-4 w-4" /></Link></div>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -61,7 +101,7 @@ export default function ManualValuePage() {
                 <label className="block"><span className="text-sm font-bold text-white/70">Anything notable?</span><textarea name="description" rows={5} placeholder="For example: mostly Technic pieces, around 40 minifigures, several instruction books..." className="mt-2 w-full rounded-xl border border-white/10 bg-[#050912] px-4 py-3 text-white placeholder:text-white/22" /></label>
                 <label className="block"><span className="text-sm font-bold text-white/70">What would you like to do?</span><select name="intent" className="mt-2 h-13 w-full rounded-xl border border-white/10 bg-[#050912] px-4 text-white"><option>List it on the Marketplace</option><option>Add it to my Collection</option><option>I am just checking the value</option></select></label>
                 <button type="submit" className="inline-flex h-14 w-full items-center justify-center gap-3 rounded-2xl bg-[#e8c86a] px-7 font-bold text-[#050912]">Save and continue <ArrowRight className="h-5 w-5" /></button>
-                <p className="text-center text-xs leading-5 text-white/30">This flow does not require a catalogue match or photo upload.</p>
+                <p className="text-center text-xs leading-5 text-white/30">No photos are needed for valuation. Photos will be required before a Marketplace listing can be published.</p>
               </form>
             )}
           </div>
