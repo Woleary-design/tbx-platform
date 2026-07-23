@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Boxes, CalendarDays, PackagePlus, Puzzle, ShoppingBag, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AtlasMarketValue } from "@/components/atlas/atlas-market-value";
 import { WishlistSetButton } from "@/components/atlas/wishlist-set-button";
 import { getAtlasSetByNumber } from "@/lib/atlas/service";
 import { createClient } from "@/lib/supabase/server";
@@ -84,6 +85,8 @@ export default async function AtlasSetPage({ params }: { params: Promise<{ setNu
           </div>
         </div>
       </section>
+
+      <AtlasMarketValue setNumber={set.set_number} />
 
       <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
         <div className="rounded-[2rem] border border-[#eadfce] bg-white p-6 shadow-[0_20px_65px_rgba(43,30,18,0.07)]">
