@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
 import { SignInForm } from "@/components/auth/sign-in-form";
+import { createClient } from "@/lib/supabase/server";
 
 function FourDotLogo() {
   return (
@@ -13,12 +15,26 @@ function FourDotLogo() {
   );
 }
 
+function safeNextPath(value?: string) {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) return "/dashboard";
+  return value;
+}
+
 type SignInPageProps = {
   searchParams?: Promise<{ next?: string }>;
 };
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
   const params = searchParams ? await searchParams : undefined;
+  const destination = safeNextPath(params?.next);
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    redirect(destination);
+  }
 
   return (
     <main className="min-h-screen bg-[#f6f9fc] text-slate-950">
@@ -57,7 +73,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
           <p className="mt-2 text-sm leading-6 text-slate-600">Sign in to an existing collector account or create your passport and vault.</p>
 
           <div className="mt-7">
-            <SignInForm nextPath={params?.next} />
+            <SignInForm nextPath={destination} />
           </div>
 
           <div className="mt-6 grid gap-3 text-sm text-slate-600">
