@@ -2,15 +2,13 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
 function getSiteUrl() {
-  const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
   const fallbackUrl = window.location.origin;
-  const url = configuredUrl || fallbackUrl;
-  return url.endsWith("/") ? url.slice(0, -1) : url;
+  return fallbackUrl.endsWith("/") ? fallbackUrl.slice(0, -1) : fallbackUrl;
 }
 
 function safeNextPath(nextPath?: string) {
@@ -40,7 +38,7 @@ export function SignInForm({ nextPath }: { nextPath?: string }) {
     setLoading(true);
     const supabase = createClient();
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${getSiteUrl()}/update-password`,
+      redirectTo: `${getSiteUrl()}/auth/callback?next=${encodeURIComponent("/update-password")}`,
     });
     setLoading(false);
 
@@ -49,6 +47,33 @@ export function SignInForm({ nextPath }: { nextPath?: string }) {
       return;
     }
     setMessage("Password reset email sent. Use the newest link in your inbox.");
+  }
+
+  async function handleMagicLink() {
+    setMessage(null);
+    setError(null);
+    if (!email.trim()) {
+      setError("Enter the account email address first.");
+      return;
+    }
+
+    setLoading(true);
+    const supabase = createClient();
+    const { error: magicLinkError } = await supabase.auth.signInWithOtp({
+      email: email.trim(),
+      options: {
+        shouldCreateUser: false,
+        emailRedirectTo: `${getSiteUrl()}/auth/callback?next=${encodeURIComponent(destination)}`,
+      },
+    });
+    setLoading(false);
+
+    if (magicLinkError) {
+      setError(magicLinkError.message);
+      return;
+    }
+
+    setMessage("Secure sign-in link sent. Open the newest email on this device.");
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -114,17 +139,20 @@ export function SignInForm({ nextPath }: { nextPath?: string }) {
 
         <label className="block">
           <span className="text-sm font-medium text-slate-700">Password</span>
-          <input className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-slate-400" value={password} onChange={(event) => setPassword(event.target.value)} type="password" minLength={8} autoComplete={mode === "sign-up" ? "new-password" : "current-password"} required />
+          <input className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-slate-400" value={password} onChange={(event) => setPassword(event.target.value)} type="password" minLength={8} autoComplete={mode === "sign-up" ? "new-password" : "current-password"} required={mode === "sign-up"} />
         </label>
 
         {mode === "sign-in" ? (
-          <button type="button" disabled={loading} onClick={handlePasswordReset} className="text-sm font-semibold text-slate-600 underline-offset-4 hover:text-slate-950 hover:underline">Forgot your password?</button>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <button type="button" disabled={loading} onClick={handlePasswordReset} className="text-sm font-semibold text-slate-600 underline-offset-4 hover:text-slate-950 hover:underline">Forgot your password?</button>
+            <button type="button" disabled={loading} onClick={handleMagicLink} className="inline-flex items-center gap-2 text-sm font-semibold text-yellow-700 underline-offset-4 hover:text-yellow-600 hover:underline"><Mail className="h-4 w-4" /> Email me a sign-in link</button>
+          </div>
         ) : null}
 
         {error ? <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}
         {message ? <p className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{message}</p> : null}
 
-        <Button disabled={loading} className="h-12 w-full rounded-xl bg-yellow-400 font-semibold text-slate-950 hover:bg-yellow-300">
+        <Button disabled={loading || (mode === "sign-in" && !password)} className="h-12 w-full rounded-xl bg-yellow-400 font-semibold text-slate-950 hover:bg-yellow-300">
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           {mode === "sign-up" ? "Create TBX account" : "Enter TBX"}
           {!loading ? <ArrowRight className="h-4 w-4" /> : null}
