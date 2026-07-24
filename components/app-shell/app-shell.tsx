@@ -52,7 +52,7 @@ function FourDotLogo({ small = false }: { small?: boolean }) {
 export function AppShell({ children, collector, isAdmin = false }: AppShellProps) {
   const pathname = usePathname();
   const visibleNavigation = isAdmin
-    ? [...navigation, { href: "/admin", label: "Command Centre", icon: LayoutDashboard }]
+    ? [{ href: "/admin", label: "Command", icon: LayoutDashboard }, ...navigation]
     : navigation;
 
   return (
@@ -87,7 +87,7 @@ export function AppShell({ children, collector, isAdmin = false }: AppShellProps
                   className={cn(
                     "group relative flex items-center gap-3 overflow-hidden rounded-2xl px-3.5 py-3 text-sm font-semibold transition-all duration-200",
                     item.href === "/admin"
-                      ? "mt-4 border border-[#ffd84d]/20 bg-[#ffd84d]/[0.055] text-[#ffd84d] hover:bg-[#ffd84d]/[0.10]"
+                      ? "border border-[#ffd84d]/20 bg-[#ffd84d]/[0.055] text-[#ffd84d] hover:bg-[#ffd84d]/[0.10]"
                       : isActive
                         ? "border border-white/[0.07] bg-[#111a2d] text-[#ffd84d] shadow-[0_14px_40px_rgba(0,0,0,0.28)]"
                         : "text-white/62 hover:bg-white/[0.055] hover:text-white",
@@ -127,13 +127,23 @@ export function AppShell({ children, collector, isAdmin = false }: AppShellProps
 
       <div className="lg:pl-72">
         <header className="sticky top-0 z-20 border-b border-white/[0.07] bg-[#050915]/92 backdrop-blur-xl">
-          <div className="flex min-h-16 flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between lg:px-8">
-            <div className="flex items-center justify-between gap-3">
-              <Link href="/" aria-label="Go to Home" className="flex items-center gap-2 font-semibold text-white lg:hidden"><FourDotLogo small /> TBX</Link>
+          <div className="px-4 py-3 lg:px-8">
+            <div className="flex items-center justify-between gap-3 lg:hidden">
+              <Link href="/" aria-label="Go to Home" className="flex items-center gap-2 font-semibold text-white"><FourDotLogo small /> TBX</Link>
+              <div className="flex items-center gap-2">
+                {isAdmin ? (
+                  <Button asChild variant="outline" size="sm" className="h-10 rounded-full border-[#ffd84d]/25 bg-[#ffd84d]/[0.07] px-3 text-[#ffd84d] hover:bg-[#ffd84d]/[0.12] hover:text-[#ffd84d]">
+                    <Link href="/admin" aria-label="Open Command Centre"><LayoutDashboard className="h-4 w-4" /><span className="hidden min-[390px]:inline">Command</span></Link>
+                  </Button>
+                ) : null}
+                <Button asChild className="h-10 rounded-full bg-[#ffd84d] px-3 font-semibold text-[#050915] hover:bg-[#ffe374]">
+                  <Link href="/sell"><Tag className="h-4 w-4" /> Sell</Link>
+                </Button>
+              </div>
             </div>
 
-            <div className="flex flex-1 items-center gap-3 sm:max-w-3xl">
-              <CatalogueSearch />
+            <div className="mt-3 flex items-center gap-2 sm:mt-0">
+              <div className="min-w-0 flex-1"><CatalogueSearch /></div>
               {isAdmin ? (
                 <Button asChild variant="outline" size="sm" className="hidden rounded-full border-[#ffd84d]/25 bg-[#ffd84d]/[0.06] px-4 text-[#ffd84d] hover:bg-[#ffd84d]/[0.12] hover:text-[#ffd84d] md:inline-flex">
                   <Link href="/admin"><LayoutDashboard className="h-4 w-4" /> Command</Link>
@@ -145,18 +155,16 @@ export function AppShell({ children, collector, isAdmin = false }: AppShellProps
             </div>
           </div>
 
-          <nav className="flex gap-2 overflow-x-auto border-t border-white/[0.06] px-4 py-2 lg:hidden">
+          <nav className="flex gap-1 overflow-x-auto border-t border-white/[0.06] px-3 py-2 lg:hidden">
             {visibleNavigation.map((item) => {
               const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(`${item.href}/`));
-              return <Link key={item.href} href={item.href} className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium", item.href === "/admin" ? "border border-[#ffd84d]/20 text-[#ffd84d]" : isActive ? "bg-[#ffd84d] text-[#050915]" : "text-white/55 hover:bg-white/[0.05] hover:text-white")}>{item.label}</Link>;
+              return <Link key={item.href} href={item.href} className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium", item.href === "/admin" ? "border border-[#ffd84d]/20 bg-[#ffd84d]/[0.06] text-[#ffd84d]" : isActive ? "bg-[#ffd84d] text-[#050915]" : "text-white/55 hover:bg-white/[0.05] hover:text-white")}>{item.label}</Link>;
             })}
           </nav>
         </header>
 
-        <main className="px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+        <main className="px-4 py-4 sm:px-6 sm:py-6 lg:px-8">{children}</main>
       </div>
-
-      <Button asChild className="fixed bottom-5 right-5 z-40 h-14 rounded-full bg-[#ffd84d] px-5 font-semibold text-[#050915] shadow-2xl hover:bg-[#ffe374] sm:hidden"><Link href="/sell"><Tag className="h-5 w-5" /> Sell</Link></Button>
     </div>
   );
 }
