@@ -17,7 +17,7 @@ export async function requireAdmin() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login?next=/admin");
+    redirect("/sign-in?next=/admin");
   }
 
   const { data: adminUser, error } = await supabase
