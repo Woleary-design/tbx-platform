@@ -1,17 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, Boxes, Check, Gauge, LockKeyhole, Sparkles, Zap } from "lucide-react";
+import { KeyboardEvent, useEffect, useMemo, useState } from "react";
+import { ArrowLeft, ArrowRight, Boxes, Check, Gauge, Loader2, LockKeyhole, Search, Sparkles, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { legoCatalogue, type LegoCatalogueSet } from "@/lib/lego/catalog";
 
 type Draft = { title: string; condition: string; included: string; description: string; price: string; delivery: string };
 type Pricing = { fast: number; recommended: number; premium: number; low: number; high: number; confidence: "High" | "Medium" | "Early estimate"; evidence: string };
+type AtlasSet = LegoCatalogueSet & { id?: string; pieceCount?: number | null; minifigureCount?: number | null; imageUrl?: string | null };
 
 const emptyDraft: Draft = { title: "", condition: "Complete with box and instructions", included: "Original box, instructions and minifigures", description: "", price: "", delivery: "Seller ships" };
 const steps = ["Item", "Condition", "Photos", "Price", "Delivery", "Preview"];
 const money = (value: number) => `R${Math.round(value).toLocaleString("en-ZA")}`;
 const roundPrice = (value: number) => Math.max(50, Math.round(value / 50) * 50);
+
+function localMatches(query: string) {
+  const clean = query.trim().toLowerCase();
+  return legoCatalogue.filter((set) => set.setNumber.toLowerCase().includes(clean) || set.name.toLowerCase().includes(clean) || set.theme.toLowerCase().includes(clean)).slice(0, 8);
+}
 
 function starterPricing(draft: Draft): Pricing {
   const weightMatch = `${draft.title} ${draft.description}`.match(/(\d+(?:\.\d+)?)\s*kg/i);
@@ -29,6 +36,10 @@ export default function CreateListingPage() {
   const [ready, setReady] = useState(false);
   const [pricing, setPricing] = useState<Pricing | null>(null);
   const [pricingLoading, setPricingLoading] = useState(false);
+  const [atlasMatches, setAtlasMatches] = useState<AtlasSet[]>([]);
+  const [selectedSet, setSelectedSet] = useState<AtlasSet | null>(null);
+  const [atlasSearching, setAtlasSearching] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     const saved = window.localStorage.getItem("tbx-listing-draft");
@@ -37,6 +48,26 @@ export default function CreateListingPage() {
   }, []);
 
   useEffect(() => { window.localStorage.setItem("tbx-listing-draft", JSON.stringify(draft)); }, [draft]);
+
+  useEffect(() => {
+    if (step !== 0 || selectedSet || draft.title.trim().length < 2) { setAtlasMatches([]); return; }
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setAtlasSearching(true);
+      try {
+        const response = await fetch(`/api/catalogue/search?q=${encodeURIComponent(draft.title.trim())}`, { signal: controller.signal });
+        const payload = await response.json();
+        const results = response.ok && Array.isArray(payload.results) ? payload.results as AtlasSet[] : [];
+        setAtlasMatches(results.length ? results.slice(0, 8) : localMatches(draft.title));
+        setActiveIndex(0);
+      } catch {
+        if (!controller.signal.aborted) setAtlasMatches(localMatches(draft.title));
+      } finally {
+        if (!controller.signal.aborted) setAtlasSearching(false);
+      }
+    }, 180);
+    return () => { window.clearTimeout(timer); controller.abort(); };
+  }, [draft.title, selectedSet, step]);
 
   useEffect(() => {
     if (step !== 3) return;
@@ -71,6 +102,22 @@ export default function CreateListingPage() {
   }, [price, pricing]);
   const priceMessage = !pricing || !price ? "Choose a TBX price or enter your own." : price < pricing.low ? "Below the current range — likely to sell quickly." : price > pricing.high ? "Above the current range — expect a longer selling time." : "Priced competitively within the current market.";
 
+  function selectAtlasSet(set: AtlasSet) {
+    setSelectedSet(set);
+    update("title", `${set.setNumber} · ${set.name}`);
+    setAtlasMatches([]);
+    setActiveIndex(0);
+    (document.activeElement as HTMLElement | null)?.blur();
+  }
+
+  function handleAtlasKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (!atlasMatches.length) return;
+    if (event.key === "ArrowDown") { event.preventDefault(); setActiveIndex((index) => (index + 1) % atlasMatches.length); }
+    else if (event.key === "ArrowUp") { event.preventDefault(); setActiveIndex((index) => (index - 1 + atlasMatches.length) % atlasMatches.length); }
+    else if (event.key === "Enter") { event.preventDefault(); selectAtlasSet(atlasMatches[activeIndex]); }
+    else if (event.key === "Escape") setAtlasMatches([]);
+  }
+
   function choosePrice(value: number) { update("price", String(value)); }
   function publish() {
     if (!signedIn) { window.location.href = `/sign-in?next=${encodeURIComponent("/sell/create?publish=1")}`; return; }
@@ -86,23 +133,13 @@ export default function CreateListingPage() {
         <h1 className="mt-4 text-5xl font-black tracking-[-0.055em]">Build everything first. Sign up only when you publish.</h1>
         <div className="mt-10 grid gap-2 sm:grid-cols-6">{steps.map((label, index) => <div key={label} className={`rounded-xl border px-3 py-3 text-center text-xs font-bold ${index <= step ? "border-[#e8c86a]/30 bg-[#e8c86a]/[0.08] text-[#e8c86a]" : "border-white/8 text-white/28"}`}>{index + 1}. {label}</div>)}</div>
         <div className="mt-8 rounded-[2rem] border border-white/[0.09] bg-[#09111f] p-6 sm:p-8">
-          {step === 0 && <Field label="What are you selling?"><input value={draft.title} onChange={(e) => update("title", e.target.value)} placeholder="e.g. LEGO 10316 Rivendell or 8 kg mixed LEGO" className="input" /></Field>}
+          {step === 0 && <div className="relative"><Field label="What are you selling?"><div className="relative"><Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/35" /><input autoFocus value={draft.title} onChange={(e) => { update("title", e.target.value); setSelectedSet(null); }} onKeyDown={handleAtlasKeyDown} placeholder="Search by set number, name or theme" autoComplete="off" aria-autocomplete="list" className="input !pl-12 !pr-12" />{atlasSearching && <Loader2 className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 animate-spin text-white/35" />}</div></Field>{atlasMatches.length > 0 && !selectedSet && <div role="listbox" className="absolute left-0 right-0 top-full z-30 -mt-4 overflow-hidden rounded-2xl border border-white/10 bg-[#050912] shadow-[0_24px_70px_rgba(0,0,0,0.65)]">{atlasMatches.map((set, index) => <button key={`${set.id ?? "atlas"}-${set.setNumber}`} type="button" role="option" aria-selected={index === activeIndex} onMouseEnter={() => setActiveIndex(index)} onClick={() => selectAtlasSet(set)} className={`flex w-full items-center gap-4 border-b border-white/[0.06] px-4 py-3 text-left last:border-b-0 ${index === activeIndex ? "bg-[#e8c86a]/10" : "hover:bg-white/[0.04]"}`}><span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-xl bg-white/[0.06] text-xs font-bold text-white/45">{set.imageUrl ? <img src={set.imageUrl} alt="" className="h-full w-full object-contain" /> : set.setNumber}</span><span className="min-w-0 flex-1"><span className="block truncate font-bold text-white">{set.name}</span><span className="mt-1 block truncate text-xs text-white/42">LEGO {set.setNumber} · {set.theme}{set.year ? ` · ${set.year}` : ""}{set.pieceCount ? ` · ${set.pieceCount.toLocaleString()} pieces` : ""}</span></span><ArrowRight className="h-4 w-4 shrink-0 text-[#e8c86a]" /></button>)}</div>}{selectedSet && <div className="-mt-3 flex items-center gap-3 rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.07] p-4"><span className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-xl bg-white/[0.06]">{selectedSet.imageUrl ? <img src={selectedSet.imageUrl} alt="" className="h-full w-full object-contain" /> : <Check className="h-5 w-5 text-emerald-300" />}</span><div className="min-w-0"><p className="truncate font-bold">{selectedSet.name}</p><p className="truncate text-xs text-white/45">Matched by Atlas · LEGO {selectedSet.setNumber}</p></div></div>}</div>}
           {step === 1 && <><Field label="Condition"><select value={draft.condition} onChange={(e) => update("condition", e.target.value)} className="input"><option>New and sealed</option><option>Complete with box and instructions</option><option>Complete without box</option><option>Incomplete</option><option>Loose or mixed</option><option>Not sure</option></select></Field><Field label="What is included?"><textarea value={draft.included} onChange={(e) => update("included", e.target.value)} rows={4} className="input" /></Field></>}
           {step === 2 && <div><h2 className="text-3xl font-black">Photos</h2><p className="mt-3 text-white/45">Photos are not required for valuation, but they will be required before a marketplace listing can go live.</p><div className="mt-6 rounded-2xl border border-dashed border-white/15 p-10 text-center text-white/35">Photo upload connection coming next. Your draft can continue without losing progress.</div><Field label="Seller description"><textarea value={draft.description} onChange={(e) => update("description", e.target.value)} rows={5} placeholder="Mention any marks, missing pieces or useful details." className="input" /></Field></div>}
-          {step === 3 && <div>
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#e8c86a]">TBX pricing engine</p><h2 className="mt-2 text-3xl font-black">What should you list it for?</h2><p className="mt-2 text-sm text-white/42">{pricingLoading ? "Reading current market data…" : pricing?.evidence}</p></div>{pricing && <div className="rounded-full border border-emerald-400/20 bg-emerald-400/[0.08] px-4 py-2 text-xs font-bold text-emerald-300">{pricing.confidence} confidence</div>}</div>
-            {pricing && <div className="mt-7 grid gap-4 lg:grid-cols-3">{[
-              { label: "Sell fast", value: pricing.fast, copy: "Priced to attract buyers quickly.", icon: Zap },
-              { label: "Recommended", value: pricing.recommended, copy: "Best balance of value and speed.", icon: Sparkles },
-              { label: "Maximise value", value: pricing.premium, copy: "Higher return, potentially longer wait.", icon: Gauge },
-            ].map(({ label, value, copy, icon: Icon }) => <button type="button" key={label} onClick={() => choosePrice(value)} className={`rounded-2xl border p-5 text-left transition hover:-translate-y-0.5 ${price === value ? "border-[#e8c86a] bg-[#e8c86a]/[0.1]" : "border-white/10 bg-white/[0.025] hover:border-[#e8c86a]/35"}`}><div className="flex items-center justify-between"><span className="grid h-10 w-10 place-items-center rounded-xl bg-[#e8c86a]/10 text-[#e8c86a]"><Icon className="h-5 w-5" /></span>{price === value && <Check className="h-5 w-5 text-[#e8c86a]" />}</div><p className="mt-5 text-sm font-bold text-white/55">{label}</p><p className="mt-1 text-3xl font-black">{money(value)}</p><p className="mt-2 text-sm leading-5 text-white/38">{copy}</p></button>)}</div>}
-            <Field label="Or set your own price (ZAR)"><input value={draft.price} onChange={(e) => update("price", e.target.value)} type="number" min="0" placeholder="Enter your listing price" className="input" /></Field>
-            {pricing && <div className="rounded-2xl border border-white/10 bg-[#050912] p-5"><div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-white/35"><span>Lower</span><span>Market position</span><span>Higher</span></div><div className="relative mt-4 h-2 rounded-full bg-gradient-to-r from-emerald-400/70 via-[#e8c86a]/80 to-red-400/70"><span className="absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-[#09111f] bg-white shadow" style={{ left: `${marketPosition}%` }} /></div><p className="mt-4 text-sm font-semibold text-white/65">{priceMessage}</p></div>}
-            <div className="mt-5 grid gap-4 sm:grid-cols-3"><div className="rounded-2xl border border-white/8 bg-white/[0.025] p-5"><p className="text-sm text-white/40">Listing price</p><p className="mt-2 text-2xl font-black">{money(price)}</p></div><div className="rounded-2xl border border-white/8 bg-white/[0.025] p-5"><p className="text-sm text-white/40">TBX fee (10%)</p><p className="mt-2 text-2xl font-black">-{money(fee)}</p></div><div className="rounded-2xl border border-[#e8c86a]/25 bg-[#e8c86a]/[0.07] p-5"><p className="text-sm text-white/45">Estimated payout</p><p className="mt-2 text-2xl font-black text-[#e8c86a]">{money(payout)}</p></div></div>
-          </div>}
+          {step === 3 && <div><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#e8c86a]">TBX pricing engine</p><h2 className="mt-2 text-3xl font-black">What should you list it for?</h2><p className="mt-2 text-sm text-white/42">{pricingLoading ? "Reading current market data…" : pricing?.evidence}</p></div>{pricing && <div className="rounded-full border border-emerald-400/20 bg-emerald-400/[0.08] px-4 py-2 text-xs font-bold text-emerald-300">{pricing.confidence} confidence</div>}</div>{pricing && <div className="mt-7 grid gap-4 lg:grid-cols-3">{[{ label: "Sell fast", value: pricing.fast, copy: "Priced to attract buyers quickly.", icon: Zap },{ label: "Recommended", value: pricing.recommended, copy: "Best balance of value and speed.", icon: Sparkles },{ label: "Maximise value", value: pricing.premium, copy: "Higher return, potentially longer wait.", icon: Gauge }].map(({ label, value, copy, icon: Icon }) => <button type="button" key={label} onClick={() => choosePrice(value)} className={`rounded-2xl border p-5 text-left transition hover:-translate-y-0.5 ${price === value ? "border-[#e8c86a] bg-[#e8c86a]/[0.1]" : "border-white/10 bg-white/[0.025] hover:border-[#e8c86a]/35"}`}><div className="flex items-center justify-between"><span className="grid h-10 w-10 place-items-center rounded-xl bg-[#e8c86a]/10 text-[#e8c86a]"><Icon className="h-5 w-5" /></span>{price === value && <Check className="h-5 w-5 text-[#e8c86a]" />}</div><p className="mt-5 text-sm font-bold text-white/55">{label}</p><p className="mt-1 text-3xl font-black">{money(value)}</p><p className="mt-2 text-sm leading-5 text-white/38">{copy}</p></button>)}</div>}<Field label="Or set your own price (ZAR)"><input value={draft.price} onChange={(e) => update("price", e.target.value)} type="number" min="0" placeholder="Enter your listing price" className="input" /></Field>{pricing && <div className="rounded-2xl border border-white/10 bg-[#050912] p-5"><div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-white/35"><span>Lower</span><span>Market position</span><span>Higher</span></div><div className="relative mt-4 h-2 rounded-full bg-gradient-to-r from-emerald-400/70 via-[#e8c86a]/80 to-red-400/70"><span className="absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-[#09111f] bg-white shadow" style={{ left: `${marketPosition}%` }} /></div><p className="mt-4 text-sm font-semibold text-white/65">{priceMessage}</p></div>}<div className="mt-5 grid gap-4 sm:grid-cols-3"><div className="rounded-2xl border border-white/8 bg-white/[0.025] p-5"><p className="text-sm text-white/40">Listing price</p><p className="mt-2 text-2xl font-black">{money(price)}</p></div><div className="rounded-2xl border border-white/8 bg-white/[0.025] p-5"><p className="text-sm text-white/40">TBX fee (10%)</p><p className="mt-2 text-2xl font-black">-{money(fee)}</p></div><div className="rounded-2xl border border-[#e8c86a]/25 bg-[#e8c86a]/[0.07] p-5"><p className="text-sm text-white/45">Estimated payout</p><p className="mt-2 text-2xl font-black text-[#e8c86a]">{money(payout)}</p></div></div></div>}
           {step === 4 && <Field label="Delivery option"><select value={draft.delivery} onChange={(e) => update("delivery", e.target.value)} className="input"><option>Seller ships</option><option>Collection only</option><option>TBX-managed delivery</option></select></Field>}
           {step === 5 && <div><div className="flex items-center justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-[#e8c86a]">Listing preview</p><h2 className="mt-2 text-3xl font-black">{draft.title || "Untitled listing"}</h2></div><p className="text-3xl font-black">{money(price)}</p></div><div className="mt-7 grid gap-4 sm:grid-cols-3">{[["Condition", draft.condition],["Included", draft.included],["Delivery", draft.delivery]].map(([label,value]) => <div key={label} className="rounded-2xl border border-white/8 bg-white/[0.025] p-4"><p className="text-xs uppercase tracking-wider text-white/30">{label}</p><p className="mt-2 font-bold">{value}</p></div>)}</div><p className="mt-6 leading-7 text-white/50">{draft.description || "No seller description added yet."}</p><div className="mt-8 rounded-2xl border border-white/10 bg-[#050912] p-5"><div className="flex items-center gap-3"><LockKeyhole className="h-5 w-5 text-[#e8c86a]" /><div><p className="font-bold">Publishing requires a free TBX account</p><p className="text-sm text-white/38">Your complete draft remains saved on this device.</p></div></div></div></div>}
-          <div className="mt-8 flex items-center justify-between border-t border-white/[0.07] pt-6"><button onClick={() => setStep((value) => Math.max(0, value - 1))} disabled={step === 0} className="rounded-xl border border-white/10 px-5 py-3 font-bold disabled:opacity-30">Back</button>{step < 5 ? <button onClick={() => setStep((value) => Math.min(5, value + 1))} disabled={step === 3 && !price} className="inline-flex items-center gap-2 rounded-xl bg-[#e8c86a] px-5 py-3 font-bold text-[#050912] disabled:cursor-not-allowed disabled:opacity-40">Continue <ArrowRight className="h-4 w-4" /></button> : <button onClick={publish} disabled={!ready} className="inline-flex items-center gap-2 rounded-xl bg-[#e8c86a] px-6 py-3 font-bold text-[#050912] disabled:opacity-50">{signedIn ? "Finish publishing" : "Create account to publish"} <Check className="h-4 w-4" /></button>}</div>
+          <div className="mt-8 flex items-center justify-between border-t border-white/[0.07] pt-6"><button onClick={() => setStep((value) => Math.max(0, value - 1))} disabled={step === 0} className="rounded-xl border border-white/10 px-5 py-3 font-bold disabled:opacity-30">Back</button>{step < 5 ? <button onClick={() => setStep((value) => Math.min(5, value + 1))} disabled={(step === 0 && !draft.title.trim()) || (step === 3 && !price)} className="inline-flex items-center gap-2 rounded-xl bg-[#e8c86a] px-5 py-3 font-bold text-[#050912] disabled:cursor-not-allowed disabled:opacity-40">Continue <ArrowRight className="h-4 w-4" /></button> : <button onClick={publish} disabled={!ready} className="inline-flex items-center gap-2 rounded-xl bg-[#e8c86a] px-6 py-3 font-bold text-[#050912] disabled:opacity-50">{signedIn ? "Finish publishing" : "Create account to publish"} <Check className="h-4 w-4" /></button>}</div>
         </div>
       </section>
       <style jsx>{`.input{margin-top:.5rem;width:100%;border-radius:.75rem;border:1px solid rgba(255,255,255,.1);background:#050912;padding:.9rem 1rem;color:white;outline:none}.input:focus{border-color:rgba(232,200,106,.45)}`}</style>
