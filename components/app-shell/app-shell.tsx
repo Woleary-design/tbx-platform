@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { Bell, BookOpen, ChevronDown, Heart, Home, LibraryBig, ShoppingBag, Sparkles, Tag } from "lucide-react";
+import { Bell, BookOpen, ChevronDown, Heart, Home, LayoutDashboard, LibraryBig, ShoppingBag, Sparkles, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { CatalogueSearch } from "@/components/catalogue/catalogue-search";
@@ -30,6 +30,7 @@ type CollectorIdentity = {
 type AppShellProps = {
   children: ReactNode;
   collector: CollectorIdentity;
+  isAdmin?: boolean;
 };
 
 function FourDotLogo({ small = false }: { small?: boolean }) {
@@ -48,8 +49,11 @@ function FourDotLogo({ small = false }: { small?: boolean }) {
   );
 }
 
-export function AppShell({ children, collector }: AppShellProps) {
+export function AppShell({ children, collector, isAdmin = false }: AppShellProps) {
   const pathname = usePathname();
+  const visibleNavigation = isAdmin
+    ? [...navigation, { href: "/admin", label: "Command Centre", icon: LayoutDashboard }]
+    : navigation;
 
   return (
     <div className="min-h-screen bg-[#050915] text-white">
@@ -73,7 +77,7 @@ export function AppShell({ children, collector }: AppShellProps) {
           </div>
 
           <nav className="flex-1 space-y-2 p-4">
-            {navigation.map((item) => {
+            {visibleNavigation.map((item) => {
               const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(`${item.href}/`));
               const Icon = item.icon;
               return (
@@ -82,13 +86,15 @@ export function AppShell({ children, collector }: AppShellProps) {
                   href={item.href}
                   className={cn(
                     "group relative flex items-center gap-3 overflow-hidden rounded-2xl px-3.5 py-3 text-sm font-semibold transition-all duration-200",
-                    isActive
-                      ? "border border-white/[0.07] bg-[#111a2d] text-[#ffd84d] shadow-[0_14px_40px_rgba(0,0,0,0.28)]"
-                      : "text-white/62 hover:bg-white/[0.055] hover:text-white",
+                    item.href === "/admin"
+                      ? "mt-4 border border-[#ffd84d]/20 bg-[#ffd84d]/[0.055] text-[#ffd84d] hover:bg-[#ffd84d]/[0.10]"
+                      : isActive
+                        ? "border border-white/[0.07] bg-[#111a2d] text-[#ffd84d] shadow-[0_14px_40px_rgba(0,0,0,0.28)]"
+                        : "text-white/62 hover:bg-white/[0.055] hover:text-white",
                   )}
                 >
-                  {isActive ? <span className="absolute inset-y-2 left-0 w-1 rounded-r-full bg-[#ffd84d]" /> : null}
-                  <Icon className={cn("h-4 w-4 transition-transform duration-200 group-hover:scale-105", isActive ? "text-[#ffd84d]" : "text-white/58")} />
+                  {isActive && item.href !== "/admin" ? <span className="absolute inset-y-2 left-0 w-1 rounded-r-full bg-[#ffd84d]" /> : null}
+                  <Icon className={cn("h-4 w-4 transition-transform duration-200 group-hover:scale-105", isActive || item.href === "/admin" ? "text-[#ffd84d]" : "text-white/58")} />
                   {item.label}
                 </Link>
               );
@@ -128,6 +134,11 @@ export function AppShell({ children, collector }: AppShellProps) {
 
             <div className="flex flex-1 items-center gap-3 sm:max-w-3xl">
               <CatalogueSearch />
+              {isAdmin ? (
+                <Button asChild variant="outline" size="sm" className="hidden rounded-full border-[#ffd84d]/25 bg-[#ffd84d]/[0.06] px-4 text-[#ffd84d] hover:bg-[#ffd84d]/[0.12] hover:text-[#ffd84d] md:inline-flex">
+                  <Link href="/admin"><LayoutDashboard className="h-4 w-4" /> Command</Link>
+                </Button>
+              ) : null}
               <Button asChild className="hidden rounded-full bg-[#ffd84d] px-5 font-semibold text-[#050915] hover:bg-[#ffe374] sm:inline-flex"><Link href="/sell"><Tag className="h-4 w-4" /> Sell</Link></Button>
               <Button asChild variant="outline" size="sm" className="rounded-full border-white/10 bg-white/[0.04] px-3 text-white hover:border-[#ffd84d]/30 hover:bg-[#ffd84d]/[0.06] hover:text-[#ffd84d]"><Link href="/notifications" aria-label="Notifications"><Bell className="h-4 w-4" /></Link></Button>
               <Button asChild variant="outline" size="sm" className="rounded-full border-white/10 bg-white/[0.04] pl-1.5 pr-3 text-white hover:border-[#ffd84d]/30 hover:bg-[#ffd84d]/[0.06]"><Link href="/profile" title={collector.displayName}><span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-[#ffd84d] text-xs font-semibold text-[#050915]">{collector.avatarUrl ? <img src={collector.avatarUrl} alt="" className="h-full w-full object-cover" /> : collector.initials}</span><ChevronDown className="h-4 w-4" /></Link></Button>
@@ -135,9 +146,9 @@ export function AppShell({ children, collector }: AppShellProps) {
           </div>
 
           <nav className="flex gap-2 overflow-x-auto border-t border-white/[0.06] px-4 py-2 lg:hidden">
-            {navigation.map((item) => {
+            {visibleNavigation.map((item) => {
               const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(`${item.href}/`));
-              return <Link key={item.href} href={item.href} className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium", isActive ? "bg-[#ffd84d] text-[#050915]" : "text-white/55 hover:bg-white/[0.05] hover:text-white")}>{item.label}</Link>;
+              return <Link key={item.href} href={item.href} className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium", item.href === "/admin" ? "border border-[#ffd84d]/20 text-[#ffd84d]" : isActive ? "bg-[#ffd84d] text-[#050915]" : "text-white/55 hover:bg-white/[0.05] hover:text-white")}>{item.label}</Link>;
             })}
           </nav>
         </header>
