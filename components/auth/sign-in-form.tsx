@@ -36,7 +36,10 @@ export function SignInForm({ nextPath }: { nextPath?: string }) {
     setLoading(true);
     const supabase = createClient();
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${getSiteUrl()}/auth/callback?next=${encodeURIComponent("/update-password")}`,
+      // Recovery links must land on the dedicated password page. That page can
+      // exchange Supabase's PKCE code itself and avoids the normal-login callback
+      // applying a collector destination such as /value or /dashboard.
+      redirectTo: `${getSiteUrl()}/update-password`,
     });
     setLoading(false);
 
