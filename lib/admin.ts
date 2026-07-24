@@ -20,9 +20,15 @@ export async function requireAdmin() {
     redirect("/login?next=/admin");
   }
 
-  const role = user.app_metadata?.role as AdminRole | undefined;
+  const { data: adminUser, error } = await supabase
+    .from("admin_users")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
 
-  if (!role || !ADMIN_ROLES.has(role)) {
+  const role = adminUser?.role as AdminRole | undefined;
+
+  if (error || !role || !ADMIN_ROLES.has(role)) {
     redirect("/");
   }
 
