@@ -53,44 +53,42 @@ export async function DashboardOverview() {
 
   return (
     <div className="min-h-screen bg-[#fffaf1]">
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:py-12">
-        <section className="overflow-hidden rounded-[2rem] bg-slate-950 px-6 py-10 text-white sm:px-10 sm:py-14">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-300">Welcome, {displayName}</p>
-          <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-tight sm:text-6xl">Discover collectibles. Build your collection.</h1>
-          <p className="mt-4 max-w-2xl text-white/65">LEGO is the first category on TBX. Search the catalogue, add sets to your private collection or Wishlist, and buy only from real live listings.</p>
-          <form action="/wants" className="mt-8 flex max-w-2xl gap-3">
+      <main className="mx-auto max-w-7xl px-0 py-2 sm:px-2 sm:py-6 lg:py-8">
+        <section className="overflow-hidden rounded-[1.75rem] bg-slate-950 px-5 py-8 text-white sm:px-10 sm:py-14">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-yellow-300">Welcome, {displayName}</p>
+          <h1 className="mt-3 max-w-3xl text-[2.35rem] font-semibold leading-[1.02] tracking-[-0.045em] sm:mt-4 sm:text-6xl sm:leading-[1.02]">
+            Discover collectibles. Build your collection.
+          </h1>
+          <p className="mt-5 max-w-2xl text-base leading-7 text-white/65 sm:text-lg">
+            LEGO is the first category on TBX. Search the catalogue, add sets to your private collection or Wishlist, and buy only from real live listings.
+          </p>
+          <form action="/wants" className="mt-7 flex max-w-2xl flex-col gap-3 sm:mt-8 sm:flex-row">
             <div className="relative flex-1">
               <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
               <Input name="q" placeholder="Search LEGO sets by name or set number…" className="h-13 rounded-2xl border-white/10 bg-white pl-12 text-slate-950" />
             </div>
             <Button className="h-13 rounded-2xl bg-yellow-400 px-6 font-semibold text-slate-950 hover:bg-yellow-300">Search</Button>
           </form>
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
             <Button asChild variant="outline" className="rounded-xl border-white/20 bg-white/5 text-white hover:bg-white/10"><Link href="/collection"><LibraryBig className="h-4 w-4" /> My Collection</Link></Button>
             <Button asChild variant="outline" className="rounded-xl border-white/20 bg-white/5 text-white hover:bg-white/10"><Link href="/wants"><Heart className="h-4 w-4" /> Wishlist</Link></Button>
-            <Button asChild variant="outline" className="rounded-xl border-white/20 bg-white/5 text-white hover:bg-white/10"><Link href="/marketplace"><ShoppingBag className="h-4 w-4" /> Marketplace</Link></Button>
+            <Button asChild variant="outline" className="col-span-2 rounded-xl border-white/20 bg-white/5 text-white hover:bg-white/10 sm:col-span-1"><Link href="/marketplace"><ShoppingBag className="h-4 w-4" /> Marketplace</Link></Button>
           </div>
         </section>
 
-        <section className="mt-12">
+        <section className="mt-10 px-1 sm:mt-12">
           <div className="flex items-end justify-between gap-4">
             <div><p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Explore</p><h2 className="mt-2 text-3xl font-semibold text-slate-950">Browse LEGO themes</h2></div>
             <Link href="/insights" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">Open Discover <ArrowRight className="h-4 w-4" /></Link>
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {categories.map((category) => (
-              <Link
-                key={category}
-                href={`/atlas?theme=${encodeURIComponent(category)}`}
-                className="rounded-2xl border border-[#eadfce] bg-white p-5 text-lg font-semibold shadow-sm transition hover:-translate-y-0.5"
-              >
-                {category}
-              </Link>
+              <Link key={category} href={`/atlas?theme=${encodeURIComponent(category)}`} className="rounded-2xl border border-[#eadfce] bg-white p-5 text-lg font-semibold shadow-sm transition hover:-translate-y-0.5">{category}</Link>
             ))}
           </div>
         </section>
 
-        <section className="mt-12">
+        <section className="mt-12 px-1">
           <div className="flex items-end justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Catalogue</p><h2 className="mt-2 text-3xl font-semibold text-slate-950">Recently added LEGO sets</h2></div><Link href="/wants" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">Search all sets <ArrowRight className="h-4 w-4" /></Link></div>
           <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {sets.map((set) => (
@@ -102,7 +100,7 @@ export async function DashboardOverview() {
           </div>
         </section>
 
-        <section className="mt-12">
+        <section className="mt-12 px-1">
           <div className="flex items-end justify-between gap-4"><div><p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600"><Sparkles className="h-4 w-4" /> Marketplace</p><h2 className="mt-2 text-3xl font-semibold text-slate-950">Recently listed</h2></div><Link href="/marketplace" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">View marketplace <ArrowRight className="h-4 w-4" /></Link></div>
           {listings.length > 0 ? <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{listings.map((listing) => <Link key={listing.id} href={`/marketplace/${listing.id}`} className="overflow-hidden rounded-[1.5rem] border border-[#eadfce] bg-white shadow-sm"><div className="grid aspect-[4/3] place-items-center bg-white p-5">{listing.set.image_url ? <img src={listing.set.image_url} alt={listing.set.name} className="h-full w-full object-contain" /> : <PackageOpen className="h-10 w-10 text-slate-300" />}</div><div className="p-5"><p className="text-xs font-semibold uppercase tracking-[0.16em] text-yellow-600">{listing.set.set_number}</p><h3 className="mt-2 font-semibold">{listing.set.name}</h3><p className="mt-2 text-lg font-semibold">R{Number(listing.price_zar).toLocaleString("en-ZA")}</p><p className="mt-1 text-sm text-slate-500">{listing.condition} · Dispatch in {listing.dispatch_days} day{listing.dispatch_days === 1 ? "" : "s"}</p></div></Link>)}</div> : <div className="mt-5 rounded-[1.5rem] border border-dashed border-slate-300 bg-white p-10 text-center"><PackageOpen className="mx-auto h-10 w-10 text-yellow-600" /><h3 className="mt-4 text-2xl font-semibold">No live listings yet.</h3><p className="mt-2 text-slate-600">The marketplace only shows real items currently for sale.</p><Button asChild className="mt-5 rounded-xl bg-yellow-400 font-semibold text-slate-950"><Link href="/sell">Sell an item</Link></Button></div>}
         </section>
