@@ -1,0 +1,68 @@
+name: Atlas Gold 2 Enrichment
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Run mode"
+        required: true
+        default: "dry-run"
+        type: choice
+        options:
+          - dry-run
+          - live
+
+permissions:
+  contents: read
+
+jobs:
+  enrich-atlas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Check required secrets
+        shell: bash
+        run: |
+          test -n "$SUPABASE_URL" || (echo "Missing SUPABASE_URL" && exit 1)
+          test -n "$SUPABASE_SERVICE_ROLE_KEY" || (echo "Missing SUPABASE_SERVICE_ROLE_KEY" && exit 1)
+
+      - name: Download Rebrickable inventory data
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p rebrickable
+          curl --fail --location --retry 3 \
+            https://cdn.rebrickable.com/media/downloads/inventories.csv.gz \
+            --output rebrickable/inventories.csv.gz
+          curl --fail --location --retry 3 \
+            https://cdn.rebrickable.com/media/downloads/inventory_minifigs.csv.gz \
+            --output rebrickable/inventory_minifigs.csv.gz
+          gunzip rebrickable/inventories.csv.gz
+          gunzip rebrickable/inventory_minifigs.csv.gz
+          test -s rebrickable/inventories.csv
+          test -s rebrickable/inventory_minifigs.csv
+          wc -l rebrickable/inventories.csv rebrickable/inventory_minifigs.csv
+
+      - name: Run Atlas Gold 2 enrichment
+        shell: bash
+        run: |
+          if [ "${{ inputs.mode }}" = "live" ]; then
+            node scripts/atlas/enrich-rebrickable-inventories.mjs ./rebrickable
+          else
+            node scripts/atlas/enrich-rebrickable-inventories.mjs ./rebrickable --dry-run
+          fi

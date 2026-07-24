@@ -1,325 +1,203 @@
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, LockKeyhole, Search, ShieldCheck, Sparkles, Users } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { HeroShowcase } from "@/features/renaissance/components/hero-showcase";
-import { PremiumListingCard } from "@/features/renaissance/components/premium-listing-card";
-import { marketplaceListings } from "@/features/renaissance/data/collector-experience.mock";
+import {
+  ArrowRight,
+  BookOpen,
+  Boxes,
+  Check,
+  CircleDollarSign,
+  Heart,
+  HelpCircle,
+  PackageOpen,
+  Search,
+  ShieldCheck,
+  Store,
+  UserRound,
+  Users,
+} from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
 
-const landingPhotos = {
-  heroCabinet:
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg/1200px-Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg",
-  architecture:
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg/700px-Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg",
-  cards:
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Thorne_Miniature_Rooms_-_Art_Institute_of_Chicago.jpg/700px-Thorne_Miniature_Rooms_-_Art_Institute_of_Chicago.jpg",
-  comics:
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Thorne_Miniature_Rooms_detail_-_Art_Institute_of_Chicago.jpg/700px-Thorne_Miniature_Rooms_detail_-_Art_Institute_of_Chicago.jpg",
-  toys:
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Unfinished_part_of_Langweil_model_in_City_of_Prague_Museum.jpg/700px-Unfinished_part_of_Langweil_model_in_City_of_Prague_Museum.jpg",
-  games:
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg/700px-Langweil_model_of_old_Prague_in_City_of_Prague_Museum_in_Nov%C3%A9_M%C4%9Bsto%2C_Prague.jpg",
-};
+const navItems = [
+  { label: "Value", href: "/value" },
+  { label: "Atlas", href: "/atlas" },
+  { label: "Market", href: "/marketplace" },
+  { label: "Collection", href: "/collection" },
+];
 
-const categories = [
+const valueRoutes = [
   {
-    title: "Architectural Icons",
-    detail: "Museum-grade models, studied and protected.",
-    imageSrc: landingPhotos.architecture,
+    title: "Complete LEGO set",
+    text: "Search by set number or name and use live Atlas pricing.",
+    href: "/value#known-set",
+    icon: Boxes,
   },
   {
-    title: "Graded Cards",
-    detail: "Population-aware slabs with visible provenance.",
-    imageSrc: landingPhotos.cards,
+    title: "Mixed box or loose parts",
+    text: "Describe bulk bricks, spare parts and unknown sets.",
+    href: "/value/manual",
+    icon: PackageOpen,
   },
   {
-    title: "Vintage Comics",
-    detail: "Key issues from golden eras, handled with care.",
-    imageSrc: landingPhotos.comics,
+    title: "Minifigures",
+    text: "Start with one figure or an entire collection.",
+    href: "/value/manual",
+    icon: Users,
   },
   {
-    title: "Designer Toys",
-    detail: "Artist editions, low runs and gallery releases.",
-    imageSrc: landingPhotos.toys,
+    title: "Instructions and boxes",
+    text: "Record manuals, packaging and accessories.",
+    href: "/value/manual",
+    icon: BookOpen,
   },
   {
-    title: "Game Memorabilia",
-    detail: "Rare hardware, sealed games and culture pieces.",
-    imageSrc: landingPhotos.games,
+    title: "I am not sure what I have",
+    text: "Use a guided description without choosing a listed set.",
+    href: "/value/manual",
+    icon: HelpCircle,
   },
 ];
 
-const stories = [
-  {
-    collector: "Maya Chen",
-    title: "From scattered shelves to a documented architectural archive.",
-    detail: "Maya tracks provenance, insured value and seller reputation before every acquisition.",
-  },
-  {
-    collector: "Andre Singh",
-    title: "A rare model found through a verified private seller.",
-    detail: "TBX Secure held funds until condition, parts and dispatch evidence were confirmed.",
-  },
-  {
-    collector: "Nadia Jacobs",
-    title: "Gallery-grade pieces without the marketplace noise.",
-    detail: "Watchlist signals help Nadia move when rare editions surface at credible prices.",
-  },
-];
+function Brand() {
+  return (
+    <Link href="/" className="group relative flex items-center gap-3" aria-label="TBX home">
+      <span className="absolute left-5 top-1/2 h-14 w-14 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#e8c86a]/20 blur-2xl transition group-hover:bg-[#e8c86a]/30" />
+      <span className="relative grid h-10 w-10 place-items-center rounded-xl border border-[#e8c86a]/25 bg-[#09101d] text-[#e8c86a] shadow-[0_0_32px_rgba(232,200,106,0.18)]">
+        <Boxes className="h-5 w-5" />
+      </span>
+      <span className="relative text-xl font-black tracking-[-0.055em] text-white">TBX</span>
+    </Link>
+  );
+}
 
-const trustReasons = [
-  { title: "Escrow protection", detail: "Funds stay protected until the collector confirms delivery.", icon: LockKeyhole },
-  { title: "Visible reputation", detail: "Seller trust, verification and history appear before purchase intent.", icon: ShieldCheck },
-  { title: "Curated discovery", detail: "Listings are presented like collection pieces, not commodity stock.", icon: Sparkles },
-  { title: "Private by design", detail: "Collector identity, value and ownership records stay carefully controlled.", icon: BadgeCheck },
-];
+export default async function HomePage() {
+  const supabase = await createClient();
+  let user: { id: string } | null = null;
 
-const featuredCollectors = [
-  { name: "Maya Chen", specialty: "Architectural builds", score: "94", location: "Cape Town" },
-  { name: "Elliot Venter", specialty: "Museum editions", score: "97", location: "Johannesburg" },
-  { name: "Nadia Jacobs", specialty: "Designer toys", score: "89", location: "Stellenbosch" },
-];
+  try {
+    user = (await supabase.auth.getUser()).data.user;
+  } catch {
+    user = null;
+  }
 
-const concepts = [
-  {
-    label: "A - Museum",
-    title: "The chosen direction",
-    detail: "A warm cabinet, spotlit pieces and calm editorial pacing. This is the world TBX should own.",
-  },
-  {
-    label: "B - Apple x Leica",
-    title: "Sharper product theatre",
-    detail: "Fewer words, tighter contrast and meticulous close-ups for collectors who care about precision.",
-  },
-  {
-    label: "C - Curator's Atelier",
-    title: "A little more wonder",
-    detail: "A friendly TBX curator, floating bricks and tactile craft cues without becoming childish.",
-  },
-];
-
-export default function HomePage() {
-  const previewListings = marketplaceListings.slice(0, 3);
+  const accountHref = user ? "/dashboard" : "/sign-in";
 
   return (
-    <div className="min-h-screen overflow-hidden bg-[#fffaf1] text-slate-950">
-      <header className="border-b border-[#eadfce] bg-[#fffaf1]/90 backdrop-blur-xl">
-        <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6">
-          <Link href="/" className="flex items-center gap-3 text-sm font-semibold tracking-normal text-slate-950 sm:text-base">
-            <span className="grid h-10 w-10 grid-cols-2 gap-1 rounded-xl p-1 shadow-sm">
-              <span className="rounded bg-slate-950" />
-              <span className="rounded bg-slate-950" />
-              <span className="rounded bg-slate-950" />
-              <span className="rounded bg-yellow-400" />
-            </span>
-            <span className="leading-tight">
-              <span className="block text-[10px] font-semibold uppercase tracking-[0.32em] text-yellow-600">The</span>
-              <span className="block text-lg font-semibold">Block Exchange</span>
-            </span>
-          </Link>
-          <div className="hidden items-center gap-8 text-sm font-medium text-slate-700 md:flex">
-            <Link className="transition-colors hover:text-slate-950" href="/marketplace">Marketplace</Link>
-            <Link className="transition-colors hover:text-slate-950" href="/insights">Collections</Link>
-            <Link className="transition-colors hover:text-slate-950" href="/vault">Vault</Link>
-            <Link className="transition-colors hover:text-slate-950" href="/marketplace">Sell</Link>
-            <Link className="transition-colors hover:text-slate-950" href="#trust">About</Link>
-          </div>
-          <div className="flex items-center gap-3 text-sm">
-            <Button asChild variant="ghost" className="hidden h-10 w-10 rounded-full p-0 text-slate-950 sm:inline-flex" aria-label="Search">
-              <Link href="/marketplace"><Search className="h-5 w-5" /></Link>
-            </Button>
-            <Link className="hidden text-slate-700 transition-colors hover:text-slate-950 sm:inline" href="/dashboard">
-              Sign in
+    <div className="min-h-screen bg-[#050912] text-white">
+      <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#050912]/88 backdrop-blur-xl">
+        <div className="mx-auto flex h-20 max-w-[1440px] items-center justify-between px-5 lg:px-10">
+          <Brand />
+          <nav className="hidden items-center gap-8 md:flex" aria-label="Primary navigation">
+            {navItems.map(({ label, href }, index) => (
+              <Link key={href} href={href} className={index === 0 ? "text-sm font-bold text-[#e8c86a]" : "text-sm font-semibold text-white/50 transition hover:text-white"}>
+                {label}
+              </Link>
+            ))}
+          </nav>
+          <div className="flex items-center gap-3">
+            <Link href="/value" className="hidden h-10 items-center rounded-xl border border-[#e8c86a]/20 bg-[#e8c86a]/[0.06] px-4 text-sm font-bold text-[#e8c86a] transition hover:bg-[#e8c86a]/10 sm:inline-flex">
+              Value my collection
             </Link>
-            <Button asChild size="sm" className="h-11 rounded-xl bg-yellow-400 px-5 font-semibold text-slate-950 shadow-[0_12px_28px_rgba(245,179,1,0.28)] hover:bg-yellow-300">
-              <Link href="/dashboard">Join TBX</Link>
-            </Button>
+            <Link href={accountHref} className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-white/70 transition hover:border-[#e8c86a]/35 hover:text-[#e8c86a]" aria-label={user ? "Open dashboard" : "Sign in"}>
+              {user ? "W" : <UserRound className="h-4 w-4" />}
+            </Link>
           </div>
-        </nav>
+        </div>
       </header>
 
       <main>
-        <section className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:py-16">
-          <div className="pointer-events-none absolute left-1/2 top-8 hidden h-16 w-16 -translate-x-[420px] rounded-[1.25rem] bg-yellow-400/80 shadow-[0_22px_50px_rgba(245,179,1,0.28)] rotate-12 lg:block" />
-          <div className="pointer-events-none absolute bottom-20 left-4 hidden h-10 w-10 rounded-xl bg-red-500/80 shadow-[0_22px_50px_rgba(185,28,28,0.18)] -rotate-12 lg:block" />
-          <div className="pointer-events-none absolute bottom-16 right-8 hidden h-12 w-12 rounded-xl bg-blue-500/80 shadow-[0_22px_50px_rgba(37,99,235,0.18)] rotate-12 lg:block" />
-          <HeroShowcase
-            eyebrow="The trusted marketplace for premium collectibles"
-            title="Own with confidence. Trade with trust."
-            description="Authenticated pieces. Protected transactions. Built for collectors, by collectors."
-            imageLabel="Curated architectural collection"
-            imageDetail="Museum-lit original builds, verified sellers and protected value in one trusted destination."
-            primarySignal="TBX Secure"
-            secondarySignal="Verified 96"
-            imageSrc={landingPhotos.heroCabinet}
-          />
-        </section>
-
-        <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
-          <div className="rounded-[2rem] border border-[#eadfce] bg-white/80 p-5 shadow-[0_24px_80px_rgba(43,30,18,0.08)] backdrop-blur">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {trustReasons.map((reason) => {
-                const Icon = reason.icon;
-                return (
-                  <div key={reason.title} className="flex gap-4 border-[#eadfce] p-3 lg:border-r last:border-r-0">
-                    <Icon className="mt-1 h-7 w-7 shrink-0 text-yellow-500" />
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-950">{reason.title}</p>
-                      <p className="mt-2 text-sm leading-6 text-slate-600">{reason.detail}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-          <div className="grid gap-8 lg:grid-cols-[260px_1fr] lg:items-end">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Trending collections</p>
-              <h2 className="mt-4 text-4xl font-semibold leading-tight tracking-normal text-slate-950">Discover what collectors love.</h2>
-              <Link href="/marketplace" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-slate-950">
-                View all collections <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-              {categories.map((category) => (
-                <Link
-                  key={category.title}
-                  href="/marketplace"
-                  className="group overflow-hidden rounded-2xl border border-[#eadfce] bg-white text-slate-950 shadow-[0_16px_50px_rgba(43,30,18,0.07)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_26px_80px_rgba(43,30,18,0.13)]"
-                >
-                  <div className="aspect-[4/3] bg-[#fbf4e8]">
-                    <img src={category.imageSrc} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                  </div>
-                  <div className="p-4">
-                    <span className="block text-sm font-semibold">{category.title}</span>
-                    <span className="mt-2 block text-sm leading-6 text-slate-600">{category.detail}</span>
-                    <ArrowRight className="mt-4 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </div>
+        <section className="relative overflow-hidden border-b border-white/[0.06]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_24%,rgba(232,200,106,0.15),transparent_31rem)]" />
+          <div className="relative mx-auto grid min-h-[790px] max-w-[1440px] items-center gap-14 px-5 py-20 lg:grid-cols-[0.88fr_1.12fr] lg:px-10 lg:py-28">
+            <div className="max-w-3xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#e8c86a]/20 bg-[#e8c86a]/[0.06] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-[#e8c86a]">
+                <CircleDollarSign className="h-3.5 w-3.5" /> TBX Value
+              </div>
+              <h1 className="mt-8 text-6xl font-black leading-[0.9] tracking-[-0.075em] sm:text-7xl lg:text-[6.2rem]">
+                Discover what your
+                <span className="block text-[#e8c86a]">collection is worth.</span>
+              </h1>
+              <p className="mt-8 max-w-2xl text-lg leading-8 text-white/55 sm:text-xl">
+                Start with a complete set, a mixed box, loose parts, minifigures or an unknown collection. Photos are only required when you publish an item for sale.
+              </p>
+              <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+                <Link href="/value" className="group inline-flex h-14 items-center justify-center gap-3 rounded-2xl bg-[#e8c86a] px-7 font-bold text-[#050912] shadow-[0_16px_50px_rgba(232,200,106,0.16)] transition hover:-translate-y-0.5 hover:bg-[#f1d478]">
+                  Value my collection <ArrowRight className="h-5 w-5 transition group-hover:translate-x-1" />
                 </Link>
-              ))}
+                <Link href="/atlas" className="inline-flex h-14 items-center justify-center gap-3 rounded-2xl border border-white/12 bg-white/[0.035] px-7 font-bold text-white/80 transition hover:-translate-y-0.5 hover:border-[#e8c86a]/25 hover:text-white">
+                  Explore Atlas
+                </Link>
+              </div>
+              <div className="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/38">
+                {["No photos needed for valuation", "No catalogue match required", "Powered by Atlas"].map((item) => (
+                  <span key={item} className="inline-flex items-center gap-2"><Check className="h-4 w-4 text-[#e8c86a]" />{item}</span>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-[2rem] border border-white/[0.09] bg-[#09111f]/95 p-5 shadow-[0_40px_120px_rgba(0,0,0,0.48)] sm:p-7">
+              <div className="border-b border-white/[0.07] px-1 pb-5">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#e8c86a]">Start here</p>
+                <h2 className="mt-2 text-2xl font-black tracking-[-0.04em]">What would you like to value?</h2>
+              </div>
+              <div className="mt-5 grid gap-3">
+                {valueRoutes.map(({ title, text, href, icon: Icon }) => (
+                  <Link key={title} href={href} className="group flex items-center gap-4 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4 transition hover:-translate-y-0.5 hover:border-[#e8c86a]/30 hover:bg-[#e8c86a]/[0.045]">
+                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-[#e8c86a]/18 bg-[#e8c86a]/[0.06] text-[#e8c86a]"><Icon className="h-5 w-5" /></span>
+                    <span className="min-w-0 flex-1"><span className="block font-bold">{title}</span><span className="mt-1 block text-sm leading-5 text-white/38">{text}</span></span>
+                    <ArrowRight className="h-5 w-5 shrink-0 text-white/20 transition group-hover:translate-x-1 group-hover:text-[#e8c86a]" />
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="bg-white py-20">
-          <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
+        <section className="mx-auto max-w-[1440px] px-5 py-24 lg:px-10 lg:py-32">
+          <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#e8c86a]">Powered by Atlas</p>
+          <div className="mt-5 grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Collector stories</p>
-              <h2 className="mt-4 max-w-xl text-4xl font-semibold leading-tight tracking-normal text-slate-950">The human side of provenance.</h2>
-              <p className="mt-5 max-w-lg text-lg leading-8 text-slate-600">TBX should feel like a private viewing, not a stock room. Every story is built around trust, condition, timing and taste.</p>
+              <h2 className="text-5xl font-black leading-[0.95] tracking-[-0.055em] sm:text-6xl">Every valuation needs evidence.</h2>
+              <p className="mt-6 max-w-xl text-lg leading-8 text-white/45">Atlas supplies identity, market history and pricing context. TBX shows when evidence is limited instead of inventing a number.</p>
             </div>
-            <div className="grid gap-4">
-              {stories.map((story) => (
-                <article key={story.collector} className="rounded-[1.5rem] border border-[#eadfce] bg-[#fffaf1] p-6 shadow-[0_16px_50px_rgba(43,30,18,0.07)]">
-                  <p className="text-sm font-semibold text-yellow-700">{story.collector}</p>
-                  <h3 className="mt-3 text-2xl font-semibold leading-tight text-slate-950">{story.title}</h3>
-                  <p className="mt-3 text-sm leading-6 text-slate-600">{story.detail}</p>
-                </article>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {["Live market prices", "Sales history", "Pricing confidence", "Collection intelligence"].map((item) => (
+                <div key={item} className="flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-[#09111e] p-5"><ShieldCheck className="h-5 w-5 text-[#e8c86a]" /><span className="font-bold">{item}</span></div>
               ))}
             </div>
           </div>
+          <form action="/atlas" method="get" className="mt-12 flex items-center gap-3 rounded-[1.75rem] border border-white/10 bg-[#0a111e] p-3 shadow-[0_30px_100px_rgba(0,0,0,0.28)]">
+            <Search className="ml-3 h-6 w-6 shrink-0 text-white/28" />
+            <input name="q" aria-label="Search Atlas" placeholder="Search a LEGO set or set number" className="min-w-0 flex-1 bg-transparent px-2 py-4 text-base outline-none placeholder:text-white/25" />
+            <button type="submit" className="inline-flex h-14 shrink-0 items-center gap-2 rounded-2xl bg-[#e8c86a] px-5 font-bold text-[#050912]">Search Atlas <ArrowRight className="h-5 w-5" /></button>
+          </form>
         </section>
 
-        <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
-          <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Marketplace preview</p>
-              <h2 className="mt-4 text-4xl font-semibold tracking-normal text-slate-950">Collector-grade listings, beautifully verified.</h2>
-            </div>
-            <Button asChild variant="outline" className="h-11 rounded-xl border-[#eadfce] bg-white px-5">
-              <Link href="/marketplace">Browse marketplace <ArrowRight className="h-4 w-4" /></Link>
-            </Button>
-          </div>
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {previewListings.map((listing) => (
-              <PremiumListingCard key={listing.id} {...listing} />
+        <section className="border-y border-white/[0.06] bg-white/[0.015]">
+          <div className="mx-auto grid max-w-[1440px] gap-6 px-5 py-24 md:grid-cols-3 lg:px-10 lg:py-28">
+            {[
+              { title: "Value", text: "Understand what you have and what the available evidence suggests.", href: "/value", icon: CircleDollarSign },
+              { title: "Market", text: "List or buy collectibles with clearer pricing context.", href: "/marketplace", icon: Store },
+              { title: "Collection", text: "Keep and track the items you are not ready to sell.", href: "/collection", icon: Heart },
+            ].map(({ title, text, href, icon: Icon }) => (
+              <Link key={title} href={href} className="group rounded-[1.75rem] border border-white/[0.07] bg-[#09111e] p-7 transition hover:-translate-y-1 hover:border-[#e8c86a]/25">
+                <Icon className="h-6 w-6 text-[#e8c86a]" />
+                <h3 className="mt-8 text-3xl font-black">{title}</h3>
+                <p className="mt-4 leading-7 text-white/42">{text}</p>
+                <span className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-[#e8c86a]">Open {title} <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" /></span>
+              </Link>
             ))}
           </div>
         </section>
 
-        <section id="trust" className="bg-slate-950 py-20 text-white">
-          <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-400">Why trust TBX</p>
-              <h2 className="mt-4 text-4xl font-semibold leading-tight tracking-normal">Trust should be visible before anyone clicks buy.</h2>
-              <p className="mt-5 text-lg leading-8 text-slate-300">The experience leads with reputation, custody, condition and privacy. The design should make confidence feel immediate.</p>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {trustReasons.map((reason) => {
-                const Icon = reason.icon;
-                return (
-                  <article key={reason.title} className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-6 shadow-[0_20px_70px_rgba(0,0,0,0.24)]">
-                    <Icon className="h-7 w-7 text-yellow-400" />
-                    <h3 className="mt-5 text-lg font-semibold">{reason.title}</h3>
-                    <p className="mt-3 text-sm leading-6 text-slate-300">{reason.detail}</p>
-                  </article>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
-          <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr]">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Featured collectors</p>
-              <h2 className="mt-4 text-4xl font-semibold leading-tight tracking-normal text-slate-950">Verified people, not anonymous storefronts.</h2>
-            </div>
-            <div className="grid gap-4 md:grid-cols-3">
-              {featuredCollectors.map((collector) => (
-                <article key={collector.name} className="rounded-[1.5rem] border border-[#eadfce] bg-white p-6 shadow-[0_16px_50px_rgba(43,30,18,0.07)]">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-yellow-400 text-lg font-semibold text-slate-950">
-                    {collector.name.split(" ").map((part) => part[0]).join("")}
-                  </div>
-                  <h3 className="mt-5 text-lg font-semibold text-slate-950">{collector.name}</h3>
-                  <p className="mt-2 text-sm text-slate-600">{collector.specialty}</p>
-                  <div className="mt-5 flex items-center justify-between border-t border-[#eadfce] pt-4 text-sm">
-                    <span className="text-slate-500">Trust {collector.score}</span>
-                    <span className="text-slate-500">{collector.location}</span>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="bg-white py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6">
-            <div className="mb-8 max-w-2xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Three homepage concepts</p>
-              <h2 className="mt-4 text-4xl font-semibold tracking-normal text-slate-950">Museum wins, but the system can flex.</h2>
-            </div>
-            <div className="grid gap-4 lg:grid-cols-3">
-              {concepts.map((concept) => (
-                <article key={concept.label} className="rounded-[1.5rem] border border-[#eadfce] bg-[#fffaf1] p-6 shadow-[0_16px_50px_rgba(43,30,18,0.07)]">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-yellow-700">{concept.label}</p>
-                  <h3 className="mt-4 text-2xl font-semibold text-slate-950">{concept.title}</h3>
-                  <p className="mt-3 text-sm leading-6 text-slate-600">{concept.detail}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
-          <div className="relative overflow-hidden rounded-[2rem] bg-slate-950 px-6 py-16 text-white shadow-[0_30px_100px_rgba(15,23,42,0.22)] sm:px-12">
-            <div className="absolute right-10 top-10 h-24 w-24 rounded-[2rem] bg-yellow-400/90 blur-sm" />
-            <div className="relative grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
-              <div>
-                <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-sm text-yellow-200"><Users className="h-4 w-4" /> Join TBX</p>
-                <h2 className="mt-6 max-w-2xl text-5xl font-semibold leading-tight tracking-normal">Enter the collector museum built for trust.</h2>
-                <p className="mt-5 max-w-xl text-lg leading-8 text-slate-300">Start with a watchlist, document your vault, or discover a piece worthy of the cabinet.</p>
+        <section className="px-5 py-24 lg:px-10 lg:py-32">
+          <div className="relative mx-auto max-w-[1440px] overflow-hidden rounded-[2rem] border border-[#e8c86a]/20 bg-[#0b1321] px-7 py-16 sm:px-12 lg:px-16 lg:py-20">
+            <div className="absolute right-0 top-0 h-80 w-80 rounded-full bg-[#e8c86a]/10 blur-3xl" />
+            <div className="relative grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
+              <div className="max-w-4xl">
+                <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#e8c86a]">TBX Value</p>
+                <h2 className="mt-5 text-5xl font-black leading-[0.94] tracking-[-0.06em] sm:text-7xl">Start with what you know.</h2>
+                <p className="mt-6 max-w-2xl text-lg leading-8 text-white/48">A set number is helpful, but it is not required. Mixed boxes and loose collections have a place too.</p>
               </div>
-              <div className="flex flex-wrap gap-3">
-                <Button asChild className="h-12 rounded-xl bg-yellow-400 px-6 font-semibold text-slate-950 hover:bg-yellow-300">
-                  <Link href="/dashboard">Join TBX <ArrowRight className="h-4 w-4" /></Link>
-                </Button>
-                <Button asChild variant="outline" className="h-12 rounded-xl border-white/20 bg-white/10 px-6 text-white hover:bg-white/15 hover:text-white">
-                  <Link href="/marketplace">Explore first</Link>
-                </Button>
-              </div>
+              <Link href="/value" className="inline-flex h-14 items-center justify-center gap-3 rounded-2xl bg-[#e8c86a] px-7 font-bold text-[#050912]">Value my collection <ArrowRight className="h-5 w-5" /></Link>
             </div>
           </div>
         </section>
