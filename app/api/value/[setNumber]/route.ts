@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { buildAtlasPricing } from "@/lib/atlas/pricing-engine";
 import { createClient } from "@/lib/supabase/server";
 
 type RouteContext = { params: Promise<{ setNumber: string }> };
@@ -84,8 +85,6 @@ function relevanceScore(title: string, setNumber: string, name: string) {
   if (!exactSetMatch(title, setNumber)) return 0;
   if (containsAnyTerm(title, accessoryTerms) || containsAnyTerm(title, cloneTerms)) return 0;
 
-  // Exact set number is the permanent Atlas identity. Product-name wording varies by retailer,
-  // so name coverage improves confidence but must not erase a genuine exact-number match.
   let score = cleanTitle.includes("lego") ? 0.82 : 0.72;
   const tokens = normalise(name)
     .split(" ")
@@ -171,8 +170,6 @@ async function getExternalRetailMarket(setNumber: string, name: string, conditio
     let results = strictPayload.shopping_results ?? [];
     let accepted = results.filter((result) => result.title && relevanceScore(result.title, canonical, name) >= 0.8);
 
-    // Retailers frequently shorten or translate product names. Retry by exact set number before
-    // telling the customer that Atlas has no evidence.
     if (!accepted.length) {
       const fallbackPayload = await runShoppingSearch(fallbackQuery, apiKey);
       results = fallbackPayload.shopping_results ?? [];
@@ -255,25 +252,11 @@ export async function GET(request: Request, { params }: RouteContext) {
   ]);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const quote = Array.isArray(data) ? data[0] : data;
+  const internalQuote = (Array.isArray(data) ? data[0] : data) ?? null;
   const listings = listingError ? [] : ((listingData ?? []) as MarketplaceListing[]);
   const prices = listings.map((listing) => Number(listing.price_zar)).filter(Number.isFinite);
-  const externalMarket = prices.length ? null : await getExternalRetailMarket(set.set_number, set.name, condition);
-
-  const externalQuote = {
-    estimated_value: externalMarket?.adjustedRecommended ?? null,
-    quick_sale: externalMarket?.adjustedLow ?? null,
-    recommended: externalMarket?.adjustedRecommended ?? null,
-    premium: externalMarket?.adjustedHigh ?? null,
-    confidence: externalMarket?.status === "available" ? 55 : 0,
-    verified_sales: 0,
-    active_listings: listings.length,
-    last_sale: null,
-    data_status: externalMarket?.status === "available" ? "external_retail_anchor" : collectible ? "insufficient_data" : "market_record_pending",
-  };
-
-  // Do not allow an empty RPC row to hide valid external evidence.
-  const quoteHasValue = quote && Number(quote.recommended ?? quote.estimated_value ?? 0) > 0;
+  const externalMarket = await getExternalRetailMarket(set.set_number, set.name, condition);
+  const pricing = buildAtlasPricing({ internalQuote, livePrices: prices, externalMarket });
 
   return NextResponse.json({
     atlasProduct: {
@@ -291,12 +274,14 @@ export async function GET(request: Request, { params }: RouteContext) {
       imageUrl: set.image_url,
     },
     condition,
-    quote: quoteHasValue ? quote : externalQuote,
+    quote: pricing.quote,
+    evidence: pricing.evidence,
+    diagnostics: pricing.diagnostics,
     market: {
-      lowestAsking: prices.length ? Math.min(...prices) : externalMarket?.adjustedLow ?? null,
-      highestAsking: prices.length ? Math.max(...prices) : externalMarket?.adjustedHigh ?? null,
+      lowestAsking: prices.length ? Math.min(...prices) : externalMarket.adjustedLow,
+      highestAsking: prices.length ? Math.max(...prices) : externalMarket.adjustedHigh,
       activeListingCount: listings.length,
-      evidenceCount: prices.length || externalMarket?.listings.length || 0,
+      evidenceCount: pricing.diagnostics.evidenceCount,
       listings: listings.map((listing) => ({
         id: listing.id,
         price: Number(listing.price_zar),
