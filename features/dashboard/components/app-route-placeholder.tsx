@@ -28,6 +28,7 @@ export function AppRoutePlaceholder({ title, description, items }: AppRoutePlace
           </div>
         </div>
       </section>
+
       <div className="grid gap-4 md:grid-cols-3">
         {items.map((item) => (
           <Card key={item} className="group border-slate-200 bg-white transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_18px_60px_rgba(15,23,42,0.10)]">
