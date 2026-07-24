@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
 import { ArrowRight, Loader2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
@@ -12,12 +11,11 @@ function getSiteUrl() {
 }
 
 function safeNextPath(nextPath?: string) {
-  if (!nextPath || !nextPath.startsWith("/") || nextPath.startsWith("//")) return "/";
+  if (!nextPath || !nextPath.startsWith("/") || nextPath.startsWith("//")) return "/dashboard";
   return nextPath;
 }
 
 export function SignInForm({ nextPath }: { nextPath?: string }) {
-  const router = useRouter();
   const destination = safeNextPath(nextPath);
   const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
   const [email, setEmail] = useState("");
@@ -99,16 +97,14 @@ export function SignInForm({ nextPath }: { nextPath?: string }) {
 
         if (signUpError) throw signUpError;
         if (data.session) {
-          router.push(destination);
-          router.refresh();
+          window.location.assign(destination);
           return;
         }
         setMessage("Account created. Check your email to confirm your TBX account.");
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) throw signInError;
-        router.push(destination);
-        router.refresh();
+        window.location.assign(destination);
       }
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Authentication failed.");
