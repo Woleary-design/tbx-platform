@@ -11,6 +11,7 @@ export default async function AuthenticatedAppLayout({ children }: { children: R
   if (!user) {
     return (
       <AppShell
+        isAdmin={false}
         collector={{
           displayName: "Guest",
           initials: "TB",
@@ -26,11 +27,18 @@ export default async function AuthenticatedAppLayout({ children }: { children: R
     );
   }
 
-  const { data: collector } = await supabase
-    .from("collectors")
-    .select("display_name, username, avatar_url, collector_level, confidence_score, tbx_id")
-    .eq("id", user.id)
-    .maybeSingle();
+  const [{ data: collector }, { data: adminUser }] = await Promise.all([
+    supabase
+      .from("collectors")
+      .select("display_name, username, avatar_url, collector_level, confidence_score, tbx_id")
+      .eq("id", user.id)
+      .maybeSingle(),
+    supabase
+      .from("admin_users")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle(),
+  ]);
 
   const displayName = collector?.display_name || user.user_metadata?.display_name || user.email?.split("@")[0] || "Collector";
   const initials = displayName
@@ -42,6 +50,7 @@ export default async function AuthenticatedAppLayout({ children }: { children: R
 
   return (
     <AppShell
+      isAdmin={Boolean(adminUser?.role)}
       collector={{
         displayName,
         initials,
