@@ -40,7 +40,7 @@ export function SignInForm({ nextPath }: { nextPath?: string }) {
     setLoading(true);
     const supabase = createClient();
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${getSiteUrl()}/auth/callback?next=/update-password`,
+      redirectTo: `${getSiteUrl()}/update-password`,
     });
     setLoading(false);
 
