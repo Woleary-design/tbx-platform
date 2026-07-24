@@ -7,10 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "atlas:import": "node scripts/import-rebrickable-catalog.mjs",
+    "atlas:import:dry": "ATLAS_IMPORT_DRY_RUN=true node scripts/import-rebrickable-catalog.mjs"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.1",
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.49.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.468.0",

@@ -4,8 +4,8 @@ export default function MessagesPage() {
   return (
     <AppRoutePlaceholder
       title="Messages"
-      description="A quieter way to negotiate serious collectibles, with order context, seller reputation and protected-trade prompts always within reach."
-      items={["Seller reputation context", "Offer and provenance threads", "Protected handover reminders"]}
+      description="Calm, transaction-aware conversations for provenance questions, protected offers and serious collector negotiations."
+      items={["Seller reputation context", "Provenance questions", "Protected trade reminders"]}
     />
   );
 }

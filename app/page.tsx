@@ -1,135 +1,204 @@
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, LockKeyhole, ShieldCheck, Sparkles, Truck } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import {
+  ArrowRight,
+  BookOpen,
+  Boxes,
+  Check,
+  CircleDollarSign,
+  Heart,
+  HelpCircle,
+  PackageOpen,
+  Search,
+  ShieldCheck,
+  Store,
+  UserRound,
+  Users,
+} from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
 
-const categories = ["Retired LEGO icons", "Graded cards", "Vintage comics", "Designer toys", "Game memorabilia"];
-
-const trustSignals = [
-  { label: "Verified sellers", value: "1,240", icon: BadgeCheck },
-  { label: "Protected order value", value: "$8.6M", icon: LockKeyhole },
-  { label: "Median dispatch", value: "1.8 days", icon: Truck },
+const navItems = [
+  { label: "Value", href: "/value" },
+  { label: "Atlas", href: "/atlas" },
+  { label: "Market", href: "/marketplace" },
+  { label: "Collection", href: "/collection" },
 ];
 
-export default function HomePage() {
+const valueRoutes = [
+  {
+    title: "Complete LEGO set",
+    text: "Search by set number or name and use live Atlas pricing.",
+    href: "/value#known-set",
+    icon: Boxes,
+  },
+  {
+    title: "Mixed box or loose parts",
+    text: "Describe bulk bricks, spare parts and unknown sets.",
+    href: "/value/manual",
+    icon: PackageOpen,
+  },
+  {
+    title: "Minifigures",
+    text: "Start with one figure or an entire collection.",
+    href: "/value/manual",
+    icon: Users,
+  },
+  {
+    title: "Instructions and boxes",
+    text: "Record manuals, packaging and accessories.",
+    href: "/value/manual",
+    icon: BookOpen,
+  },
+  {
+    title: "I am not sure what I have",
+    text: "Use a guided description without choosing a listed set.",
+    href: "/value/manual",
+    icon: HelpCircle,
+  },
+];
+
+function Brand() {
   return (
-    <div className="min-h-screen overflow-hidden">
-      <header className="border-b bg-card/80 backdrop-blur-xl">
-        <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-          <Link href="/" className="flex items-center gap-2 text-lg font-semibold tracking-normal">
-            <ShieldCheck className="h-5 w-5 text-primary" />
-            The Block Exchange
-          </Link>
-          <div className="flex items-center gap-3 text-sm">
-            <Link className="hidden text-muted-foreground transition-colors hover:text-foreground sm:inline" href="/marketplace">
-              Marketplace
+    <Link href="/" className="group relative flex items-center gap-3" aria-label="TBX home">
+      <span className="absolute left-5 top-1/2 h-14 w-14 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#e8c86a]/20 blur-2xl transition group-hover:bg-[#e8c86a]/30" />
+      <span className="relative grid h-10 w-10 place-items-center rounded-xl border border-[#e8c86a]/25 bg-[#09101d] text-[#e8c86a] shadow-[0_0_32px_rgba(232,200,106,0.18)]">
+        <Boxes className="h-5 w-5" />
+      </span>
+      <span className="relative text-xl font-black tracking-[-0.055em] text-white">TBX</span>
+    </Link>
+  );
+}
+
+export default async function HomePage() {
+  const supabase = await createClient();
+  let user: { id: string } | null = null;
+
+  try {
+    user = (await supabase.auth.getUser()).data.user;
+  } catch {
+    user = null;
+  }
+
+  const accountHref = user ? "/dashboard" : "/sign-in";
+
+  return (
+    <div className="min-h-screen bg-[#050912] text-white">
+      <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#050912]/88 backdrop-blur-xl">
+        <div className="mx-auto flex h-20 max-w-[1440px] items-center justify-between px-5 lg:px-10">
+          <Brand />
+          <nav className="hidden items-center gap-8 md:flex" aria-label="Primary navigation">
+            {navItems.map(({ label, href }, index) => (
+              <Link key={href} href={href} className={index === 0 ? "text-sm font-bold text-[#e8c86a]" : "text-sm font-semibold text-white/50 transition hover:text-white"}>
+                {label}
+              </Link>
+            ))}
+          </nav>
+          <div className="flex items-center gap-3">
+            <Link href="/value" className="hidden h-10 items-center rounded-xl border border-[#e8c86a]/20 bg-[#e8c86a]/[0.06] px-4 text-sm font-bold text-[#e8c86a] transition hover:bg-[#e8c86a]/10 sm:inline-flex">
+              Value my collection
             </Link>
-            <Link className="text-muted-foreground transition-colors hover:text-foreground" href="/dashboard">
-              Dashboard
+            <Link href={accountHref} className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-white/70 transition hover:border-[#e8c86a]/35 hover:text-[#e8c86a]" aria-label={user ? "Open dashboard" : "Sign in"}>
+              {user ? "W" : <UserRound className="h-4 w-4" />}
             </Link>
-            <Button asChild size="sm" className="rounded-full">
-              <Link href="/dashboard">Enter TBX</Link>
-            </Button>
           </div>
-        </nav>
+        </div>
       </header>
 
       <main>
-        <section className="mx-auto grid min-h-[calc(100vh-4rem)] max-w-7xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:py-14">
-          <div className="space-y-8">
-            <div className="inline-flex items-center gap-2 rounded-full border bg-card/80 px-3 py-1.5 text-sm font-medium text-primary shadow-sm">
-              <Sparkles className="h-4 w-4" />
-              Private marketplace for serious collectors
-            </div>
-            <div className="space-y-5">
-              <h1 className="max-w-4xl text-5xl font-semibold leading-[1.02] tracking-normal sm:text-6xl lg:text-7xl">
-                Own with confidence. Trade with trust.
+        <section className="relative overflow-hidden border-b border-white/[0.06]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_24%,rgba(232,200,106,0.15),transparent_31rem)]" />
+          <div className="relative mx-auto grid min-h-[790px] max-w-[1440px] items-center gap-14 px-5 py-20 lg:grid-cols-[0.88fr_1.12fr] lg:px-10 lg:py-28">
+            <div className="max-w-3xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#e8c86a]/20 bg-[#e8c86a]/[0.06] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-[#e8c86a]">
+                <CircleDollarSign className="h-3.5 w-3.5" /> TBX Value
+              </div>
+              <h1 className="mt-8 text-6xl font-black leading-[0.9] tracking-[-0.075em] sm:text-7xl lg:text-[6.2rem]">
+                Discover what your
+                <span className="block text-[#e8c86a]">collection is worth.</span>
               </h1>
-              <p className="max-w-2xl text-lg leading-8 text-muted-foreground">
-                TBX brings verified reputation, protected transactions and provenance-aware presentation to the collectibles that deserve more than an ordinary listing page.
+              <p className="mt-8 max-w-2xl text-lg leading-8 text-white/55 sm:text-xl">
+                Start with a complete set, a mixed box, loose parts, minifigures or an unknown collection. Photos are only required when you publish an item for sale.
               </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Button asChild className="h-11 rounded-full px-5">
-                <Link href="/dashboard">
-                  Open collector console
-                  <ArrowRight className="h-4 w-4" />
+              <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+                <Link href="/value" className="group inline-flex h-14 items-center justify-center gap-3 rounded-2xl bg-[#e8c86a] px-7 font-bold text-[#050912] shadow-[0_16px_50px_rgba(232,200,106,0.16)] transition hover:-translate-y-0.5 hover:bg-[#f1d478]">
+                  Value my collection <ArrowRight className="h-5 w-5 transition group-hover:translate-x-1" />
                 </Link>
-              </Button>
-              <Button asChild variant="outline" className="h-11 rounded-full bg-card/70 px-5">
-                <Link href="/marketplace">Browse vaulted pieces</Link>
-              </Button>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-3">
-              {trustSignals.map((signal) => {
-                const Icon = signal.icon;
-                return (
-                  <div key={signal.label} className="rounded-2xl border bg-card/80 p-4 shadow-sm backdrop-blur">
-                    <Icon className="h-4 w-4 text-primary" />
-                    <p className="mt-4 text-2xl font-semibold">{signal.value}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{signal.label}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="relative min-h-[620px]">
-            <div className="absolute left-0 top-8 h-[500px] w-[76%] rounded-[2rem] border bg-card p-5 shadow-[0_30px_90px_rgba(15,23,42,0.16)] transition-transform duration-300 hover:-translate-y-1">
-              <div className="flex h-full flex-col overflow-hidden rounded-[1.5rem] border bg-gradient-to-br from-stone-50 via-emerald-50 to-stone-300 p-6">
-                <div className="flex items-center justify-between">
-                  <span className="rounded-full bg-card/85 px-3 py-1 text-xs font-medium text-primary">TBX Secure</span>
-                  <span className="rounded-full bg-foreground px-3 py-1 text-xs font-medium text-background">Verified 92</span>
-                </div>
-                <div className="mt-auto space-y-3 rounded-3xl border bg-card/70 p-5 backdrop-blur-sm">
-                  <p className="text-sm font-medium text-muted-foreground">Vaulted collectible</p>
-                  <h2 className="max-w-sm text-4xl font-semibold leading-tight">UCS Millennium Falcon sealed first owner set</h2>
-                  <p className="max-w-sm text-sm leading-6 text-muted-foreground">
-                    Original shipper, documented storage history and insured handover options.
-                  </p>
-                </div>
+                <Link href="/atlas" className="inline-flex h-14 items-center justify-center gap-3 rounded-2xl border border-white/12 bg-white/[0.035] px-7 font-bold text-white/80 transition hover:-translate-y-0.5 hover:border-[#e8c86a]/25 hover:text-white">
+                  Explore Atlas
+                </Link>
+              </div>
+              <div className="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/38">
+                {["No photos needed for valuation", "No catalogue match required", "Powered by Atlas"].map((item) => (
+                  <span key={item} className="inline-flex items-center gap-2"><Check className="h-4 w-4 text-[#e8c86a]" />{item}</span>
+                ))}
               </div>
             </div>
 
-            <div className="absolute bottom-8 right-0 w-[58%] rounded-[1.5rem] border bg-card p-4 shadow-[0_24px_70px_rgba(15,23,42,0.14)] transition-transform duration-300 hover:-translate-y-1">
-              <div className="rounded-[1.1rem] border bg-background p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Seller trust</p>
-                    <p className="mt-2 text-5xl font-semibold">96</p>
-                  </div>
-                  <ShieldCheck className="h-9 w-9 text-primary" />
-                </div>
-                <div className="mt-6 space-y-3 text-sm">
-                  <div className="flex items-center justify-between gap-4">
-                    <span>Identity verified</span>
-                    <span className="font-medium text-primary">Complete</span>
-                  </div>
-                  <div className="flex items-center justify-between gap-4">
-                    <span>Successful trades</span>
-                    <span className="font-medium">184</span>
-                  </div>
-                  <div className="flex items-center justify-between gap-4">
-                    <span>Average dispatch</span>
-                    <span className="font-medium">1.6 days</span>
-                  </div>
-                </div>
+            <div className="rounded-[2rem] border border-white/[0.09] bg-[#09111f]/95 p-5 shadow-[0_40px_120px_rgba(0,0,0,0.48)] sm:p-7">
+              <div className="border-b border-white/[0.07] px-1 pb-5">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#e8c86a]">Start here</p>
+                <h2 className="mt-2 text-2xl font-black tracking-[-0.04em]">What would you like to value?</h2>
+              </div>
+              <div className="mt-5 grid gap-3">
+                {valueRoutes.map(({ title, text, href, icon: Icon }) => (
+                  <Link key={title} href={href} className="group flex items-center gap-4 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4 transition hover:-translate-y-0.5 hover:border-[#e8c86a]/30 hover:bg-[#e8c86a]/[0.045]">
+                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-[#e8c86a]/18 bg-[#e8c86a]/[0.06] text-[#e8c86a]"><Icon className="h-5 w-5" /></span>
+                    <span className="min-w-0 flex-1"><span className="block font-bold">{title}</span><span className="mt-1 block text-sm leading-5 text-white/38">{text}</span></span>
+                    <ArrowRight className="h-5 w-5 shrink-0 text-white/20 transition group-hover:translate-x-1 group-hover:text-[#e8c86a]" />
+                  </Link>
+                ))}
               </div>
             </div>
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            {categories.map((category) => (
-              <Link
-                key={category}
-                href="/marketplace"
-                className="group rounded-2xl border bg-card/80 p-5 text-sm font-medium shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[0_18px_55px_rgba(15,23,42,0.1)]"
-              >
-                <span>{category}</span>
-                <ArrowRight className="mt-8 h-4 w-4 text-primary transition-transform group-hover:translate-x-1" />
+        <section className="mx-auto max-w-[1440px] px-5 py-24 lg:px-10 lg:py-32">
+          <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#e8c86a]">Powered by Atlas</p>
+          <div className="mt-5 grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
+            <div>
+              <h2 className="text-5xl font-black leading-[0.95] tracking-[-0.055em] sm:text-6xl">Every valuation needs evidence.</h2>
+              <p className="mt-6 max-w-xl text-lg leading-8 text-white/45">Atlas supplies identity, market history and pricing context. TBX shows when evidence is limited instead of inventing a number.</p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {["Live market prices", "Sales history", "Pricing confidence", "Collection intelligence"].map((item) => (
+                <div key={item} className="flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-[#09111e] p-5"><ShieldCheck className="h-5 w-5 text-[#e8c86a]" /><span className="font-bold">{item}</span></div>
+              ))}
+            </div>
+          </div>
+          <form action="/atlas" method="get" className="mt-12 flex items-center gap-3 rounded-[1.75rem] border border-white/10 bg-[#0a111e] p-3 shadow-[0_30px_100px_rgba(0,0,0,0.28)]">
+            <Search className="ml-3 h-6 w-6 shrink-0 text-white/28" />
+            <input name="q" aria-label="Search Atlas" placeholder="Search a LEGO set or set number" className="min-w-0 flex-1 bg-transparent px-2 py-4 text-base outline-none placeholder:text-white/25" />
+            <button type="submit" className="inline-flex h-14 shrink-0 items-center gap-2 rounded-2xl bg-[#e8c86a] px-5 font-bold text-[#050912]">Search Atlas <ArrowRight className="h-5 w-5" /></button>
+          </form>
+        </section>
+
+        <section className="border-y border-white/[0.06] bg-white/[0.015]">
+          <div className="mx-auto grid max-w-[1440px] gap-6 px-5 py-24 md:grid-cols-3 lg:px-10 lg:py-28">
+            {[
+              { title: "Value", text: "Understand what you have and what the available evidence suggests.", href: "/value", icon: CircleDollarSign },
+              { title: "Market", text: "List or buy collectibles with clearer pricing context.", href: "/marketplace", icon: Store },
+              { title: "Collection", text: "Keep and track the items you are not ready to sell.", href: "/collection", icon: Heart },
+            ].map(({ title, text, href, icon: Icon }) => (
+              <Link key={title} href={href} className="group rounded-[1.75rem] border border-white/[0.07] bg-[#09111e] p-7 transition hover:-translate-y-1 hover:border-[#e8c86a]/25">
+                <Icon className="h-6 w-6 text-[#e8c86a]" />
+                <h3 className="mt-8 text-3xl font-black">{title}</h3>
+                <p className="mt-4 leading-7 text-white/42">{text}</p>
+                <span className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-[#e8c86a]">Open {title} <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" /></span>
               </Link>
             ))}
+          </div>
+        </section>
+
+        <section className="px-5 py-24 lg:px-10 lg:py-32">
+          <div className="relative mx-auto max-w-[1440px] overflow-hidden rounded-[2rem] border border-[#e8c86a]/20 bg-[#0b1321] px-7 py-16 sm:px-12 lg:px-16 lg:py-20">
+            <div className="absolute right-0 top-0 h-80 w-80 rounded-full bg-[#e8c86a]/10 blur-3xl" />
+            <div className="relative grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
+              <div className="max-w-4xl">
+                <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#e8c86a]">TBX Value</p>
+                <h2 className="mt-5 text-5xl font-black leading-[0.94] tracking-[-0.06em] sm:text-7xl">Start with what you know.</h2>
+                <p className="mt-6 max-w-2xl text-lg leading-8 text-white/48">A set number is helpful, but it is not required. Mixed boxes and loose collections have a place too.</p>
+              </div>
+              <Link href="/value" className="inline-flex h-14 items-center justify-center gap-3 rounded-2xl bg-[#e8c86a] px-7 font-bold text-[#050912]">Value my collection <ArrowRight className="h-5 w-5" /></Link>
+            </div>
           </div>
         </section>
       </main>

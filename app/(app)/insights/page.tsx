@@ -3,9 +3,9 @@ import { AppRoutePlaceholder } from "@/features/dashboard/components/app-route-p
 export default function InsightsPage() {
   return (
     <AppRoutePlaceholder
-      title="Insights"
-      description="Market intelligence for the collection you actually own, highlighting value movement, rarity pressure and opportunities worth a closer look."
-      items={["Vault value movement", "Rarity and demand signals", "Watchlist price gaps"]}
+      title="Collection"
+      description="A refined view of owned pieces, market movement, category exposure and opportunities that deserve a place in the vault."
+      items={["Portfolio value movement", "Rarity and demand signals", "Acquisition opportunities"]}
     />
   );
 }

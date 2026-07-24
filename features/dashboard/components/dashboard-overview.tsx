@@ -1,134 +1,112 @@
-import { Archive, ArrowRight, BadgeCheck, ShieldCheck, Sparkles } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DashboardCard } from "@/features/dashboard/components/dashboard-card";
-import {
-  dashboardMetrics,
-  recentActivity,
-  recommendedListings,
-  vaultPreview,
-} from "@/features/dashboard/data/dashboard.mock";
+import Link from "next/link";
+import { ArrowRight, Heart, LibraryBig, PackageOpen, Search, ShoppingBag, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { createClient } from "@/lib/supabase/server";
 
-export function DashboardOverview() {
+type CatalogueSet = {
+  id: string;
+  set_number: string;
+  name: string;
+  theme: string | null;
+  year_released: number | null;
+  piece_count: number | null;
+  image_url: string | null;
+};
+
+type ListingRow = {
+  id: string;
+  price_zar: number | string;
+  condition: string;
+  dispatch_days: number;
+  lego_sets: CatalogueSet[] | null;
+};
+
+const categories = ["Icons", "Star Wars", "Technic", "Speed Champions", "Architecture", "NINJAGO"];
+
+export async function DashboardOverview() {
+  const supabase = await createClient();
+  const { data: userData } = await supabase.auth.getUser();
+  const user = userData.user;
+
+  const [catalogueResult, listingsResult] = await Promise.all([
+    supabase
+      .from("lego_sets")
+      .select("id, set_number, name, theme, year_released, piece_count, image_url")
+      .eq("is_active", true)
+      .order("year_released", { ascending: false })
+      .limit(8),
+    supabase
+      .from("marketplace_listings")
+      .select("id, price_zar, condition, dispatch_days, lego_sets(id, set_number, name, theme, year_released, piece_count, image_url)")
+      .eq("status", "live")
+      .order("published_at", { ascending: false })
+      .limit(4),
+  ]);
+
+  const sets = (catalogueResult.data ?? []) as CatalogueSet[];
+  const listings = ((listingsResult.data ?? []) as unknown as ListingRow[]).flatMap((listing) => {
+    const set = listing.lego_sets?.[0];
+    return set ? [{ ...listing, set }] : [];
+  });
+  const displayName = user?.user_metadata?.display_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Collector";
+
   return (
-    <div className="space-y-8">
-      <section className="overflow-hidden rounded-[1.75rem] border bg-card shadow-[0_28px_80px_rgba(15,23,42,0.08)]">
-        <div className="grid gap-8 p-6 md:p-8 xl:grid-cols-[1fr_420px] xl:items-stretch">
-          <div className="flex flex-col justify-between gap-8">
-            <div className="space-y-5">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary">
-                <ShieldCheck className="h-4 w-4" />
-                Own with confidence. Trade with trust.
-              </div>
-              <div>
-                <h1 className="max-w-3xl text-4xl font-semibold leading-tight tracking-normal md:text-5xl">
-                  Your private command centre for high-value collecting.
-                </h1>
-                <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground">
-                  Review protected trades, watch market signals and keep provenance close to every piece in your vault.
-                </p>
-              </div>
+    <div className="min-h-screen bg-[#fffaf1]">
+      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:py-12">
+        <section className="overflow-hidden rounded-[2rem] bg-slate-950 px-6 py-10 text-white sm:px-10 sm:py-14">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-300">Welcome, {displayName}</p>
+          <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-tight sm:text-6xl">Discover collectibles. Build your collection.</h1>
+          <p className="mt-4 max-w-2xl text-white/65">LEGO is the first category on TBX. Search the catalogue, add sets to your private collection or Wishlist, and buy only from real live listings.</p>
+          <form action="/wants" className="mt-8 flex max-w-2xl gap-3">
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+              <Input name="q" placeholder="Search LEGO sets by name or set number…" className="h-13 rounded-2xl border-white/10 bg-white pl-12 text-slate-950" />
             </div>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-2xl border bg-background/70 p-4">
-                <p className="text-sm text-muted-foreground">Verified identity</p>
-                <p className="mt-2 font-semibold text-primary">Current</p>
-              </div>
-              <div className="rounded-2xl border bg-background/70 p-4">
-                <p className="text-sm text-muted-foreground">Inspection window</p>
-                <p className="mt-2 font-semibold">48 hours</p>
-              </div>
-              <div className="rounded-2xl border bg-background/70 p-4">
-                <p className="text-sm text-muted-foreground">Vault insurance</p>
-                <p className="mt-2 font-semibold">Reviewed</p>
-              </div>
-            </div>
+            <Button className="h-13 rounded-2xl bg-yellow-400 px-6 font-semibold text-slate-950 hover:bg-yellow-300">Search</Button>
+          </form>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Button asChild variant="outline" className="rounded-xl border-white/20 bg-white/5 text-white hover:bg-white/10"><Link href="/collection"><LibraryBig className="h-4 w-4" /> My Collection</Link></Button>
+            <Button asChild variant="outline" className="rounded-xl border-white/20 bg-white/5 text-white hover:bg-white/10"><Link href="/wants"><Heart className="h-4 w-4" /> Wishlist</Link></Button>
+            <Button asChild variant="outline" className="rounded-xl border-white/20 bg-white/5 text-white hover:bg-white/10"><Link href="/marketplace"><ShoppingBag className="h-4 w-4" /> Marketplace</Link></Button>
           </div>
+        </section>
 
-          <div className="relative min-h-[320px] rounded-[1.4rem] border bg-gradient-to-br from-stone-50 via-emerald-50 to-stone-300 p-5">
-            <div className="absolute right-5 top-5 rounded-full bg-card/90 px-3 py-1 text-xs font-medium text-primary shadow-sm">
-              TBX Secure active
-            </div>
-            <div className="flex h-full flex-col justify-end rounded-[1rem] border bg-card/70 p-5 backdrop-blur-sm">
-              <p className="text-sm font-medium text-muted-foreground">Featured vault piece</p>
-              <h2 className="mt-2 max-w-xs text-3xl font-semibold leading-tight">Sealed UCS Millennium Falcon with original shipper</h2>
-              <p className="mt-4 max-w-sm text-sm leading-6 text-muted-foreground">
-                Provenance note updated, market spread narrowed, and seller trust remains premier-grade.
-              </p>
-            </div>
+        <section className="mt-12">
+          <div className="flex items-end justify-between gap-4">
+            <div><p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Explore</p><h2 className="mt-2 text-3xl font-semibold text-slate-950">Browse LEGO themes</h2></div>
+            <Link href="/insights" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">Open Discover <ArrowRight className="h-4 w-4" /></Link>
           </div>
-        </div>
-      </section>
-
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {dashboardMetrics.map((metric) => (
-          <DashboardCard key={metric.label} {...metric} />
-        ))}
-      </section>
-
-      <section className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle>Recent Trust Activity</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {recentActivity.map((activity, index) => (
-              <div key={activity} className="group flex gap-4 rounded-2xl border bg-background/60 p-4 transition-colors hover:border-primary/35">
-                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                  {index + 1}
-                </span>
-                <p className="text-sm leading-6 text-muted-foreground">{activity}</p>
-              </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {categories.map((category) => (
+              <Link
+                key={category}
+                href={`/atlas?theme=${encodeURIComponent(category)}`}
+                className="rounded-2xl border border-[#eadfce] bg-white p-5 text-lg font-semibold shadow-sm transition hover:-translate-y-0.5"
+              >
+                {category}
+              </Link>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle>Curated Opportunities</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {recommendedListings.map((listing) => (
-              <div key={listing.title} className="rounded-2xl border bg-background/60 p-4 transition-colors hover:border-primary/35">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-medium leading-6">{listing.title}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{listing.condition}</p>
-                  </div>
-                  <p className="shrink-0 font-semibold">{listing.price}</p>
-                </div>
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                  <p className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    {listing.trust}
-                  </p>
-                  <ArrowRight className="h-4 w-4 text-primary" />
-                </div>
-              </div>
+        <section className="mt-12">
+          <div className="flex items-end justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Catalogue</p><h2 className="mt-2 text-3xl font-semibold text-slate-950">Recently added LEGO sets</h2></div><Link href="/wants" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">Search all sets <ArrowRight className="h-4 w-4" /></Link></div>
+          <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {sets.map((set) => (
+              <article key={set.id} className="overflow-hidden rounded-[1.5rem] border border-[#eadfce] bg-white shadow-[0_16px_50px_rgba(43,30,18,0.07)]">
+                <div className="grid aspect-[4/3] place-items-center bg-white p-5">{set.image_url ? <img src={set.image_url} alt={set.name} className="h-full w-full object-contain" /> : <PackageOpen className="h-10 w-10 text-slate-300" />}</div>
+                <div className="p-5"><p className="text-xs font-semibold uppercase tracking-[0.16em] text-yellow-600">{set.set_number}</p><h3 className="mt-2 font-semibold text-slate-950">{set.name}</h3><p className="mt-2 text-sm text-slate-500">{set.theme ?? "LEGO"}{set.year_released ? ` · ${set.year_released}` : ""}{set.piece_count ? ` · ${set.piece_count.toLocaleString("en-ZA")} pieces` : ""}</p><div className="mt-4 flex gap-2"><Button asChild size="sm" className="rounded-lg bg-slate-950 text-white"><Link href={`/collection?set=${encodeURIComponent(set.set_number)}`}>Add</Link></Button><Button asChild size="sm" variant="outline" className="rounded-lg"><Link href={`/wants?set=${encodeURIComponent(set.set_number)}`}>Wishlist</Link></Button></div></div>
+              </article>
             ))}
-          </CardContent>
-        </Card>
-      </section>
+          </div>
+        </section>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Archive className="h-5 w-5 text-primary" />
-            Vault Preview
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-3">
-          {vaultPreview.map((item) => (
-            <div key={item.name} className="rounded-2xl border bg-background/60 p-5 transition-colors hover:border-primary/35">
-              <div className="flex items-center justify-between gap-4">
-                <p className="text-sm font-medium text-muted-foreground">{item.name}</p>
-                <BadgeCheck className="h-4 w-4 text-primary" />
-              </div>
-              <p className="mt-5 text-3xl font-semibold">{item.count}</p>
-              <p className="mt-2 text-sm text-muted-foreground">{item.value} insured value</p>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+        <section className="mt-12">
+          <div className="flex items-end justify-between gap-4"><div><p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600"><Sparkles className="h-4 w-4" /> Marketplace</p><h2 className="mt-2 text-3xl font-semibold text-slate-950">Recently listed</h2></div><Link href="/marketplace" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">View marketplace <ArrowRight className="h-4 w-4" /></Link></div>
+          {listings.length > 0 ? <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{listings.map((listing) => <Link key={listing.id} href={`/marketplace/${listing.id}`} className="overflow-hidden rounded-[1.5rem] border border-[#eadfce] bg-white shadow-sm"><div className="grid aspect-[4/3] place-items-center bg-white p-5">{listing.set.image_url ? <img src={listing.set.image_url} alt={listing.set.name} className="h-full w-full object-contain" /> : <PackageOpen className="h-10 w-10 text-slate-300" />}</div><div className="p-5"><p className="text-xs font-semibold uppercase tracking-[0.16em] text-yellow-600">{listing.set.set_number}</p><h3 className="mt-2 font-semibold">{listing.set.name}</h3><p className="mt-2 text-lg font-semibold">R{Number(listing.price_zar).toLocaleString("en-ZA")}</p><p className="mt-1 text-sm text-slate-500">{listing.condition} · Dispatch in {listing.dispatch_days} day{listing.dispatch_days === 1 ? "" : "s"}</p></div></Link>)}</div> : <div className="mt-5 rounded-[1.5rem] border border-dashed border-slate-300 bg-white p-10 text-center"><PackageOpen className="mx-auto h-10 w-10 text-yellow-600" /><h3 className="mt-4 text-2xl font-semibold">No live listings yet.</h3><p className="mt-2 text-slate-600">The marketplace only shows real items currently for sale.</p><Button asChild className="mt-5 rounded-xl bg-yellow-400 font-semibold text-slate-950"><Link href="/sell">Sell an item</Link></Button></div>}
+        </section>
+      </main>
     </div>
   );
 }

@@ -1,6 +1,58 @@
 import type { ReactNode } from "react";
 import { AppShell } from "@/components/app-shell/app-shell";
+import { createClient } from "@/lib/supabase/server";
 
-export default function AuthenticatedAppLayout({ children }: { children: ReactNode }) {
-  return <AppShell>{children}</AppShell>;
+export default async function AuthenticatedAppLayout({ children }: { children: ReactNode }) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return (
+      <AppShell
+        collector={{
+          displayName: "Guest",
+          initials: "TB",
+          avatarUrl: null,
+          level: "Guest browsing",
+          score: 0,
+          tbxId: "",
+          email: "",
+        }}
+      >
+        {children}
+      </AppShell>
+    );
+  }
+
+  const { data: collector } = await supabase
+    .from("collectors")
+    .select("display_name, username, avatar_url, collector_level, confidence_score, tbx_id")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const displayName = collector?.display_name || user.user_metadata?.display_name || user.email?.split("@")[0] || "Collector";
+  const initials = displayName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part: string) => part[0]?.toUpperCase())
+    .join("") || "TB";
+
+  return (
+    <AppShell
+      collector={{
+        displayName,
+        initials,
+        avatarUrl: collector?.avatar_url ?? null,
+        level: collector?.collector_level ?? "Collector",
+        score: collector?.confidence_score ?? 50,
+        tbxId: collector?.tbx_id ?? "TBX pending",
+        email: user.email ?? "",
+      }}
+    >
+      {children}
+    </AppShell>
+  );
 }
