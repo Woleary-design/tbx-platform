@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { buildAtlasPricing } from "@/lib/atlas/pricing-engine";
 import { createClient } from "@/lib/supabase/server";
+import { buildAtlasPricing } from "@/lib/atlas/pricing-engine";
 
 type RouteContext = { params: Promise<{ setNumber: string }> };
 
@@ -68,6 +68,15 @@ function median(values: number[]) {
 
 function normalise(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function slugify(value: string) {
+  return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 function exactSetMatch(title: string, setNumber: string) {
@@ -143,11 +152,66 @@ async function runShoppingSearch(query: string, apiKey: string) {
   return (await response.json()) as { shopping_results?: ShoppingResult[] };
 }
 
+function extractOfficialPrice(html: string) {
+  const patterns = [
+    /property=["']product:price:amount["'][^>]*content=["']([0-9.,]+)["']/i,
+    /content=["']([0-9.,]+)["'][^>]*property=["']product:price:amount["']/i,
+    /["']price["']\s*:\s*["']?([0-9]+(?:\.[0-9]+)?)["']?/i,
+  ];
+  for (const pattern of patterns) {
+    const match = html.match(pattern);
+    if (!match) continue;
+    const value = Number(match[1].replace(/,/g, ""));
+    if (Number.isFinite(value) && value >= 100) return value;
+  }
+  return null;
+}
+
+async function getOfficialLegoMarket(setNumber: string, name: string, condition: string) {
+  const canonical = canonicalSetNumber(setNumber);
+  const productUrl = `https://www.lego.com/en-za/product/${slugify(name)}-${canonical}`;
+  try {
+    const response = await fetch(productUrl, {
+      headers: { "user-agent": "Mozilla/5.0 TBX Atlas Pricing" },
+      next: { revalidate: 21600 },
+    });
+    if (!response.ok) return null;
+    const html = await response.text();
+    const retailPrice = extractOfficialPrice(html);
+    if (!retailPrice) return null;
+    const factor = conditionFactor(condition);
+    const adjusted = Math.round(retailPrice * factor);
+    return {
+      provider: "lego_official_za",
+      status: "available",
+      searchUrl: productUrl,
+      retailLow: retailPrice,
+      retailMedian: retailPrice,
+      retailHigh: retailPrice,
+      adjustedLow: adjusted,
+      adjustedRecommended: adjusted,
+      adjustedHigh: adjusted,
+      listings: [{
+        id: `lego-official-${canonical}`,
+        title: `LEGO ${canonical} ${name}`,
+        source: "LEGO South Africa",
+        price: retailPrice,
+        href: productUrl,
+        thumbnail: null,
+        condition: "New retail",
+        relevance: 1,
+      }],
+    };
+  } catch {
+    return null;
+  }
+}
+
 async function getExternalRetailMarket(setNumber: string, name: string, condition: string) {
   const apiKey = process.env.SERPAPI_KEY;
   const canonical = canonicalSetNumber(setNumber);
-  const strictQuery = `LEGO ${canonical} ${name} -light -lighting -LED -kit -stand -mount -case -instructions -stickers -compatible -blocks -bricks -MOC`;
-  const fallbackQuery = `LEGO set ${canonical} -light -lighting -LED -kit -stand -mount -case -instructions -stickers -compatible -MOC`;
+  const strictQuery = `LEGO ${canonical} ${name}`;
+  const fallbackQuery = `LEGO ${canonical}`;
   const searchUrl = `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(fallbackQuery)}`;
 
   const emptyResult = (status: string) => ({
@@ -163,7 +227,9 @@ async function getExternalRetailMarket(setNumber: string, name: string, conditio
     listings: [],
   });
 
-  if (!apiKey) return emptyResult("not_configured");
+  if (!apiKey) {
+    return (await getOfficialLegoMarket(canonical, name, condition)) ?? emptyResult("not_configured");
+  }
 
   try {
     const strictPayload = await runShoppingSearch(strictQuery, apiKey);
@@ -191,26 +257,30 @@ async function getExternalRetailMarket(setNumber: string, name: string, conditio
       .sort((a, b) => a.price - b.price);
 
     const listings = rejectPriceOutliers(matchedListings).slice(0, 8);
+    if (!listings.length) {
+      return (await getOfficialLegoMarket(canonical, name, condition)) ?? emptyResult("no_exact_matches");
+    }
+
     const prices = listings.map((listing) => listing.price);
-    const retailLow = prices.length ? Math.min(...prices) : null;
-    const retailHigh = prices.length ? Math.max(...prices) : null;
+    const retailLow = Math.min(...prices);
+    const retailHigh = Math.max(...prices);
     const retailMedian = median(prices);
     const factor = conditionFactor(condition);
 
     return {
       provider: "google_shopping",
-      status: listings.length ? "available" : "no_exact_matches",
+      status: "available",
       searchUrl,
       retailLow,
       retailMedian,
       retailHigh,
-      adjustedLow: retailLow == null ? null : Math.round(retailLow * factor),
+      adjustedLow: Math.round(retailLow * factor),
       adjustedRecommended: retailMedian == null ? null : Math.round(retailMedian * factor),
-      adjustedHigh: retailHigh == null ? null : Math.round(retailHigh * factor),
+      adjustedHigh: Math.round(retailHigh * factor),
       listings,
     };
   } catch {
-    return emptyResult("unavailable");
+    return (await getOfficialLegoMarket(canonical, name, condition)) ?? emptyResult("unavailable");
   }
 }
 
@@ -252,10 +322,10 @@ export async function GET(request: Request, { params }: RouteContext) {
   ]);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const internalQuote = (Array.isArray(data) ? data[0] : data) ?? null;
+  const internalQuote = Array.isArray(data) ? data[0] : data;
   const listings = listingError ? [] : ((listingData ?? []) as MarketplaceListing[]);
   const prices = listings.map((listing) => Number(listing.price_zar)).filter(Number.isFinite);
-  const externalMarket = await getExternalRetailMarket(set.set_number, set.name, condition);
+  const externalMarket = prices.length ? null : await getExternalRetailMarket(set.set_number, set.name, condition);
   const pricing = buildAtlasPricing({ internalQuote, livePrices: prices, externalMarket });
 
   return NextResponse.json({
@@ -278,8 +348,8 @@ export async function GET(request: Request, { params }: RouteContext) {
     evidence: pricing.evidence,
     diagnostics: pricing.diagnostics,
     market: {
-      lowestAsking: prices.length ? Math.min(...prices) : externalMarket.adjustedLow,
-      highestAsking: prices.length ? Math.max(...prices) : externalMarket.adjustedHigh,
+      lowestAsking: prices.length ? Math.min(...prices) : externalMarket?.adjustedLow ?? null,
+      highestAsking: prices.length ? Math.max(...prices) : externalMarket?.adjustedHigh ?? null,
       activeListingCount: listings.length,
       evidenceCount: pricing.diagnostics.evidenceCount,
       listings: listings.map((listing) => ({
