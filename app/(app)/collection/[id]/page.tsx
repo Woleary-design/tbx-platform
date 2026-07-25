@@ -86,7 +86,7 @@ export default async function CollectionItemPage({ params }: { params: Promise<{
             <ShoppingBag className="h-7 w-7 text-yellow-300" />
             <h2 className="mt-4 text-2xl font-semibold">Ready to sell?</h2>
             <p className="mt-3 text-sm leading-6 text-white/65">Your collection record will pre-fill the listing. Confirm the sale details, add the required photos and choose the price and delivery options.</p>
-            <Button asChild className="mt-6 h-12 w-full rounded-xl bg-yellow-400 font-semibold text-slate-950 hover:bg-yellow-300"><Link href={`/sell/create?asset=${encodeURIComponent(asset.id)}`}>List for Sale</Link></Button>
+            <Button asChild className="mt-6 h-12 w-full rounded-xl bg-yellow-400 font-semibold text-slate-950 hover:bg-yellow-300"><Link href={`/sell/from-collection/${encodeURIComponent(asset.id)}`}>List for Sale</Link></Button>
           </div>
 
           <div className="rounded-[2rem] border border-[#eadfce] bg-white p-6 text-sm text-slate-600">
