@@ -60,7 +60,7 @@ export default async function SellPage() {
           </div>
           <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             {assets.map((asset) => (
-              <Link key={asset.id} href={`/sell/create?asset=${encodeURIComponent(asset.id)}`} className="group rounded-[1.75rem] border border-white/[0.09] bg-[#09111f] p-6 text-white transition hover:-translate-y-1 hover:border-[#e8c86a]/35">
+              <Link key={asset.id} href={`/sell/from-collection/${encodeURIComponent(asset.id)}`} className="group rounded-[1.75rem] border border-white/[0.09] bg-[#09111f] p-6 text-white transition hover:-translate-y-1 hover:border-[#e8c86a]/35">
                 <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-[#e8c86a]">LEGO {asset.set_number}</p><h3 className="mt-3 text-2xl font-black">{asset.set_name}</h3><p className="mt-2 text-sm text-white/40">{asset.theme ?? "LEGO"} · {asset.condition}</p></div><ShoppingBag className="h-6 w-6 shrink-0 text-[#e8c86a]" /></div>
                 <div className="mt-7 flex items-end justify-between gap-4"><div><p className="text-xs text-white/35">Atlas value</p><p className="mt-1 text-2xl font-black">{money(asset.estimated_value)}</p></div><span className="inline-flex items-center gap-2 text-sm font-bold text-[#e8c86a]">List this item <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" /></span></div>
               </Link>
