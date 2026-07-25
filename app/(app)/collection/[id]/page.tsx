@@ -85,13 +85,13 @@ export default async function CollectionItemPage({ params }: { params: Promise<{
           <div className="rounded-[2rem] border border-[#eadfce] bg-slate-950 p-6 text-white shadow-[0_24px_80px_rgba(15,23,42,0.14)]">
             <ShoppingBag className="h-7 w-7 text-yellow-300" />
             <h2 className="mt-4 text-2xl font-semibold">Ready to sell?</h2>
-            <p className="mt-3 text-sm leading-6 text-white/65">Your collection details will pre-fill the listing. You will only need to set the fixed price and delivery options.</p>
-            <Button className="mt-6 h-12 w-full rounded-xl bg-yellow-400 font-semibold text-slate-950 hover:bg-yellow-300">List for Sale</Button>
+            <p className="mt-3 text-sm leading-6 text-white/65">Your collection record will pre-fill the listing. Confirm the sale details, add the required photos and choose the price and delivery options.</p>
+            <Button asChild className="mt-6 h-12 w-full rounded-xl bg-yellow-400 font-semibold text-slate-950 hover:bg-yellow-300"><Link href={`/sell/create?asset=${encodeURIComponent(asset.id)}`}>List for Sale</Link></Button>
           </div>
 
           <div className="rounded-[2rem] border border-[#eadfce] bg-white p-6 text-sm text-slate-600">
-            <p className="flex items-center gap-2"><CircleDollarSign className="h-4 w-4 text-yellow-600" /> Market pricing engine will appear here.</p>
-            <p className="mt-3 flex items-center gap-2"><MapPin className="h-4 w-4 text-yellow-600" /> Storage location will be editable here.</p>
+            <p className="flex items-center gap-2"><CircleDollarSign className="h-4 w-4 text-yellow-600" /> Atlas value is stored with this collection record.</p>
+            <p className="mt-3 flex items-center gap-2"><MapPin className="h-4 w-4 text-yellow-600" /> Storage and delivery details are confirmed when listing.</p>
           </div>
         </div>
       </section>
