@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Loader2, Save, Trash2 } from "lucide-react";
+import { Check, FileText, Loader2, PackageCheck, Save, ShieldCheck, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
@@ -20,6 +20,7 @@ type EditableCollectionRecord = {
 };
 
 const conditionOptions = ["New Sealed", "New Open Box", "Used Complete", "Used Incomplete", "Unknown"];
+const inputClass = "mt-2 h-12 w-full rounded-xl border border-white/10 bg-[#07101d] px-4 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-[#e8c86a]/45 focus:ring-4 focus:ring-[#e8c86a]/5";
 
 export function EditCollectionRecordForm({ record }: { record: EditableCollectionRecord }) {
   const router = useRouter();
@@ -99,9 +100,7 @@ export function EditCollectionRecordForm({ record }: { record: EditableCollectio
         .maybeSingle();
 
       if (deleteError) {
-        if (deleteError.code === "23503") {
-          throw new Error("This item is linked to a marketplace record. Remove or close that listing before deleting it from your collection.");
-        }
+        if (deleteError.code === "23503") throw new Error("This item is linked to a marketplace record. Remove or close that listing before deleting it from your collection.");
         throw deleteError;
       }
       if (!deletedRecord) throw new Error("This collection record could not be deleted.");
@@ -116,43 +115,56 @@ export function EditCollectionRecordForm({ record }: { record: EditableCollectio
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-2">
-          <label className="block"><span className="text-sm font-medium text-slate-700">Condition</span><select name="condition" defaultValue={record.condition} className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-slate-400">{conditionOptions.map((condition) => <option key={condition} value={condition}>{condition}</option>)}</select></label>
-          <label className="block"><span className="text-sm font-medium text-slate-700">Visibility</span><span className="mt-2 flex h-12 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700"><input name="is_public" type="checkbox" defaultChecked={record.isPublic} className="h-4 w-4" /> Public collection record</span></label>
-          <label className="block"><span className="text-sm font-medium text-slate-700">Purchase price (R)</span><input name="purchase_price" type="number" min="0" step="0.01" defaultValue={record.purchasePrice ?? ""} placeholder="Optional" className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-slate-400" /></label>
-          <label className="block"><span className="text-sm font-medium text-slate-700">Estimated value (R)</span><input name="estimated_value" type="number" min="0" step="0.01" defaultValue={record.estimatedValue ?? ""} placeholder="Optional" className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-slate-400" /></label>
-        </div>
-
-        <fieldset className="rounded-2xl border border-[#eadfce] bg-[#fffaf1] p-5">
-          <legend className="px-2 font-semibold text-slate-950">Ownership and completeness</legend>
-          <p className="mt-1 text-sm text-slate-600">These details improve Collection Health and will pre-fill a future sale listing.</p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            {[["original_owner", "I am the original owner", record.originalOwner], ["original_receipt", "Original receipt available", record.originalReceipt], ["instructions_complete", "Instructions included and complete", Boolean(record.instructionsComplete)], ["minifigures_complete", "All minifigures included", Boolean(record.minifiguresComplete)]].map(([name, label, checked]) => <label key={String(name)} className="flex items-center gap-3 rounded-xl bg-white p-3 text-sm text-slate-700"><input name={String(name)} type="checkbox" defaultChecked={Boolean(checked)} className="h-4 w-4" /> {String(label)}</label>)}
+        <section className="rounded-[1.5rem] border border-white/[0.08] bg-[#0a1321] p-5 sm:p-6">
+          <div className="mb-5 flex items-center gap-3">
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#e8c86a]/10 text-[#e8c86a]"><ShieldCheck className="h-5 w-5" /></span>
+            <div><h2 className="font-black text-white">Record details</h2><p className="mt-0.5 text-sm text-white/40">Condition, visibility and value.</p></div>
           </div>
-        </fieldset>
+          <div className="grid gap-5 md:grid-cols-2">
+            <label className="block"><span className="text-sm font-semibold text-white/70">Condition</span><select name="condition" defaultValue={record.condition} className={inputClass}>{conditionOptions.map((condition) => <option key={condition} value={condition}>{condition}</option>)}</select></label>
+            <label className="block"><span className="text-sm font-semibold text-white/70">Visibility</span><span className="mt-2 flex h-12 items-center gap-3 rounded-xl border border-white/10 bg-[#07101d] px-4 text-sm text-white/70"><input name="is_public" type="checkbox" defaultChecked={record.isPublic} className="h-4 w-4 accent-[#e8c86a]" /> Public collection record</span></label>
+            <label className="block"><span className="text-sm font-semibold text-white/70">Purchase price (R)</span><input name="purchase_price" type="number" min="0" step="0.01" defaultValue={record.purchasePrice ?? ""} placeholder="Optional" className={inputClass} /></label>
+            <label className="block"><span className="text-sm font-semibold text-white/70">Atlas estimated value (R)</span><input name="estimated_value" type="number" min="0" step="0.01" defaultValue={record.estimatedValue ?? ""} placeholder="Optional" className={inputClass} /></label>
+          </div>
+        </section>
 
-        <label className="block"><span className="text-sm font-medium text-slate-700">Collector notes</span><textarea name="notes" defaultValue={record.notes ?? ""} rows={6} placeholder="Purchase history, missing pieces, restoration details or anything important about this copy." className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 outline-none focus:border-slate-400" /></label>
+        <section className="rounded-[1.5rem] border border-white/[0.08] bg-[#0a1321] p-5 sm:p-6">
+          <div className="mb-5 flex items-center gap-3">
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#e8c86a]/10 text-[#e8c86a]"><PackageCheck className="h-5 w-5" /></span>
+            <div><h2 className="font-black text-white">Ownership and completeness</h2><p className="mt-0.5 text-sm text-white/40">These details improve Collection Health and pre-fill a future listing.</p></div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {[["original_owner", "I am the original owner", record.originalOwner], ["original_receipt", "Original receipt available", record.originalReceipt], ["instructions_complete", "Instructions included and complete", Boolean(record.instructionsComplete)], ["minifigures_complete", "All minifigures included", Boolean(record.minifiguresComplete)]].map(([name, label, checked]) => (
+              <label key={String(name)} className="flex min-h-14 items-center gap-3 rounded-xl border border-white/[0.08] bg-[#07101d] px-4 py-3 text-sm text-white/75 transition hover:border-[#e8c86a]/25">
+                <input name={String(name)} type="checkbox" defaultChecked={Boolean(checked)} className="h-4 w-4 shrink-0 accent-[#e8c86a]" />
+                {String(label)}
+              </label>
+            ))}
+          </div>
+        </section>
 
-        {error ? <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}
-        {saved ? <p role="status" className="flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700"><Check className="h-4 w-4" /> Collection record saved.</p> : null}
-        <Button disabled={saving || deleting} className="h-12 w-full rounded-xl bg-yellow-400 font-semibold text-slate-950 hover:bg-yellow-300">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}{saving ? "Saving record…" : "Save Collection Record"}</Button>
+        <section className="rounded-[1.5rem] border border-white/[0.08] bg-[#0a1321] p-5 sm:p-6">
+          <div className="mb-5 flex items-center gap-3">
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#e8c86a]/10 text-[#e8c86a]"><FileText className="h-5 w-5" /></span>
+            <div><h2 className="font-black text-white">Collector notes</h2><p className="mt-0.5 text-sm text-white/40">Purchase history, missing pieces or anything important about this copy.</p></div>
+          </div>
+          <textarea name="notes" defaultValue={record.notes ?? ""} rows={5} placeholder="Add notes about this item…" className="w-full rounded-xl border border-white/10 bg-[#07101d] px-4 py-3 text-sm leading-6 text-white outline-none placeholder:text-white/25 focus:border-[#e8c86a]/45 focus:ring-4 focus:ring-[#e8c86a]/5" />
+        </section>
+
+        {error ? <p role="alert" className="rounded-xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-200">{error}</p> : null}
+        {saved ? <p role="status" className="flex items-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm font-medium text-emerald-200"><Check className="h-4 w-4" /> Collection record saved.</p> : null}
+        <Button disabled={saving || deleting} className="h-13 w-full rounded-xl bg-[#e8c86a] font-black text-[#050912] hover:bg-[#f1d478]">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}{saving ? "Saving record…" : "Save Collection Record"}</Button>
       </form>
 
-      <section className="rounded-2xl border border-red-200 bg-red-50 p-5">
+      <section className="rounded-[1.5rem] border border-red-400/15 bg-red-500/[0.05] p-5 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="font-semibold text-red-950">Delete this set</h2>
-            <p className="mt-1 text-sm leading-6 text-red-700">This permanently removes your copy from My Collection. You can add the same set again later as a new record.</p>
-          </div>
+          <div><h2 className="font-black text-red-200">Delete this set</h2><p className="mt-1 max-w-xl text-sm leading-6 text-red-200/55">Permanently remove this copy from My Collection. The same set can be added again later as a new record.</p></div>
           {!confirmDelete ? (
-            <Button type="button" variant="outline" onClick={() => setConfirmDelete(true)} disabled={saving || deleting} className="shrink-0 rounded-xl border-red-300 bg-white text-red-700 hover:bg-red-100 hover:text-red-800"><Trash2 className="h-4 w-4" /> Delete Set</Button>
+            <Button type="button" variant="outline" onClick={() => setConfirmDelete(true)} disabled={saving || deleting} className="shrink-0 rounded-xl border-red-400/25 bg-transparent text-red-200 hover:bg-red-400/10 hover:text-red-100"><Trash2 className="h-4 w-4" /> Delete Set</Button>
           ) : (
-            <div className="flex shrink-0 gap-2">
-              <Button type="button" variant="outline" onClick={() => setConfirmDelete(false)} disabled={deleting} className="rounded-xl bg-white">Cancel</Button>
-              <Button type="button" onClick={deleteRecord} disabled={deleting} className="rounded-xl bg-red-600 text-white hover:bg-red-700">{deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}{deleting ? "Deleting…" : "Confirm Delete"}</Button>
-            </div>
+            <div className="flex shrink-0 gap-2"><Button type="button" variant="outline" onClick={() => setConfirmDelete(false)} disabled={deleting} className="rounded-xl border-white/15 bg-transparent text-white hover:bg-white/5">Cancel</Button><Button type="button" onClick={deleteRecord} disabled={deleting} className="rounded-xl bg-red-600 text-white hover:bg-red-700">{deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}{deleting ? "Deleting…" : "Confirm Delete"}</Button></div>
           )}
         </div>
       </section>
