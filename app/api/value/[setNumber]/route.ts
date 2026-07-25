@@ -55,7 +55,7 @@ const cloneTerms = [
   "gobricks", "jiestar", "king building blocks",
 ];
 
-const stopWords = new Set(["lego", "icons", "classic", "architecture", "technic", "the", "and", "with", "set"]);
+const stopWords = new Set(["lego", "icons", "classic", "architecture", "technic", "ninjago", "the", "and", "with", "set"]);
 
 function canonicalSetNumber(value: string) {
   return decodeURIComponent(value).trim().toUpperCase().replace(/^LEGO\s+/i, "").split("-")[0];
@@ -103,8 +103,7 @@ function relevanceScore(title: string, setNumber: string, name: string) {
   let score = cleanTitle.includes("lego") ? 0.86 : 0.76;
   const tokens = normalise(name).split(" ").filter((token) => token.length > 2 && !stopWords.has(token));
   const coverage = tokens.length ? tokens.filter((token) => cleanTitle.includes(token)).length / tokens.length : 0;
-  score += coverage * 0.14;
-  return Math.min(score, 1);
+  return Math.min(score + coverage * 0.14, 1);
 }
 
 function rejectPriceOutliers<T extends { price: number }>(listings: T[]) {
@@ -114,14 +113,39 @@ function rejectPriceOutliers<T extends { price: number }>(listings: T[]) {
   return listings.filter((listing) => listing.price >= centre * 0.42 && listing.price <= centre * 2.25);
 }
 
+function listingIdentity(listing: ExternalListing) {
+  const href = listing.href.split("?")[0].replace(/\/$/, "");
+  const title = normalise(listing.title).slice(0, 90);
+  return `${normalise(listing.source)}|${href}|${title}|${Math.round(listing.price)}`;
+}
+
+function deduplicateListings(listings: ExternalListing[]) {
+  const unique = new Map<string, ExternalListing>();
+  for (const listing of listings) {
+    const key = listingIdentity(listing);
+    const existing = unique.get(key);
+    if (!existing || listing.relevance > existing.relevance) unique.set(key, listing);
+  }
+  return [...unique.values()];
+}
+
 function buildMarket(provider: string, searchUrl: string, listings: ExternalListing[], condition: string) {
-  const cleaned = rejectPriceOutliers(listings).sort((a, b) => a.price - b.price).slice(0, 10);
+  const unique = deduplicateListings(listings);
+  const cleaned = rejectPriceOutliers(unique).sort((a, b) => a.price - b.price).slice(0, 10);
   if (!cleaned.length) return null;
+
   const prices = cleaned.map((listing) => listing.price);
   const factor = conditionFactor(condition);
   const retailLow = Math.min(...prices);
   const retailHigh = Math.max(...prices);
-  const retailMedian = median(prices);
+  const retailMedian = median(prices) ?? retailLow;
+  const adjustedAnchor = Math.round(retailMedian * factor);
+
+  // One retailer or several identical retailer results are an anchor, not a real market range.
+  const hasRealSpread = retailHigh > retailLow * 1.03;
+  const adjustedLow = hasRealSpread ? Math.round(retailLow * factor) : Math.round(adjustedAnchor * 0.9);
+  const adjustedHigh = hasRealSpread ? Math.round(retailHigh * factor) : Math.round(adjustedAnchor * 1.1);
+
   return {
     provider,
     status: "available",
@@ -129,9 +153,9 @@ function buildMarket(provider: string, searchUrl: string, listings: ExternalList
     retailLow,
     retailMedian,
     retailHigh,
-    adjustedLow: Math.round(retailLow * factor),
-    adjustedRecommended: retailMedian == null ? null : Math.round(retailMedian * factor),
-    adjustedHigh: Math.round(retailHigh * factor),
+    adjustedLow,
+    adjustedRecommended: adjustedAnchor,
+    adjustedHigh,
     listings: cleaned,
   };
 }
@@ -141,7 +165,6 @@ async function resolveAtlasProduct(supabase: Awaited<ReturnType<typeof createCli
   const exact = await supabase.from("lego_sets").select("id, set_number, name, image_url").in("set_number", [canonical, `${canonical}-1`]).limit(1).maybeSingle();
   if (exact.error) return { set: null, error: exact.error };
   if (exact.data) return { set: exact.data as LegoSet, error: null };
-
   const variant = await supabase.from("lego_sets").select("id, set_number, name, image_url").ilike("set_number", `${canonical}-%`).order("set_number", { ascending: true }).limit(1).maybeSingle();
   return { set: (variant.data as LegoSet | null) ?? null, error: variant.error };
 }
@@ -186,7 +209,7 @@ async function getOfficialLegoMarket(setNumber: string, name: string, condition:
 
 function parsePublicShoppingHtml(html: string, setNumber: string, name: string, searchUrl: string) {
   const canonical = canonicalSetNumber(setNumber);
-  const decoded = html.replace(/&quot;/g, '"').replace(/&amp;/g, "&").replace(/&#39;/g, "'").replace(/<[^>]+>/g, " ");
+  const decoded = html.replace(/&quot;/g, "\"").replace(/&amp;/g, "&").replace(/&#39;/g, "'").replace(/<[^>]+>/g, " ");
   const windows = decoded.split(new RegExp(`(?=${canonical})`, "i")).slice(1, 35).map((part) => `${canonical}${part.slice(0, 520)}`);
   const listings: ExternalListing[] = [];
 
@@ -200,15 +223,12 @@ function parsePublicShoppingHtml(html: string, setNumber: string, name: string, 
     listings.push({ id: `google-public-${index}`, title: text.slice(0, 140).trim(), source: "Google Shopping result", price, href: searchUrl, thumbnail: null, condition: "New retail", relevance: relevanceScore(text, canonical, name) });
   });
 
-  const unique = new Map<string, ExternalListing>();
-  listings.forEach((listing) => unique.set(`${Math.round(listing.price)}-${listing.title.slice(0, 40)}`, listing));
-  return [...unique.values()];
+  return deduplicateListings(listings);
 }
 
 async function getPublicGoogleShoppingMarket(setNumber: string, name: string, condition: string) {
   const canonical = canonicalSetNumber(setNumber);
-  const query = `LEGO ${canonical}`;
-  const searchUrl = `https://www.google.com/search?tbm=shop&gl=za&hl=en&q=${encodeURIComponent(query)}`;
+  const searchUrl = `https://www.google.com/search?tbm=shop&gl=za&hl=en&q=${encodeURIComponent(`LEGO ${canonical}`)}`;
   try {
     const response = await fetch(searchUrl, { headers: { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36", "accept-language": "en-ZA,en;q=0.9" }, next: { revalidate: 21600 } });
     if (!response.ok) return null;
@@ -221,7 +241,7 @@ async function getPublicGoogleShoppingMarket(setNumber: string, name: string, co
 async function getExternalRetailMarket(setNumber: string, name: string, condition: string) {
   const apiKey = process.env.SERPAPI_KEY;
   const canonical = canonicalSetNumber(setNumber);
-  const queries = [`LEGO ${canonical} ${name}`, `LEGO Technic ${canonical}`, `LEGO set ${canonical}`, `LEGO ${canonical}`];
+  const queries = [`LEGO ${canonical} ${name}`, `LEGO set ${canonical}`, `LEGO ${canonical}`];
   const searchUrl = `https://www.google.com/search?tbm=shop&gl=za&hl=en&q=${encodeURIComponent(`LEGO ${canonical}`)}`;
   const emptyResult = (status: string) => ({ provider: "google_shopping", status, searchUrl, retailLow: null, retailMedian: null, retailHigh: null, adjustedLow: null, adjustedRecommended: null, adjustedHigh: null, listings: [], queries });
 
@@ -235,23 +255,20 @@ async function getExternalRetailMarket(setNumber: string, name: string, conditio
           const relevance = relevanceScore(result.title, canonical, name);
           const price = Number(result.extracted_price);
           if (relevance < 0.75 || !Number.isFinite(price) || price < 100) continue;
-          collected.push({ id: `external-${query}-${result.position ?? index}`, title: result.title, source: result.source ?? "Online retailer", price, href: result.product_link ?? result.link ?? searchUrl, thumbnail: result.thumbnail ?? null, condition: "New retail", relevance });
+          collected.push({ id: `external-${result.position ?? index}`, title: result.title, source: result.source ?? "Online retailer", price, href: result.product_link ?? result.link ?? searchUrl, thumbnail: result.thumbnail ?? null, condition: "New retail", relevance });
         }
-        if (collected.length >= 4) break;
       }
       const serpMarket = buildMarket("google_shopping", searchUrl, collected, condition);
       if (serpMarket) return { ...serpMarket, queries };
     } catch {
-      // Continue through the provider-independent fallbacks.
+      // Continue through provider-independent fallbacks.
     }
   }
 
   const publicMarket = await getPublicGoogleShoppingMarket(canonical, name, condition);
   if (publicMarket) return { ...publicMarket, queries };
-
   const officialMarket = await getOfficialLegoMarket(canonical, name, condition);
   if (officialMarket) return { ...officialMarket, queries };
-
   return emptyResult(apiKey ? "no_exact_matches" : "not_configured");
 }
 
@@ -270,7 +287,6 @@ export async function GET(request: Request, { params }: RouteContext) {
 
   const quotePromise = collectible ? supabase.rpc("seller_value_quote", { target_collectible_id: collectible.id, target_condition: condition }) : Promise.resolve({ data: null, error: null });
   const listingsPromise = supabase.from("marketplace_listings").select("id, price_zar, condition, published_at").eq("status", "live").eq("lego_set_id", set.id).order("price_zar", { ascending: true }).limit(12);
-
   const [{ data, error }, { data: listingData, error: listingError }] = await Promise.all([quotePromise, listingsPromise]);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
