@@ -48,7 +48,7 @@ const valuePaths = [
 
 export default function ValuePage() {
   return (
-    <main className="min-h-screen bg-[#050912] pb-28 text-white sm:pb-0">
+    <main className="min-h-screen bg-[#050912] text-white">
       <header className="border-b border-white/[0.06] bg-[#050912]/90 backdrop-blur-xl">
         <div className="mx-auto flex h-20 max-w-[1280px] items-center justify-between px-5 lg:px-10">
           <Link href="/" className="flex items-center gap-3 font-black tracking-[-0.04em]">
@@ -64,15 +64,15 @@ export default function ValuePage() {
         <div className="relative mx-auto max-w-[1280px] px-5 py-20 lg:px-10 lg:py-24">
           <div className="max-w-4xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#e8c86a]/20 bg-[#e8c86a]/[0.06] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-[#e8c86a]"><Sparkles className="h-3.5 w-3.5" /> TBX Value</div>
-            <h1 className="mt-7 text-6xl font-black leading-[0.9] tracking-[-0.07em] sm:text-7xl">What would you like <span className="block text-[#e8c86a]">to value?</span></h1>
-            <p className="mt-7 max-w-2xl text-lg leading-8 text-white/52">Start with a known set or describe loose, mixed or unlisted LEGO. Photos are not required.</p>
+            <h1 className="mt-7 text-5xl font-black leading-[0.92] tracking-[-0.06em] sm:text-7xl">What would you like <span className="block text-[#e8c86a]">to value?</span></h1>
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-white/52">Start with a known set or describe loose, mixed or unlisted LEGO. Photos are not required.</p>
           </div>
 
-          <div className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+          <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-5">
             {valuePaths.map(({ title, text, icon: Icon, href }) => (
               <Link key={title} href={href} className="group rounded-[1.5rem] border border-white/[0.08] bg-[#09111e] p-6 transition hover:-translate-y-1 hover:border-[#e8c86a]/30">
                 <Icon className="h-6 w-6 text-[#e8c86a]" />
-                <h2 className="mt-8 text-xl font-black tracking-[-0.035em]">{title}</h2>
+                <h2 className="mt-7 text-xl font-black tracking-[-0.035em]">{title}</h2>
                 <p className="mt-3 text-sm leading-6 text-white/42">{text}</p>
                 <span className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#e8c86a]">Start <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" /></span>
               </Link>
@@ -82,12 +82,12 @@ export default function ValuePage() {
       </section>
 
       <section id="known-set" className="scroll-mt-20 border-b border-white/[0.06]">
-        <div className="mx-auto grid max-w-[1280px] gap-12 px-5 py-24 lg:grid-cols-[0.72fr_1.28fr] lg:items-start lg:px-10">
+        <div className="mx-auto grid max-w-[1280px] gap-12 px-5 py-20 lg:grid-cols-[0.72fr_1.28fr] lg:items-start lg:px-10 lg:py-24">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#e8c86a]">Known set valuation</p>
-            <h2 className="mt-4 text-5xl font-black tracking-[-0.055em]">Search Atlas for a complete set.</h2>
-            <p className="mt-6 text-lg leading-8 text-white/45">Choose the set and its condition. TBX then retrieves the market evidence currently available for that Atlas record.</p>
-            <div className="mt-8 space-y-3 text-sm text-white/48">
+            <h2 className="mt-4 text-4xl font-black leading-tight tracking-[-0.05em] sm:text-5xl">Search Atlas for a complete set.</h2>
+            <p className="mt-5 text-lg leading-8 text-white/45">Choose the set and its condition. TBX then retrieves the market evidence currently available for that Atlas record.</p>
+            <div className="mt-7 space-y-3 text-sm text-white/48">
               {["No photo upload", "Condition-aware valuation", "Limited evidence is reported honestly"].map((item) => <div key={item} className="flex items-center gap-3"><Check className="h-4 w-4 text-[#e8c86a]" />{item}</div>)}
             </div>
           </div>
@@ -101,7 +101,7 @@ export default function ValuePage() {
         </div>
       </section>
 
-      <aside className="fixed inset-x-4 bottom-4 z-40 sm:inset-x-auto sm:bottom-6 sm:right-6 sm:w-[360px]">
+      <aside className="fixed bottom-6 right-6 z-40 hidden w-[360px] sm:block">
         <div className="flex items-center gap-4 rounded-2xl border border-[#e8c86a]/25 bg-[#09111f]/95 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.5)] backdrop-blur-xl">
           <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#e8c86a]/10 text-[#e8c86a]"><CircleDollarSign className="h-5 w-5" /></span>
           <div className="min-w-0 flex-1">
