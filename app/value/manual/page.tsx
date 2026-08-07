@@ -1,6 +1,7 @@
 import { KnownValueClient } from "./known-value-client";
-import { ManualValueSmartClient, type IntakeType } from "./manual-value-smart-client";
+import { type IntakeType } from "./manual-value-smart-client";
 import { MinifigureValueClient } from "./minifigure-value-client";
+import { AtlasDescribeClient } from "./atlas-describe-client";
 
 type SearchParams = Promise<{ type?: string; resume?: string }>;
 
@@ -12,7 +13,7 @@ function resolveFlow(type?: string): IntakeType {
 export default async function ManualValuePage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const flow = resolveFlow(params.type);
-  if (flow === "unknown") return <ManualValueSmartClient flow={flow} resume={params.resume} />;
+  if (flow === "unknown") return <AtlasDescribeClient resume={params.resume} />;
   if (flow === "minifigures") return <MinifigureValueClient resume={params.resume} />;
   return <KnownValueClient flow={flow} resume={params.resume} />;
 }
