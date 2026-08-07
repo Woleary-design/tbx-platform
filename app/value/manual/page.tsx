@@ -1,5 +1,6 @@
 import { KnownValueClient } from "./known-value-client";
 import { ManualValueSmartClient, type IntakeType } from "./manual-value-smart-client";
+import { MinifigureValueClient } from "./minifigure-value-client";
 
 type SearchParams = Promise<{ type?: string; resume?: string }>;
 
@@ -12,5 +13,6 @@ export default async function ManualValuePage({ searchParams }: { searchParams: 
   const params = await searchParams;
   const flow = resolveFlow(params.type);
   if (flow === "unknown") return <ManualValueSmartClient flow={flow} resume={params.resume} />;
+  if (flow === "minifigures") return <MinifigureValueClient resume={params.resume} />;
   return <KnownValueClient flow={flow} resume={params.resume} />;
 }
