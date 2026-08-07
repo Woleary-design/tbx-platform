@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Boxes, Check, Loader2, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -15,6 +15,8 @@ type ManualDraft = {
   minifigureName?: string;
   minifigureCode?: string;
   minifigureTheme?: string;
+  matchedMinifigureId?: string;
+  /** Legacy Atlas minifigure drafts stored the minifigure UUID here. */
   matchedSetId?: string;
   matchedSetNumber?: string;
   matchedName?: string;
@@ -68,7 +70,7 @@ export function MinifigureValueClient({ resume }: { resume?: string }) {
       minifigureName: name,
       minifigureCode: code,
       minifigureTheme: theme,
-      matchedSetId: selectedMatch?.id,
+      matchedMinifigureId: selectedMatch?.id,
       matchedSetNumber: selectedMatch?.setNumber,
       matchedName: selectedMatch?.name,
       matchedTheme: selectedMatch?.theme,
@@ -92,7 +94,8 @@ export function MinifigureValueClient({ resume }: { resume?: string }) {
   function identity(data: ManualDraft) {
     if (data.matchedName) {
       return {
-        legoSetId: data.matchedSetId ?? null,
+        legoSetId: null,
+        legoMinifigureId: data.matchedMinifigureId ?? data.matchedSetId ?? null,
         setNumber: data.matchedSetNumber || "MATCHED",
         setName: data.matchedName,
         theme: data.matchedTheme || "Minifigures",
@@ -100,6 +103,7 @@ export function MinifigureValueClient({ resume }: { resume?: string }) {
     }
     return {
       legoSetId: null,
+      legoMinifigureId: null,
       setNumber: data.minifigureCode?.trim().toUpperCase() || "MINIFIG",
       setName: data.minifigureName?.trim() || data.itemType || "LEGO minifigure",
       theme: data.minifigureTheme?.trim() || "Minifigures",
@@ -119,10 +123,17 @@ export function MinifigureValueClient({ resume }: { resume?: string }) {
 
     const item = identity(data);
     const estimatedValue = await resolveEstimatedValue(data);
-    const notes = [data.description, data.condition ? `Atlas condition: ${data.condition}` : "", data.minifigureTheme ? `Theme or series: ${data.minifigureTheme}` : ""].filter(Boolean).join("\n\n");
+    const notes = [
+      data.description,
+      data.condition ? `Atlas condition: ${data.condition}` : "",
+      data.minifigureTheme ? `Theme or series: ${data.minifigureTheme}` : "",
+      data.matchedSetNumber ? `Atlas minifigure: ${data.matchedSetNumber}` : "",
+    ].filter(Boolean).join("\n\n");
+
     const { data: asset, error: insertError } = await supabase.from("assets").insert({
       owner_id: userData.user.id,
       lego_set_id: item.legoSetId,
+      lego_minifigure_id: item.legoMinifigureId,
       set_number: item.setNumber,
       set_name: item.setName,
       theme: item.theme,
@@ -133,6 +144,7 @@ export function MinifigureValueClient({ resume }: { resume?: string }) {
       is_public: false,
       notes: notes || null,
     }).select("id").single();
+
     if (insertError || !asset) throw insertError ?? new Error("The collection record could not be created.");
     window.localStorage.removeItem(COLLECTION_PENDING_KEY);
     router.push(`/collection/${asset.id}`);
@@ -161,6 +173,7 @@ export function MinifigureValueClient({ resume }: { resume?: string }) {
           price: price ? String(price) : "",
           delivery: "Seller ships",
           itemKind: "minifigure",
+          legoMinifigureId: item.legoMinifigureId,
         }));
         router.push("/sell/create?source=manual");
         return;
