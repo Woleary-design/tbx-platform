@@ -1,6 +1,12 @@
 name: Atlas catalogue import
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - "scripts/import-rebrickable-catalog.mjs"
+      - "supabase/migrations/*minifigure*"
   workflow_dispatch:
     inputs:
       dry_run:
