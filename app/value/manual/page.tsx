@@ -1,3 +1,4 @@
+import { KnownValueClient } from "./known-value-client";
 import { ManualValueSmartClient, type IntakeType } from "./manual-value-smart-client";
 
 type SearchParams = Promise<{ type?: string; resume?: string }>;
@@ -9,5 +10,7 @@ function resolveFlow(type?: string): IntakeType {
 
 export default async function ManualValuePage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  return <ManualValueSmartClient flow={resolveFlow(params.type)} resume={params.resume} />;
+  const flow = resolveFlow(params.type);
+  if (flow === "unknown") return <ManualValueSmartClient flow={flow} resume={params.resume} />;
+  return <KnownValueClient flow={flow} resume={params.resume} />;
 }
