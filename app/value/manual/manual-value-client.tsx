@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, BookOpen, Boxes, Check, HelpCircle, Loader2, PackageOpen, Sparkles, UserRound } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -24,6 +24,9 @@ type Choice = {
   text: string;
   icon: typeof PackageOpen;
 };
+
+const DRAFT_KEY = "tbx-manual-lego-draft";
+const COLLECTION_PENDING_KEY = "tbx-manual-collection-pending";
 
 const itemChoices: Choice[] = [
   { value: "Mixed box of LEGO", title: "A mixed box of LEGO", text: "Pieces from different sets or a general mixed collection.", icon: PackageOpen },
@@ -57,12 +60,25 @@ function manualIdentity(data: ManualDraft) {
   return { setNumber: "MANUAL", setName: data.itemType || "LEGO collection", theme: "Loose LEGO", isMinifigure: false };
 }
 
+function assetCondition(condition?: string) {
+  if (condition === "Excellent" || condition === "Good") return "Used Complete";
+  if (condition === "Damaged or incomplete") return "Used Incomplete";
+  return "Unknown";
+}
+
+function messageFromError(value: unknown, fallback: string) {
+  if (value instanceof Error) return value.message;
+  if (value && typeof value === "object" && "message" in value && typeof value.message === "string") return value.message;
+  return fallback;
+}
+
 function optionClass(active: boolean) {
   return `group flex w-full items-start gap-4 rounded-2xl border p-4 text-left transition ${active ? "border-[#e8c86a]/55 bg-[#e8c86a]/10" : "border-white/10 bg-[#050912] hover:border-white/20 hover:bg-white/[0.025]"}`;
 }
 
-export function ManualValueClient({ flow }: { flow: IntakeType }) {
+export function ManualValueClient({ flow, resume }: { flow: IntakeType; resume?: string }) {
   const router = useRouter();
+  const resumeAttempted = useRef(false);
   const [step, setStep] = useState(0);
   const [itemType, setItemType] = useState(() => defaultItemType(flow));
   const [amount, setAmount] = useState("");
@@ -107,11 +123,46 @@ export function ManualValueClient({ flow }: { flow: IntakeType }) {
     return { itemType: finalItemType, condition, description: notes, intent, minifigureName, minifigureCode, minifigureTheme };
   }
 
-  async function complete(intent: string) {
+  async function saveCollection(data: ManualDraft, allowLoginRedirect = true) {
+    const identity = manualIdentity(data);
+    const listingDescription = [data.description, data.condition ? `Atlas condition: ${data.condition}` : "", identity.isMinifigure && identity.theme ? `Theme or series: ${identity.theme}` : ""].filter(Boolean).join("\n\n");
+    const supabase = createClient();
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+
+    if (userError || !userData.user) {
+      if (!allowLoginRedirect) throw new Error("Your sign-in could not be confirmed. Please sign in again.");
+      window.localStorage.setItem(COLLECTION_PENDING_KEY, JSON.stringify(data));
+      const returnPath = `/value/manual?type=${encodeURIComponent(flow)}&resume=collection`;
+      router.push(`/sign-in?next=${encodeURIComponent(returnPath)}`);
+      return false;
+    }
+
+    const { data: asset, error: insertError } = await supabase.from("assets").insert({
+      owner_id: userData.user.id,
+      lego_set_id: null,
+      set_number: identity.setNumber,
+      set_name: identity.setName,
+      theme: identity.theme,
+      condition: assetCondition(data.condition),
+      sealed: false,
+      estimated_value: null,
+      passport_status: "Draft",
+      is_public: false,
+      notes: listingDescription || null,
+    }).select("id").single();
+
+    if (insertError || !asset) throw insertError ?? new Error("The collection record could not be created.");
+    window.localStorage.removeItem(COLLECTION_PENDING_KEY);
+    router.push(`/collection/${asset.id}`);
+    router.refresh();
+    return true;
+  }
+
+  async function complete(intent: string, overrideDraft?: ManualDraft, allowLoginRedirect = true) {
     setSaving(true);
     setError(null);
-    const data = buildDraft(intent);
-    window.localStorage.setItem("tbx-manual-lego-draft", JSON.stringify(data));
+    const data = overrideDraft ?? buildDraft(intent);
+    window.localStorage.setItem(DRAFT_KEY, JSON.stringify(data));
 
     const identity = manualIdentity(data);
     const listingTitle = identity.isMinifigure
@@ -121,30 +172,7 @@ export function ManualValueClient({ flow }: { flow: IntakeType }) {
 
     try {
       if (intent === "Add it to my Collection") {
-        const supabase = createClient();
-        const { data: userData, error: userError } = await supabase.auth.getUser();
-        if (userError || !userData.user) {
-          window.localStorage.setItem("tbx-manual-collection-pending", JSON.stringify(data));
-          router.push(`/sign-in?next=${encodeURIComponent("/value/manual?resume=collection")}`);
-          return;
-        }
-
-        const { data: asset, error: insertError } = await supabase.from("assets").insert({
-          owner_id: userData.user.id,
-          lego_set_id: null,
-          set_number: identity.setNumber,
-          set_name: identity.setName,
-          theme: identity.theme,
-          condition: data.condition || "Unknown",
-          sealed: false,
-          passport_status: "Draft",
-          is_public: false,
-          notes: listingDescription || null,
-        }).select("id").single();
-
-        if (insertError || !asset) throw insertError ?? new Error("The collection record could not be created.");
-        router.push(`/collection/${asset.id}`);
-        router.refresh();
+        await saveCollection(data, allowLoginRedirect);
         return;
       }
 
@@ -164,11 +192,42 @@ export function ManualValueClient({ flow }: { flow: IntakeType }) {
 
       setSubmitted(true);
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : "TBX could not save this item.");
+      setSubmitted(false);
+      setStep(3);
+      setError(messageFromError(caughtError, "TBX could not save this item."));
     } finally {
       setSaving(false);
     }
   }
+
+  useEffect(() => {
+    if (resume !== "collection" || resumeAttempted.current) return;
+    resumeAttempted.current = true;
+
+    const pending = window.localStorage.getItem(COLLECTION_PENDING_KEY);
+    if (!pending) {
+      setStep(3);
+      setError("Atlas could not find the item you were adding. Your valuation draft is still available on this device.");
+      return;
+    }
+
+    try {
+      const data = JSON.parse(pending) as ManualDraft;
+      setItemType(data.itemType || defaultItemType(flow));
+      setMinifigureScope(data.itemType === "Minifigure collection" ? "Minifigure collection" : "Single minifigure");
+      setDescription(data.description || "");
+      setCondition(data.condition || "Not sure");
+      setMinifigureName(data.minifigureName || "");
+      setMinifigureCode(data.minifigureCode || "");
+      setMinifigureTheme(data.minifigureTheme || "");
+      setSubmitted(false);
+      setStep(3);
+      void complete("Add it to my Collection", data, false);
+    } catch {
+      setStep(3);
+      setError("Atlas could not restore the saved item. Please review the summary and try again.");
+    }
+  }, [flow, resume]);
 
   if (submitted) {
     return (
@@ -177,11 +236,10 @@ export function ManualValueClient({ flow }: { flow: IntakeType }) {
           <div className="w-full rounded-[2rem] border border-white/[0.09] bg-[#09111f]/95 p-8 text-center shadow-[0_40px_120px_rgba(0,0,0,0.48)] sm:p-12">
             <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl border border-[#e8c86a]/25 bg-[#e8c86a]/10 text-[#e8c86a]"><Check className="h-8 w-8" /></span>
             <p className="mt-6 text-xs font-bold uppercase tracking-[0.2em] text-[#e8c86a]">Atlas</p>
-            <h1 className="mt-2 text-3xl font-black tracking-[-0.04em]">Atlas has what it needs</h1>
-            <p className="mx-auto mt-3 max-w-lg leading-7 text-white/48">Your description is saved. You can keep it as a valuation draft, add it to your collection, or start a Marketplace listing.</p>
-            {error ? <p className="mt-5 rounded-xl border border-red-400/20 bg-red-400/[0.08] px-4 py-3 text-sm text-red-200">{error}</p> : null}
+            <h1 className="mt-2 text-3xl font-black tracking-[-0.04em]">Atlas has enough to continue</h1>
+            <p className="mx-auto mt-3 max-w-lg leading-7 text-white/48">Your valuation draft is saved on this device. You can add it to your Collection or start a Marketplace listing.</p>
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
-              <button type="button" disabled={saving} onClick={() => complete("Add it to my Collection")} className="inline-flex h-12 items-center justify-center rounded-xl border border-white/12 px-5 font-bold text-white/80 transition hover:border-white/25 hover:text-white disabled:opacity-50">Add to Collection</button>
+              <button type="button" disabled={saving} onClick={() => complete("Add it to my Collection")} className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-white/12 px-5 font-bold text-white/80 transition hover:border-white/25 hover:text-white disabled:opacity-50">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Add to Collection</button>
               <button type="button" disabled={saving} onClick={() => complete("List it on the Marketplace")} className="inline-flex h-12 items-center justify-center rounded-xl border border-white/12 px-5 font-bold text-white/80 transition hover:border-white/25 hover:text-white disabled:opacity-50">List on Marketplace</button>
             </div>
             <Link href="/value" className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-[#e8c86a]">Back to Value <ArrowRight className="h-4 w-4" /></Link>
@@ -276,8 +334,8 @@ export function ManualValueClient({ flow }: { flow: IntakeType }) {
             {error ? <p role="alert" className="mt-5 rounded-xl border border-red-400/20 bg-red-400/[0.08] px-4 py-3 text-sm text-red-200">{error}</p> : null}
 
             <div className="mt-7 flex items-center gap-3 border-t border-white/[0.07] pt-6">
-              {step > 0 ? <button type="button" onClick={() => setStep((value) => value - 1)} className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-white/10 px-5 font-bold text-white/60 transition hover:text-white"><ArrowLeft className="h-4 w-4" /> Back</button> : null}
-              {step < totalSteps - 1 ? <button type="button" disabled={!canContinue} onClick={() => setStep((value) => value + 1)} className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#e8c86a] px-5 font-black text-[#050912] transition hover:bg-[#f1d478] disabled:cursor-not-allowed disabled:opacity-35">Continue <ArrowRight className="h-4 w-4" /></button> : <button type="button" disabled={saving} onClick={() => complete("I am just checking the value")} className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#e8c86a] px-5 font-black text-[#050912] transition hover:bg-[#f1d478] disabled:opacity-50">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Continue with Atlas <ArrowRight className="h-4 w-4" /></button>}
+              {step > 0 ? <button type="button" disabled={saving} onClick={() => setStep((value) => value - 1)} className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-white/10 px-5 font-bold text-white/60 transition hover:text-white disabled:opacity-40"><ArrowLeft className="h-4 w-4" /> Back</button> : null}
+              {step < totalSteps - 1 ? <button type="button" disabled={!canContinue || saving} onClick={() => { setError(null); setStep((value) => value + 1); }} className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#e8c86a] px-5 font-black text-[#050912] transition hover:bg-[#f1d478] disabled:cursor-not-allowed disabled:opacity-35">Continue <ArrowRight className="h-4 w-4" /></button> : <button type="button" disabled={saving} onClick={() => complete("I am just checking the value")} className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#e8c86a] px-5 font-black text-[#050912] transition hover:bg-[#f1d478] disabled:opacity-50">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Continue with Atlas <ArrowRight className="h-4 w-4" /></button>}
             </div>
           </div>
         </div>
