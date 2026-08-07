@@ -16,6 +16,16 @@ export type AtlasCandidate = {
   matchedOn: string[];
 };
 
+type RecognisedSet = {
+  id: string;
+  setNumber: string;
+  name: string;
+  theme: string | null;
+  imageUrl: string | null;
+};
+
+type MatchState = "candidate_minifigures" | "possible_source_set" | "needs_more_detail" | null;
+
 function rand(value: number) {
   return new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR", maximumFractionDigits: 0 }).format(value);
 }
@@ -38,14 +48,16 @@ export function AtlasIdentificationPanel({
   onSelect: (candidate: AtlasCandidate | null) => void;
 }) {
   const [candidates, setCandidates] = useState<AtlasCandidate[]>([]);
-  const [recognisedCharacter, setRecognisedCharacter] = useState<string | null>(null);
+  const [recognisedSet, setRecognisedSet] = useState<RecognisedSet | null>(null);
+  const [matchState, setMatchState] = useState<MatchState>(null);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
   useEffect(() => {
     if (loose || query.trim().length < 2) {
       setCandidates([]);
-      setRecognisedCharacter(null);
+      setRecognisedSet(null);
+      setMatchState(null);
       setSearched(false);
       return;
     }
@@ -58,12 +70,14 @@ export function AtlasIdentificationPanel({
         const payload = await response.json();
         if (!response.ok) throw new Error(payload.error ?? "Atlas could not search the catalogue.");
         setCandidates(Array.isArray(payload.results) ? payload.results : []);
-        setRecognisedCharacter(typeof payload.recognisedCharacter === "string" ? payload.recognisedCharacter : null);
+        setRecognisedSet(payload.recognisedSet && typeof payload.recognisedSet === "object" ? payload.recognisedSet as RecognisedSet : null);
+        setMatchState(typeof payload.matchState === "string" ? payload.matchState as MatchState : null);
         setSearched(true);
       } catch {
         if (!controller.signal.aborted) {
           setCandidates([]);
-          setRecognisedCharacter(null);
+          setRecognisedSet(null);
+          setMatchState("needs_more_detail");
           setSearched(true);
         }
       } finally {
@@ -100,8 +114,26 @@ export function AtlasIdentificationPanel({
     <div className="mt-6 rounded-2xl border border-[#e8c86a]/20 bg-[#e8c86a]/[0.045] p-5">
       <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-[#e8c86a]"><Sparkles className="h-4 w-4" /> Atlas identification</div>
       {loading ? <p className="mt-4 flex items-center gap-2 text-sm text-white/45"><Loader2 className="h-4 w-4 animate-spin" /> Searching for the closest matches…</p> : null}
-      {!loading && searched && candidates.length === 0 && recognisedCharacter && minifigure ? <div className="mt-4 rounded-xl border border-[#e8c86a]/20 bg-[#050912] p-4"><p className="font-bold text-white">Atlas recognises {recognisedCharacter}.</p><p className="mt-2 text-sm leading-6 text-white/45">TBX does not yet have the exact minifigure variants for this character in its catalogue. Add a minifigure code, theme/series, or visible variant details so Atlas can narrow it down without guessing.</p></div> : null}
-      {!loading && searched && candidates.length === 0 && !recognisedCharacter ? <p className="mt-4 text-sm leading-6 text-white/45">Atlas could not find a strong catalogue match from this description yet. You can still continue with the manual description.</p> : null}
+
+      {!loading && searched && minifigure && candidates.length === 0 && matchState === "possible_source_set" && recognisedSet ? (
+        <div className="mt-4 rounded-xl border border-[#e8c86a]/20 bg-[#050912] p-4">
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#e8c86a]">Possible source set</p>
+          <div className="mt-3 flex items-center gap-4">
+            {recognisedSet.imageUrl ? <img src={recognisedSet.imageUrl} alt="" className="h-16 w-16 rounded-lg bg-white/5 object-contain" /> : <span className="grid h-16 w-16 shrink-0 place-items-center rounded-lg bg-white/[0.04] text-white/25"><Search className="h-5 w-5" /></span>}
+            <div className="min-w-0">
+              <p className="font-black text-white">{recognisedSet.setNumber} · {recognisedSet.name}</p>
+              {recognisedSet.theme ? <p className="mt-1 text-sm text-white/40">{recognisedSet.theme}</p> : null}
+            </div>
+          </div>
+          <div className="mt-4 border-t border-white/[0.08] pt-4">
+            <div className="flex items-center justify-between gap-4 text-sm"><span className="text-white/40">Exact minifigure</span><span className="font-bold text-white/75">Not identified yet</span></div>
+            <p className="mt-3 text-sm leading-6 text-white/45">Atlas found a likely set connection, but that does not identify the figure. Add the character name, minifigure code, theme/series, or visible details such as hat, hair, torso print, face, cape or accessories.</p>
+          </div>
+        </div>
+      ) : null}
+
+      {!loading && searched && candidates.length === 0 && (!minifigure || matchState === "needs_more_detail") ? <p className="mt-4 text-sm leading-6 text-white/45">Atlas could not identify the exact {minifigure ? "minifigure" : "item"} yet. Add another useful detail and Atlas will try again.</p> : null}
+
       {!loading && candidates.length > 0 ? <div className="mt-4 space-y-3"><p className="text-sm text-white/50">I found {candidates.length} possible {minifigure ? "minifigure" : "set"} matches. Choose one only if it looks right.</p>{candidates.slice(0, 5).map((candidate) => { const active = selected?.id === candidate.id; return <button key={candidate.id} type="button" onClick={() => onSelect(active ? null : candidate)} className={`flex w-full items-center gap-4 rounded-xl border p-4 text-left transition ${active ? "border-[#e8c86a]/55 bg-[#e8c86a]/10" : "border-white/[0.08] bg-[#050912] hover:border-white/20"}`}>{candidate.imageUrl ? <img src={candidate.imageUrl} alt="" className="h-16 w-16 rounded-lg bg-white/5 object-contain" /> : <span className="grid h-16 w-16 shrink-0 place-items-center rounded-lg bg-white/[0.04] text-white/25"><Search className="h-5 w-5" /></span>}<span className="min-w-0 flex-1"><span className="block truncate font-black text-white">{candidate.setNumber} · {candidate.name}</span><span className="mt-1 block truncate text-sm text-white/40">{[candidate.theme, candidate.subtheme, candidate.year].filter(Boolean).join(" · ")}</span><span className="mt-1 block text-xs font-bold text-[#e8c86a]">{candidate.confidence}% match</span></span>{active ? <Check className="h-5 w-5 shrink-0 text-[#e8c86a]" /> : null}</button>; })}</div> : null}
     </div>
   );
