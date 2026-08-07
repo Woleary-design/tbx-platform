@@ -55,7 +55,7 @@ function searchTerms(text: string) {
 }
 
 function isMinifigureRecord(row: AtlasRow) {
-  return (row.theme ?? "").toLowerCase().includes("minifig") || (row.subtheme ?? "").toLowerCase().includes("minifig") || /^sw\d+/i.test(row.set_number);
+  return (row.theme ?? "").toLowerCase().includes("minifig") || (row.subtheme ?? "").toLowerCase().includes("minifig") || /^[a-z]{2,4}\d{3,}$/i.test(row.set_number);
 }
 
 function fieldBoost(row: AtlasRow, term: string) {
@@ -80,6 +80,23 @@ function fieldBoost(row: AtlasRow, term: string) {
 function confidence(score: number, hits: number) {
   const base = 38 + Math.min(46, hits * 13) + Math.min(12, Math.log10(Math.max(score, 1)) * 5);
   return Math.max(32, Math.min(97, Math.round(base)));
+}
+
+function sourceSetScore(row: AtlasRow, queryCompact: string, terms: string[]) {
+  const nameCompact = compact(row.name);
+  const numberCompact = compact(row.set_number);
+  let score = 0;
+  if (queryCompact && nameCompact === queryCompact) score += 1000;
+  if (queryCompact && numberCompact === queryCompact) score += 950;
+  if (queryCompact && nameCompact.includes(queryCompact)) score += 500;
+  for (const term of terms) {
+    const token = compact(term);
+    if (!token) continue;
+    if (nameCompact.includes(token)) score += 80;
+    if (compact(row.theme ?? "").includes(token)) score += 30;
+    if (compact(row.subtheme ?? "").includes(token)) score += 30;
+  }
+  return score;
 }
 
 export async function GET(request: NextRequest) {
@@ -159,21 +176,31 @@ export async function GET(request: NextRequest) {
       matchedOn: [...reasons].slice(0, 4),
     }));
 
-  let recognisedCharacter: string | null = null;
-  if (kind === "minifigure" && results.length === 0 && queryCompact) {
-    const hint = [...seenCatalogueRows.values()]
+  let recognisedSet: { id: string; setNumber: string; name: string; theme: string | null; imageUrl: string | null } | null = null;
+  if (kind === "minifigure" && results.length === 0) {
+    const sourceSet = [...seenCatalogueRows.values()]
       .filter((row) => !isMinifigureRecord(row))
-      .sort((a, b) => {
-        const aName = compact(a.name);
-        const bName = compact(b.name);
-        const aExact = aName === queryCompact ? 1 : 0;
-        const bExact = bName === queryCompact ? 1 : 0;
-        if (aExact !== bExact) return bExact - aExact;
-        return aName.length - bName.length;
-      })
-      .find((row) => compact(row.name) === queryCompact || compact(row.name).includes(queryCompact));
-    recognisedCharacter = hint?.name ?? null;
+      .map((row) => ({ row, score: sourceSetScore(row, queryCompact, terms) }))
+      .filter(({ score }) => score >= 120)
+      .sort((a, b) => b.score - a.score)[0]?.row;
+
+    if (sourceSet) {
+      recognisedSet = {
+        id: sourceSet.id,
+        setNumber: sourceSet.set_number,
+        name: sourceSet.name,
+        theme: sourceSet.theme,
+        imageUrl: sourceSet.image_url,
+      };
+    }
   }
 
-  return NextResponse.json({ source: "atlas-description-match", kind, terms, recognisedCharacter, results });
+  return NextResponse.json({
+    source: "atlas-description-match",
+    kind,
+    terms,
+    matchState: results.length > 0 ? "candidate_minifigures" : recognisedSet ? "possible_source_set" : "needs_more_detail",
+    recognisedSet,
+    results,
+  });
 }
