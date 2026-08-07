@@ -5,8 +5,10 @@ on:
     branches:
       - main
     paths:
+      - ".github/workflows/atlas-catalog-import.yml"
       - "scripts/import-rebrickable-catalog.mjs"
       - "supabase/migrations/*minifigure*"
+      - "supabase/migrations/*catalogue*"
   workflow_dispatch:
     inputs:
       dry_run:
@@ -27,7 +29,7 @@ permissions:
 
 concurrency:
   group: atlas-catalog-import
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   import:
@@ -47,9 +49,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
 
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
       - name: Validate required Supabase secrets
         if: ${{ env.ATLAS_IMPORT_DRY_RUN != 'true' }}
