@@ -92,10 +92,12 @@ export async function GET(request: NextRequest) {
 
   const supabase = await createClient();
   const ranked = new Map<string, { row: AtlasRow; score: number; reasons: Set<string> }>();
+  const seenCatalogueRows = new Map<string, AtlasRow>();
 
   function addRows(rows: AtlasRow[], term: string, termIndex: number, sourceBoost: number) {
     rows.forEach((row, position) => {
       if (row.atlas_visibility && row.atlas_visibility !== "public") return;
+      seenCatalogueRows.set(row.id, row);
       const minifigureRecord = isMinifigureRecord(row);
       if (kind === "minifigure" && !minifigureRecord) return;
       if (kind === "set" && minifigureRecord) return;
@@ -157,5 +159,21 @@ export async function GET(request: NextRequest) {
       matchedOn: [...reasons].slice(0, 4),
     }));
 
-  return NextResponse.json({ source: "atlas-description-match", kind, terms, results });
+  let recognisedCharacter: string | null = null;
+  if (kind === "minifigure" && results.length === 0 && queryCompact) {
+    const hint = [...seenCatalogueRows.values()]
+      .filter((row) => !isMinifigureRecord(row))
+      .sort((a, b) => {
+        const aName = compact(a.name);
+        const bName = compact(b.name);
+        const aExact = aName === queryCompact ? 1 : 0;
+        const bExact = bName === queryCompact ? 1 : 0;
+        if (aExact !== bExact) return bExact - aExact;
+        return aName.length - bName.length;
+      })
+      .find((row) => compact(row.name) === queryCompact || compact(row.name).includes(queryCompact));
+    recognisedCharacter = hint?.name ?? null;
+  }
+
+  return NextResponse.json({ source: "atlas-description-match", kind, terms, recognisedCharacter, results });
 }
