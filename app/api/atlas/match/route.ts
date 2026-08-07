@@ -25,15 +25,16 @@ function clean(value: string) {
 
 function searchTerms(text: string) {
   const words = clean(text).split(" ").filter((word) => word.length >= 3 && !STOP_WORDS.has(word));
-  const unique = [...new Set(words)];
-  const phrases: string[] = [];
-  if (unique.length >= 2) phrases.push(unique.slice(0, 4).join(" "));
-  phrases.push(...unique.slice(0, 6));
-  return [...new Set(phrases)].slice(0, 6);
+  return [...new Set(words)].slice(0, 8);
 }
 
-function confidence(score: number) {
-  return Math.max(25, Math.min(96, Math.round(35 + Math.log10(Math.max(score, 1)) * 22)));
+function isMinifigureRecord(row: AtlasRow) {
+  return (row.theme ?? "").toLowerCase().includes("minifig") || (row.subtheme ?? "").toLowerCase().includes("minifig") || /^sw\d+/i.test(row.set_number);
+}
+
+function confidence(score: number, hits: number) {
+  const base = 36 + Math.min(42, hits * 11) + Math.min(16, Math.log10(Math.max(score, 1)) * 7);
+  return Math.max(28, Math.min(96, Math.round(base)));
 }
 
 export async function GET(request: NextRequest) {
@@ -47,38 +48,50 @@ export async function GET(request: NextRequest) {
   const supabase = await createClient();
   const ranked = new Map<string, { row: AtlasRow; score: number; reasons: Set<string> }>();
 
-  const searches = await Promise.all(
-    terms.map(async (term, index) => {
-      const { data } = await supabase.rpc("atlas_search", { search_query: term, result_limit: 24 });
-      return { term, index, rows: (data ?? []) as AtlasRow[] };
-    }),
-  );
-
-  for (const { term, index, rows } of searches) {
-    for (let position = 0; position < rows.length; position += 1) {
-      const row = rows[position];
-      if (row.atlas_visibility && row.atlas_visibility !== "public") continue;
-      const minifigureRecord = (row.theme ?? "").toLowerCase().includes("minifig") || (row.subtheme ?? "").toLowerCase().includes("minifig") || /^sw\d+/i.test(row.set_number);
-      if (kind === "minifigure" && !minifigureRecord) continue;
-      if (kind === "set" && minifigureRecord) continue;
+  function addRows(rows: AtlasRow[], term: string, termIndex: number, sourceBoost: number) {
+    rows.forEach((row, position) => {
+      if (row.atlas_visibility && row.atlas_visibility !== "public") return;
+      const minifigureRecord = isMinifigureRecord(row);
+      if (kind === "minifigure" && !minifigureRecord) return;
+      if (kind === "set" && minifigureRecord) return;
 
       const rpcRelevance = Number(row.relevance ?? 0);
-      const termWeight = Math.max(1, 6 - index);
-      const rankWeight = Math.max(1, 24 - position);
-      const exactBoost = clean(row.set_number) === clean(term) || clean(row.name) === clean(term) ? 900 : 0;
-      const score = rpcRelevance + termWeight * rankWeight * 5 + exactBoost;
+      const exact = clean(row.set_number) === clean(term) || clean(row.name) === clean(term);
+      const score = sourceBoost + rpcRelevance + Math.max(1, 8 - termIndex) * Math.max(1, 24 - position) * 4 + (exact ? 900 : 0);
       const existing = ranked.get(row.id);
       if (existing) {
-        existing.score += score * 0.6;
+        existing.score += score * 0.55;
         existing.reasons.add(term);
       } else {
         ranked.set(row.id, { row, score, reasons: new Set([term]) });
       }
-    }
+    });
+  }
+
+  const searches = await Promise.all(terms.slice(0, 6).map(async (term, index) => {
+    const [{ data: rpcData }, { data: directData }] = await Promise.all([
+      supabase.rpc("atlas_search", { search_query: term, result_limit: 20 }),
+      supabase
+        .from("lego_sets")
+        .select("id,set_number,name,theme,subtheme,year_released,piece_count,image_url,atlas_visibility")
+        .eq("is_active", true)
+        .eq("atlas_visibility", "public")
+        .or(`set_number.ilike.%${term}%,name.ilike.%${term}%,theme.ilike.%${term}%,subtheme.ilike.%${term}%`)
+        .limit(24),
+    ]);
+    return { term, index, rpcRows: (rpcData ?? []) as AtlasRow[], directRows: (directData ?? []) as AtlasRow[] };
+  }));
+
+  for (const search of searches) {
+    addRows(search.rpcRows, search.term, search.index, 120);
+    addRows(search.directRows, search.term, search.index, 60);
   }
 
   const results = [...ranked.values()]
-    .sort((a, b) => b.score - a.score)
+    .sort((a, b) => {
+      const hitDiff = b.reasons.size - a.reasons.size;
+      return hitDiff || b.score - a.score;
+    })
     .slice(0, 5)
     .map(({ row, score, reasons }) => ({
       id: row.id,
@@ -89,9 +102,9 @@ export async function GET(request: NextRequest) {
       year: row.year_released,
       pieces: row.piece_count,
       imageUrl: row.image_url,
-      confidence: confidence(score),
-      matchedOn: [...reasons].slice(0, 3),
+      confidence: confidence(score, reasons.size),
+      matchedOn: [...reasons].slice(0, 4),
     }));
 
-  return NextResponse.json({ source: "atlas-description-match", kind, results });
+  return NextResponse.json({ source: "atlas-description-match", kind, terms, results });
 }
