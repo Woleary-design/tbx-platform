@@ -9,6 +9,7 @@ export function MobileSellNow() {
 
   if (
     pathname.startsWith("/sell") ||
+    pathname.startsWith("/value") ||
     pathname.startsWith("/sign-in") ||
     pathname.startsWith("/sign-up") ||
     pathname.startsWith("/admin")
