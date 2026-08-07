@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, Boxes, Check, ImagePlus, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Boxes, Check, ImagePlus, Loader2, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type ListingDraft = {
@@ -13,6 +13,21 @@ type ListingDraft = {
   price?: string;
   delivery?: string;
   itemKind?: string;
+  legoMinifigureId?: string | null;
+  atlasLow?: number | null;
+  atlasRecommended?: number | null;
+  atlasHigh?: number | null;
+  atlasEvidenceCount?: number | null;
+  atlasBasis?: string | null;
+};
+
+type MinifigureQuote = {
+  status?: string;
+  low?: number | null;
+  recommended?: number | null;
+  high?: number | null;
+  evidenceCount?: number | null;
+  basis?: string | null;
 };
 
 const stages = ["Confirm", "Photos", "Delivery", "Preview"];
@@ -22,6 +37,8 @@ export default function AtlasSellPage() {
   const [stage, setStage] = useState(0);
   const [draft, setDraft] = useState<ListingDraft>({ delivery: "Seller ships" });
   const [atlasPrice, setAtlasPrice] = useState<number | null>(null);
+  const [pricingLoading, setPricingLoading] = useState(false);
+  const [pricingChecked, setPricingChecked] = useState(false);
   const [ready, setReady] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
 
@@ -31,7 +48,7 @@ export default function AtlasSellPage() {
       try {
         const restored = JSON.parse(saved) as ListingDraft;
         setDraft({ delivery: "Seller ships", ...restored });
-        const initialPrice = Number(restored.price || 0);
+        const initialPrice = Number(restored.atlasRecommended ?? restored.price ?? 0);
         setAtlasPrice(Number.isFinite(initialPrice) && initialPrice > 0 ? initialPrice : null);
       } catch {
         // Leave the route usable even if an old local draft is malformed.
@@ -47,6 +64,58 @@ export default function AtlasSellPage() {
     if (!ready) return;
     window.localStorage.setItem("tbx-listing-draft", JSON.stringify(draft));
   }, [draft, ready]);
+
+  useEffect(() => {
+    if (!ready || pricingChecked || draft.itemKind !== "minifigure" || !draft.legoMinifigureId) return;
+    if (draft.atlasRecommended && draft.atlasRecommended > 0) {
+      setAtlasPrice(draft.atlasRecommended);
+      if (!draft.price) setDraft((current) => ({ ...current, price: String(current.atlasRecommended ?? "") }));
+      setPricingChecked(true);
+      return;
+    }
+
+    const controller = new AbortController();
+    setPricingLoading(true);
+    void (async () => {
+      try {
+        const supabase = createClient();
+        const { data: figure } = await supabase
+          .from("lego_minifigures")
+          .select("catalogue_id")
+          .eq("id", draft.legoMinifigureId)
+          .maybeSingle();
+        const catalogueId = figure?.catalogue_id;
+        if (!catalogueId) return;
+
+        const response = await fetch(`/api/value/minifigure/${encodeURIComponent(catalogueId)}?condition=${encodeURIComponent(draft.condition || "Not sure")}`, { signal: controller.signal });
+        const payload = await response.json();
+        if (!response.ok) return;
+        const quote = (payload?.quote ?? {}) as MinifigureQuote;
+        const recommended = Number(quote.recommended ?? 0);
+        if (quote.status !== "available" || !Number.isFinite(recommended) || recommended <= 0) return;
+
+        setAtlasPrice(Math.round(recommended));
+        setDraft((current) => ({
+          ...current,
+          price: current.price || String(Math.round(recommended)),
+          atlasLow: quote.low ?? null,
+          atlasRecommended: Math.round(recommended),
+          atlasHigh: quote.high ?? null,
+          atlasEvidenceCount: quote.evidenceCount ?? 0,
+          atlasBasis: quote.basis ?? "Current South African asking-market evidence",
+        }));
+      } catch {
+        // Pricing is helpful but should never block listing creation.
+      } finally {
+        if (!controller.signal.aborted) {
+          setPricingLoading(false);
+          setPricingChecked(true);
+        }
+      }
+    })();
+
+    return () => controller.abort();
+  }, [ready, pricingChecked, draft.itemKind, draft.legoMinifigureId, draft.atlasRecommended, draft.condition, draft.price]);
 
   const price = Number(draft.price || 0);
   const fee = price * 0.1;
@@ -66,6 +135,7 @@ export default function AtlasSellPage() {
   }
 
   const canContinue = stage !== 0 || Boolean(draft.title?.trim() && price > 0);
+  const hasRange = Number(draft.atlasLow || 0) > 0 && Number(draft.atlasHigh || 0) > 0;
 
   return (
     <main className="min-h-screen bg-[#050912] text-white">
@@ -95,14 +165,16 @@ export default function AtlasSellPage() {
 
               <div className="mt-7 grid gap-5 sm:grid-cols-2">
                 <div className="rounded-2xl border border-white/10 bg-[#050912] p-5">
-                  <p className="text-sm text-white/40">Atlas value</p>
-                  <p className="mt-2 text-3xl font-black">{atlasPrice ? money(atlasPrice) : "No price yet"}</p>
-                  <p className="mt-2 text-xs leading-5 text-white/30">This is the value Atlas carried forward from identification. Your Marketplace asking price can be different.</p>
+                  <p className="text-sm text-white/40">Atlas estimate</p>
+                  {pricingLoading ? <p className="mt-3 flex items-center gap-2 text-sm text-white/45"><Loader2 className="h-4 w-4 animate-spin" /> Checking current market evidence…</p> : <p className="mt-2 text-3xl font-black">{atlasPrice ? money(atlasPrice) : "Pricing unavailable"}</p>}
+                  {!pricingLoading && atlasPrice && hasRange ? <p className="mt-2 text-sm font-bold text-[#e8c86a]">Market range {money(Number(draft.atlasLow))} – {money(Number(draft.atlasHigh))}</p> : null}
+                  {!pricingLoading && atlasPrice ? <p className="mt-2 text-xs leading-5 text-white/30">{draft.atlasBasis || "Current South African asking-market evidence"}{draft.atlasEvidenceCount ? ` · ${draft.atlasEvidenceCount} matching listing${draft.atlasEvidenceCount === 1 ? "" : "s"}` : ""}.</p> : null}
+                  {!pricingLoading && !atlasPrice ? <p className="mt-2 text-xs leading-5 text-white/30">Atlas identified the item, but there is not enough credible market evidence to estimate its value yet.</p> : null}
                 </div>
                 <label className="rounded-2xl border border-[#e8c86a]/25 bg-[#e8c86a]/[0.05] p-5">
                   <span className="text-sm font-bold text-white/65">Your listing price (ZAR)</span>
                   <input type="number" min="0" value={draft.price || ""} onChange={(event) => update("price", event.target.value)} placeholder="Enter price" className="mt-3 h-14 w-full rounded-xl border border-white/10 bg-[#050912] px-4 text-xl font-black text-white outline-none focus:border-[#e8c86a]/50" />
-                  {atlasPrice && price !== atlasPrice ? <button type="button" onClick={() => update("price", String(atlasPrice))} className="mt-3 text-xs font-bold text-[#e8c86a]">Use Atlas value again</button> : null}
+                  {atlasPrice && price !== atlasPrice ? <button type="button" onClick={() => update("price", String(atlasPrice))} className="mt-3 text-xs font-bold text-[#e8c86a]">Use Atlas estimate again</button> : null}
                 </label>
               </div>
 
