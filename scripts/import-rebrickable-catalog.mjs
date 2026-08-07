@@ -186,10 +186,8 @@ async function main() {
   const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
 
   if (!limit) {
-    const { error: deactivateSetsError } = await supabase.from("lego_sets").update({ is_active: false, updated_at: importedAt }).eq("external_source", "rebrickable").eq("is_active", true);
-    if (deactivateSetsError) throw new Error(`Could not deactivate the previous set catalogue: ${deactivateSetsError.message}`);
-    const { error: deactivateFigsError } = await supabase.from("lego_minifigures").update({ is_active: false, updated_at: importedAt }).eq("source", "rebrickable").eq("is_active", true);
-    if (deactivateFigsError) throw new Error(`Could not deactivate the previous minifigure catalogue: ${deactivateFigsError.message}`);
+    const { error: refreshError } = await supabase.rpc("atlas_prepare_catalogue_refresh", { refresh_time: importedAt });
+    if (refreshError) throw new Error(`Could not prepare the previous catalogue for refresh: ${refreshError.message}`);
     console.log("Marked previous Rebrickable set and minifigure catalogues inactive before rebuilding them.");
   }
 
