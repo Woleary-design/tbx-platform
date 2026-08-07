@@ -1,6 +1,6 @@
 import { ManualValueClient, type IntakeType } from "./manual-value-client";
 
-type SearchParams = Promise<{ type?: string }>;
+type SearchParams = Promise<{ type?: string; resume?: string }>;
 
 function resolveFlow(type?: string): IntakeType {
   if (type === "mixed" || type === "minifigures" || type === "instructions") return type;
@@ -9,5 +9,5 @@ function resolveFlow(type?: string): IntakeType {
 
 export default async function ManualValuePage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  return <ManualValueClient flow={resolveFlow(params.type)} />;
+  return <ManualValueClient flow={resolveFlow(params.type)} resume={params.resume} />;
 }
