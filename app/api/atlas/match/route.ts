@@ -16,15 +16,23 @@ type AtlasRow = {
 };
 
 const STOP_WORDS = new Set([
-  "lego", "with", "from", "that", "this", "have", "has", "some", "very", "looks", "look", "like", "figure", "figures", "minifigure", "minifigures", "pieces", "piece", "parts", "part", "built", "build", "box", "instructions", "manual", "unknown", "set", "sets", "and", "the", "for", "not", "but", "are", "was", "were", "its", "about", "maybe", "colour", "colors", "colours",
+  "lego", "with", "from", "that", "this", "have", "has", "some", "very", "looks", "look", "like", "figure", "figures", "minifigure", "minifigures", "pieces", "piece", "parts", "part", "built", "build", "box", "instructions", "manual", "unknown", "set", "sets", "and", "the", "for", "not", "but", "are", "was", "were", "its", "about", "maybe", "colour", "colors", "colours", "large", "small", "big",
 ]);
 
 function clean(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9\- ]/g, " ").replace(/\s+/g, " ").trim();
 }
 
+function normalizeWord(word: string) {
+  if (word.length > 4 && word.endsWith("s") && !word.endsWith("ss")) return word.slice(0, -1);
+  return word;
+}
+
 function searchTerms(text: string) {
-  const words = clean(text).split(" ").filter((word) => word.length >= 3 && !STOP_WORDS.has(word));
+  const words = clean(text)
+    .split(" ")
+    .map(normalizeWord)
+    .filter((word) => word.length >= 3 && !STOP_WORDS.has(word));
   return [...new Set(words)].slice(0, 8);
 }
 
@@ -32,8 +40,21 @@ function isMinifigureRecord(row: AtlasRow) {
   return (row.theme ?? "").toLowerCase().includes("minifig") || (row.subtheme ?? "").toLowerCase().includes("minifig") || /^sw\d+/i.test(row.set_number);
 }
 
+function fieldBoost(row: AtlasRow, term: string) {
+  const needle = clean(term);
+  const name = clean(row.name);
+  const theme = clean(row.theme ?? "");
+  const subtheme = clean(row.subtheme ?? "");
+  const number = clean(row.set_number);
+  if (number === needle || name === needle) return 900;
+  if (name.includes(needle)) return 240;
+  if (theme === needle || subtheme === needle) return 260;
+  if (theme.includes(needle) || subtheme.includes(needle)) return 170;
+  return 0;
+}
+
 function confidence(score: number, hits: number) {
-  const base = 36 + Math.min(42, hits * 11) + Math.min(16, Math.log10(Math.max(score, 1)) * 7);
+  const base = 34 + Math.min(48, hits * 13) + Math.min(14, Math.log10(Math.max(score, 1)) * 6);
   return Math.max(28, Math.min(96, Math.round(base)));
 }
 
@@ -56,11 +77,10 @@ export async function GET(request: NextRequest) {
       if (kind === "set" && minifigureRecord) return;
 
       const rpcRelevance = Number(row.relevance ?? 0);
-      const exact = clean(row.set_number) === clean(term) || clean(row.name) === clean(term);
-      const score = sourceBoost + rpcRelevance + Math.max(1, 8 - termIndex) * Math.max(1, 24 - position) * 4 + (exact ? 900 : 0);
+      const score = sourceBoost + rpcRelevance + fieldBoost(row, term) + Math.max(1, 8 - termIndex) * Math.max(1, 24 - position) * 3;
       const existing = ranked.get(row.id);
       if (existing) {
-        existing.score += score * 0.55;
+        existing.score += score * 0.65;
         existing.reasons.add(term);
       } else {
         ranked.set(row.id, { row, score, reasons: new Set([term]) });
@@ -68,7 +88,7 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const searches = await Promise.all(terms.slice(0, 6).map(async (term, index) => {
+  const searches = await Promise.all(terms.slice(0, 7).map(async (term, index) => {
     const [{ data: rpcData }, { data: directData }] = await Promise.all([
       supabase.rpc("atlas_search", { search_query: term, result_limit: 20 }),
       supabase
@@ -77,7 +97,7 @@ export async function GET(request: NextRequest) {
         .eq("is_active", true)
         .eq("atlas_visibility", "public")
         .or(`set_number.ilike.%${term}%,name.ilike.%${term}%,theme.ilike.%${term}%,subtheme.ilike.%${term}%`)
-        .limit(24),
+        .limit(30),
     ]);
     return { term, index, rpcRows: (rpcData ?? []) as AtlasRow[], directRows: (directData ?? []) as AtlasRow[] };
   }));
