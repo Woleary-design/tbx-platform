@@ -191,7 +191,7 @@ async function main() {
     console.log("Marked previous Rebrickable set and minifigure catalogues inactive before rebuilding them.");
   }
 
-  const setProcessed = await upsertBatches(supabase, "lego_sets", catalogueRows, "set_number", "sets");
+  const setProcessed = await upsertBatches(supabase, "lego_sets", catalogueRows, "external_source,external_id", "sets");
   const figProcessed = await upsertBatches(supabase, "lego_minifigures", minifigureRows, "catalogue_id", "minifigures");
   console.log(`Atlas catalogue import complete: ${setProcessed.toLocaleString()} sets and ${figProcessed.toLocaleString()} minifigures active.`);
 }
