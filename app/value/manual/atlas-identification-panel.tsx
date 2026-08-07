@@ -24,6 +24,16 @@ type RecognisedSet = {
   imageUrl: string | null;
 };
 
+type PriceQuote = {
+  status: "available" | "unavailable";
+  currency: "ZAR";
+  low: number | null;
+  recommended: number | null;
+  high: number | null;
+  evidenceCount: number;
+  basis?: string;
+};
+
 type MatchState = "candidate_minifigures" | "possible_source_set" | "needs_more_detail" | null;
 
 function rand(value: number) {
@@ -52,6 +62,8 @@ export function AtlasIdentificationPanel({
   const [matchState, setMatchState] = useState<MatchState>(null);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [priceQuote, setPriceQuote] = useState<PriceQuote | null>(null);
+  const [pricing, setPricing] = useState(false);
 
   useEffect(() => {
     if (loose || query.trim().length < 2) {
@@ -91,6 +103,29 @@ export function AtlasIdentificationPanel({
     };
   }, [loose, minifigure, query]);
 
+  useEffect(() => {
+    setPriceQuote(null);
+    if (!minifigure || !selected?.setNumber) return;
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setPricing(true);
+      try {
+        const response = await fetch(`/api/value/minifigure/${encodeURIComponent(selected.setNumber)}`, { signal: controller.signal });
+        const payload = await response.json();
+        if (!response.ok) throw new Error("Pricing unavailable");
+        setPriceQuote(payload?.quote ?? null);
+      } catch {
+        if (!controller.signal.aborted) setPriceQuote({ status: "unavailable", currency: "ZAR", low: null, recommended: null, high: null, evidenceCount: 0 });
+      } finally {
+        if (!controller.signal.aborted) setPricing(false);
+      }
+    }, 200);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [minifigure, selected?.setNumber]);
+
   const bulkRange = useMemo(() => {
     if (!weightKg || weightKg <= 0) return null;
     return { low: Math.round(weightKg * 150), high: Math.round(weightKg * 250) };
@@ -120,10 +155,7 @@ export function AtlasIdentificationPanel({
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#e8c86a]">Possible source set</p>
           <div className="mt-3 flex items-center gap-4">
             {recognisedSet.imageUrl ? <img src={recognisedSet.imageUrl} alt="" className="h-16 w-16 rounded-lg bg-white/5 object-contain" /> : <span className="grid h-16 w-16 shrink-0 place-items-center rounded-lg bg-white/[0.04] text-white/25"><Search className="h-5 w-5" /></span>}
-            <div className="min-w-0">
-              <p className="font-black text-white">{recognisedSet.setNumber} · {recognisedSet.name}</p>
-              {recognisedSet.theme ? <p className="mt-1 text-sm text-white/40">{recognisedSet.theme}</p> : null}
-            </div>
+            <div className="min-w-0"><p className="font-black text-white">{recognisedSet.setNumber} · {recognisedSet.name}</p>{recognisedSet.theme ? <p className="mt-1 text-sm text-white/40">{recognisedSet.theme}</p> : null}</div>
           </div>
           <div className="mt-4 border-t border-white/[0.08] pt-4">
             <div className="flex items-center justify-between gap-4 text-sm"><span className="text-white/40">Exact minifigure</span><span className="font-bold text-white/75">Not identified yet</span></div>
@@ -134,7 +166,24 @@ export function AtlasIdentificationPanel({
 
       {!loading && searched && candidates.length === 0 && (!minifigure || matchState === "needs_more_detail") ? <p className="mt-4 text-sm leading-6 text-white/45">Atlas could not identify the exact {minifigure ? "minifigure" : "item"} yet. Add another useful detail and Atlas will try again.</p> : null}
 
-      {!loading && candidates.length > 0 ? <div className="mt-4 space-y-3"><p className="text-sm text-white/50">I found {candidates.length} possible {minifigure ? "minifigure" : "set"} matches. Choose one only if it looks right.</p>{candidates.slice(0, 5).map((candidate) => { const active = selected?.id === candidate.id; return <button key={candidate.id} type="button" onClick={() => onSelect(active ? null : candidate)} className={`flex w-full items-center gap-4 rounded-xl border p-4 text-left transition ${active ? "border-[#e8c86a]/55 bg-[#e8c86a]/10" : "border-white/[0.08] bg-[#050912] hover:border-white/20"}`}>{candidate.imageUrl ? <img src={candidate.imageUrl} alt="" className="h-16 w-16 rounded-lg bg-white/5 object-contain" /> : <span className="grid h-16 w-16 shrink-0 place-items-center rounded-lg bg-white/[0.04] text-white/25"><Search className="h-5 w-5" /></span>}<span className="min-w-0 flex-1"><span className="block truncate font-black text-white">{candidate.setNumber} · {candidate.name}</span><span className="mt-1 block truncate text-sm text-white/40">{[candidate.theme, candidate.subtheme, candidate.year].filter(Boolean).join(" · ")}</span><span className="mt-1 block text-xs font-bold text-[#e8c86a]">{candidate.confidence}% match</span></span>{active ? <Check className="h-5 w-5 shrink-0 text-[#e8c86a]" /> : null}</button>; })}</div> : null}
+      {!loading && candidates.length > 0 ? (
+        <div className="mt-4 space-y-3">
+          <p className="text-sm text-white/50">I found {candidates.length} possible {minifigure ? "minifigure" : "set"} matches. Choose one only if it looks right.</p>
+          {candidates.slice(0, 5).map((candidate) => {
+            const active = selected?.id === candidate.id;
+            return <button key={candidate.id} type="button" onClick={() => onSelect(active ? null : candidate)} className={`flex w-full items-center gap-4 rounded-xl border p-4 text-left transition ${active ? "border-[#e8c86a]/55 bg-[#e8c86a]/10" : "border-white/[0.08] bg-[#050912] hover:border-white/20"}`}>{candidate.imageUrl ? <img src={candidate.imageUrl} alt="" className="h-16 w-16 rounded-lg bg-white/5 object-contain" /> : <span className="grid h-16 w-16 shrink-0 place-items-center rounded-lg bg-white/[0.04] text-white/25"><Search className="h-5 w-5" /></span>}<span className="min-w-0 flex-1"><span className="block truncate font-black text-white">{candidate.setNumber} · {candidate.name}</span><span className="mt-1 block truncate text-sm text-white/40">{[candidate.theme, candidate.subtheme, candidate.year].filter(Boolean).join(" · ")}</span><span className="mt-1 block text-xs font-bold text-[#e8c86a]">{candidate.confidence}% match</span></span>{active ? <Check className="h-5 w-5 shrink-0 text-[#e8c86a]" /> : null}</button>;
+          })}
+        </div>
+      ) : null}
+
+      {minifigure && selected ? (
+        <div className="mt-4 rounded-xl border border-white/[0.09] bg-[#050912] p-5">
+          <div className="flex items-center justify-between gap-4"><p className="text-xs font-bold uppercase tracking-[0.14em] text-[#e8c86a]">Estimated value</p>{pricing ? <Loader2 className="h-4 w-4 animate-spin text-white/35" /> : null}</div>
+          {!pricing && priceQuote?.status === "available" && priceQuote.recommended && priceQuote.low && priceQuote.high ? <><p className="mt-2 text-3xl font-black tracking-[-0.045em] text-white">{rand(priceQuote.recommended)}</p><p className="mt-1 text-sm font-bold text-white/55">Likely range {rand(priceQuote.low)} – {rand(priceQuote.high)}</p><p className="mt-3 text-xs leading-5 text-white/35">{priceQuote.basis || "Current South African asking-market evidence"} · {priceQuote.evidenceCount} matching listing{priceQuote.evidenceCount === 1 ? "" : "s"}. This is an estimate, not a guaranteed sale price.</p></> : null}
+          {!pricing && priceQuote?.status === "unavailable" ? <><p className="mt-2 font-bold text-white/75">Not enough pricing evidence yet</p><p className="mt-2 text-xs leading-5 text-white/35">Atlas found the figure, but not enough credible current market listings to show a responsible estimate.</p></> : null}
+          {pricing ? <p className="mt-2 text-sm text-white/40">Checking current market evidence…</p> : null}
+        </div>
+      ) : null}
     </div>
   );
 }
