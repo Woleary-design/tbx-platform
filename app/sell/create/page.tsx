@@ -31,6 +31,7 @@ type Draft = {
   weight: string;
   price: string;
   shippingMethods: CourierCode[];
+  sourceAssetId?: string;
 };
 type TextDraftField = Exclude<keyof Draft, "shippingMethods">;
 type Pricing = {
@@ -112,10 +113,18 @@ export default function CreateListingPage() {
   const [selectedSet, setSelectedSet] = useState<AtlasSet | null>(null);
   const [atlasSearching, setAtlasSearching] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [fromCollection, setFromCollection] = useState(false);
 
   useEffect(() => {
     const saved = window.localStorage.getItem("tbx-listing-draft");
-    if (saved) setDraft({ ...emptyDraft, ...JSON.parse(saved) });
+    if (saved) {
+      const restored = { ...emptyDraft, ...JSON.parse(saved) } as Draft;
+      setDraft(restored);
+      if (restored.sourceAssetId) {
+        setFromCollection(true);
+        setStep(1);
+      }
+    }
     createClient().auth.getUser().then(({ data }) => {
       setSignedIn(Boolean(data.user));
       setReady(true);
@@ -254,6 +263,7 @@ export default function CreateListingPage() {
             ? "Contents not yet identified"
             : "Original box, instructions and minifigures",
       price: "",
+      sourceAssetId: undefined,
     }));
   }
 
@@ -328,9 +338,9 @@ export default function CreateListingPage() {
       </header>
 
       <section className="mx-auto max-w-[1200px] px-5 py-14 lg:px-10">
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#e8c86a]">Create a listing</p>
+        <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#e8c86a]">{fromCollection ? "Listing from your collection" : "Create a listing"}</p>
         <h1 className="mt-4 max-w-5xl text-5xl font-black tracking-[-0.055em]">
-          Tell us what you have. TBX will guide the rest.
+          {fromCollection ? "Your collection item is ready. Confirm the sale details." : "Tell us what you have. TBX will guide the rest."}
         </h1>
 
         <div className="mt-10 grid gap-2 sm:grid-cols-6">
