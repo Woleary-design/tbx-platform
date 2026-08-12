@@ -12,8 +12,8 @@ import { cn } from "@/lib/utils";
 const navigation = [
   { href: "/", label: "Home", icon: Home },
   { href: "/collection", label: "My Collection", icon: LibraryBig },
-  { href: "/wishlist", label: "Wishlist", icon: Heart },
   { href: "/marketplace", label: "Marketplace", icon: ShoppingBag },
+  { href: "/wishlist", label: "Wishlist", icon: Heart },
   { href: "/atlas", label: "Atlas", icon: BookOpen },
 ];
 
@@ -136,7 +136,7 @@ export function AppShell({ children, collector, isAdmin = false }: AppShellProps
                     <Link href="/admin" aria-label="Open Command Centre"><LayoutDashboard className="h-4 w-4" /><span className="hidden min-[390px]:inline">Command</span></Link>
                   </Button>
                 ) : null}
-                <Button asChild className="h-10 rounded-full bg-[#ffd84d] px-3 font-semibold text-[#050915] hover:bg-[#ffe374]">
+                <Button asChild className="h-12 rounded-full bg-[#ffd84d] px-5 text-base font-bold text-[#050915] shadow-[0_10px_30px_rgba(255,216,77,0.18)] hover:bg-[#ffe374]">
                   <Link href="/sell"><Tag className="h-4 w-4" /> Sell</Link>
                 </Button>
               </div>
