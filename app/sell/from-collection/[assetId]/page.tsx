@@ -50,7 +50,7 @@ export default function SellFromCollectionPage() {
         description: asset.notes ?? "",
         weight: "",
         price: asset.estimated_value ? String(Math.round(Number(asset.estimated_value))) : "",
-        delivery: "Seller ships",
+        shippingMethods: ["courier-guy", "paxi", "pargo"],
         sourceAssetId: asset.id,
       }));
 
