@@ -24,7 +24,7 @@ export default async function ProductDetailPage({ params }: Props) {
       .from("listings")
       .select(`
         id, title, description, asking_price, published_at, value_quote,
-        assets!listings_asset_id_fkey(set_number, set_name, theme, condition, original_owner, original_receipt, instructions_complete, minifigures_complete),
+        assets!listings_asset_id_fkey(set_number, set_name, theme, condition, original_owner, original_receipt, instructions_complete, minifigures_complete, passport_status, lego_sets!assets_lego_set_id_fkey(image_url)),
         collectors!listings_seller_id_fkey(display_name, username, collector_level, confidence_score, completed_trades, average_dispatch_days, disputes, identity_verified, address_verified, payment_verified)
       `)
       .eq("id", listingId)
@@ -34,6 +34,7 @@ export default async function ProductDetailPage({ params }: Props) {
     if (data) {
       const asset = Array.isArray(data.assets) ? data.assets[0] : data.assets;
       const seller = Array.isArray(data.collectors) ? data.collectors[0] : data.collectors;
+      const legoSet = Array.isArray(asset?.lego_sets) ? asset.lego_sets[0] : asset?.lego_sets;
       const quote = data.value_quote && typeof data.value_quote === "object" && !Array.isArray(data.value_quote)
         ? data.value_quote as Record<string, unknown>
         : {};
@@ -50,7 +51,8 @@ export default async function ProductDetailPage({ params }: Props) {
         category: asset?.theme ?? "Collection",
         priceZar: Number(data.asking_price),
         condition,
-        imageUrl: null,
+        imageUrl: legoSet?.image_url ?? null,
+        verified: asset?.passport_status === "TBX Certified",
         publishedAt: data.published_at ?? new Date().toISOString(),
         rarityRank: seller?.confidence_score ?? 50,
         seller: {
@@ -93,11 +95,11 @@ export default async function ProductDetailPage({ params }: Props) {
         <div className="space-y-8">
           <div className="overflow-hidden rounded-[2.25rem] border border-[#eadfce] bg-white shadow-[0_30px_100px_rgba(43,30,18,0.12)]">
             <div className="relative grid aspect-[16/10] place-items-center overflow-hidden bg-[radial-gradient(circle_at_35%_22%,rgba(250,204,21,0.34),transparent_30%),linear-gradient(135deg,#fff8e8,#ecd1a8)]">
-              {listing.imageUrl ? <Image src={listing.imageUrl} alt={listing.title} fill priority sizes="(max-width: 1024px) 100vw, 70vw" className="object-cover" /> : <ShoppingBag className="h-28 w-28 text-yellow-600/70" />}
+              {listing.imageUrl ? <Image src={listing.imageUrl} alt={listing.title} fill priority sizes="(max-width: 1024px) 100vw, 70vw" className="object-contain p-5 sm:p-8" /> : <ShoppingBag className="h-28 w-28 text-yellow-600/70" />}
               <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-slate-950/35 to-transparent" />
-              <div className="absolute left-5 top-5"><VerifiedLabel /></div>
+              {listing.verified !== false ? <div className="absolute left-5 top-5"><VerifiedLabel /></div> : null}
             </div>
-            <div className="grid grid-cols-4 gap-3 p-4">{["Hero", "Box", "Details", "Evidence"].map((label) => <div key={label} className="rounded-xl border border-[#eadfce] bg-white p-3 text-center text-xs font-semibold text-slate-500">{label}</div>)}</div>
+            <div className="border-t border-[#eadfce] p-4 text-center text-xs font-semibold text-slate-500">{listing.imageUrl ? "LEGO catalogue image" : "Seller photos pending"}</div>
           </div>
 
           <div className="rounded-[2rem] border border-[#eadfce] bg-white p-7 shadow-[0_24px_80px_rgba(43,30,18,0.08)]">
@@ -113,7 +115,7 @@ export default async function ProductDetailPage({ params }: Props) {
         </div>
 
         <aside className="h-fit rounded-[1.9rem] border border-[#eadfce] bg-white p-6 shadow-[0_30px_100px_rgba(43,30,18,0.13)] lg:sticky lg:top-24">
-          <div className="flex items-center justify-between"><VerifiedLabel /><button aria-label="Add to watchlist" className="rounded-full border border-[#eadfce] p-2 text-slate-500 hover:text-red-500"><Heart className="h-4 w-4" /></button></div>
+          <div className="flex items-center justify-between">{listing.verified !== false ? <VerifiedLabel /> : <span className="text-xs font-semibold text-slate-500">Seller supplied listing</span>}<button aria-label="Add to watchlist" className="rounded-full border border-[#eadfce] p-2 text-slate-500 hover:text-red-500"><Heart className="h-4 w-4" /></button></div>
           <div className="mt-6 rounded-2xl bg-slate-950 p-4 text-white"><p className="text-xs uppercase tracking-[0.16em] text-yellow-300">Seller trust</p><p className="mt-2 text-3xl font-semibold">{listing.seller.trustScore} <span className="text-sm text-white/50">{listing.seller.level}</span></p></div>
           <p className="mt-6 text-4xl font-semibold text-slate-950">{formatZar(listing.priceZar)}</p>
           <p className="mt-2 text-sm leading-6 text-slate-500">Funds are held securely until delivery and your inspection window is complete.</p>
