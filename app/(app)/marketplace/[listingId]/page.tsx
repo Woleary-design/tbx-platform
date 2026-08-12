@@ -28,7 +28,7 @@ export default async function ProductDetailPage({ params }: Props) {
               <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-slate-950/35 to-transparent" />
               <div className="absolute left-5 top-5"><VerifiedLabel /></div>
             </div>
-            <div className="grid grid-cols-4 gap-3 p-4">{["Hero", "Box", "Details", "Evidence"].map((label) => <div key={label} className="rounded-xl border border-[#eadfce] bg-[#fffaf1] p-3 text-center text-xs font-semibold text-slate-500">{label}</div>)}</div>
+            <div className="grid grid-cols-4 gap-3 p-4">{["Hero", "Box", "Details", "Evidence"].map((label) => <div key={label} className="rounded-xl border border-[#eadfce] bg-white p-3 text-center text-xs font-semibold text-slate-500">{label}</div>)}</div>
           </div>
 
           <div className="rounded-[2rem] border border-[#eadfce] bg-white p-7 shadow-[0_24px_80px_rgba(43,30,18,0.08)]">
@@ -55,7 +55,7 @@ export default async function ProductDetailPage({ params }: Props) {
             <p className="flex justify-between"><span>Insurance</span><strong>{listing.shipping.insuranceIncluded ? "Included" : "Not included"}</strong></p>
             <p className="flex justify-between"><span>Dispatch</span><strong>{listing.dispatchDays} day{listing.dispatchDays === 1 ? "" : "s"}</strong></p>
           </div>
-          <div className="mt-6 flex gap-2 rounded-2xl bg-[#fffaf1] p-4 text-sm leading-6 text-slate-600"><ShieldCheck className="mt-1 h-4 w-4 shrink-0 text-emerald-700" /><span><strong className="text-slate-950">TBX Secure:</strong> the seller is paid only after delivery and buyer inspection.</span></div>
+          <div className="mt-6 flex gap-2 rounded-2xl border border-[#eadfce] bg-white p-4 text-sm leading-6 text-slate-600"><ShieldCheck className="mt-1 h-4 w-4 shrink-0 text-emerald-700" /><span><strong className="text-slate-950">TBX Secure:</strong> the seller is paid only after delivery and buyer inspection.</span></div>
           <div className="mt-4 flex items-center gap-2 text-xs text-slate-500"><Truck className="h-4 w-4" /> Protected delivery within South Africa</div>
         </aside>
       </section>
