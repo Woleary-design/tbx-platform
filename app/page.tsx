@@ -118,12 +118,20 @@ export default async function HomePage() {
               <p className="mt-8 max-w-2xl text-lg leading-8 text-white/55 sm:text-xl">
                 Start with a complete set, a mixed box, loose parts, minifigures or an unknown collection. Photos are only required when you publish an item for sale.
               </p>
-              <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-                <Link href="/value" className="group inline-flex h-14 items-center justify-center gap-3 rounded-2xl bg-[#e8c86a] px-7 font-bold text-[#050912] shadow-[0_16px_50px_rgba(232,200,106,0.16)] transition hover:-translate-y-0.5 hover:bg-[#f1d478]">
-                  Value my collection <ArrowRight className="h-5 w-5 transition group-hover:translate-x-1" />
+              <div className="mt-10 grid gap-3 sm:grid-cols-2">
+                <Link href="/sell" className="group inline-flex h-16 items-center justify-center gap-3 rounded-2xl bg-[#e8c86a] px-7 text-lg font-black text-[#050912] shadow-[0_16px_50px_rgba(232,200,106,0.2)] transition hover:-translate-y-0.5 hover:bg-[#f1d478]">
+                  Sell LEGO <ArrowRight className="h-5 w-5 transition group-hover:translate-x-1" />
                 </Link>
-                <Link href="/atlas" className="inline-flex h-14 items-center justify-center gap-3 rounded-2xl border border-white/12 bg-white/[0.035] px-7 font-bold text-white/80 transition hover:-translate-y-0.5 hover:border-[#e8c86a]/25 hover:text-white">
-                  Explore Atlas
+                <Link href="/value" className="inline-flex h-16 items-center justify-center gap-3 rounded-2xl border border-[#e8c86a]/25 bg-[#e8c86a]/[0.06] px-7 text-lg font-bold text-[#e8c86a] transition hover:-translate-y-0.5 hover:bg-[#e8c86a]/10">
+                  Value my collection
+                </Link>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <Link href="/collection" className="inline-flex min-h-20 items-center justify-between gap-3 rounded-2xl border border-white/12 bg-white/[0.035] px-4 font-bold text-white/85 transition hover:border-[#e8c86a]/30 hover:text-white">
+                  <span className="inline-flex items-center gap-2"><Heart className="h-5 w-5 text-[#e8c86a]" /> My Collection</span><ArrowRight className="h-4 w-4 text-white/35" />
+                </Link>
+                <Link href="/marketplace" className="inline-flex min-h-20 items-center justify-between gap-3 rounded-2xl border border-white/12 bg-white/[0.035] px-4 font-bold text-white/85 transition hover:border-[#e8c86a]/30 hover:text-white">
+                  <span className="inline-flex items-center gap-2"><Store className="h-5 w-5 text-[#e8c86a]" /> Marketplace</span><ArrowRight className="h-4 w-4 text-white/35" />
                 </Link>
               </div>
               <div className="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/38">
