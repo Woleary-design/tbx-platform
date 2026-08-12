@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { KeyboardEvent, useEffect, useMemo, useState } from "react";
+import { KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -114,6 +114,7 @@ export default function CreateListingPage() {
   const [atlasSearching, setAtlasSearching] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [fromCollection, setFromCollection] = useState(false);
+  const skipInitialDraftPersist = useRef(true);
 
   useEffect(() => {
     const saved = window.localStorage.getItem("tbx-listing-draft");
@@ -132,6 +133,10 @@ export default function CreateListingPage() {
   }, []);
 
   useEffect(() => {
+    if (skipInitialDraftPersist.current) {
+      skipInitialDraftPersist.current = false;
+      return;
+    }
     window.localStorage.setItem("tbx-listing-draft", JSON.stringify(draft));
   }, [draft]);
 
