@@ -24,7 +24,7 @@ export default async function ProductDetailPage({ params }: Props) {
       .from("listings")
       .select(`
         id, title, description, asking_price, published_at, value_quote,
-        assets!listings_asset_id_fkey(set_number, set_name, theme, condition, original_owner, original_receipt, instructions_complete, minifigures_complete, passport_status, lego_sets!assets_lego_set_id_fkey(image_url)),
+        assets!listings_asset_id_fkey(set_number, set_name, theme, condition, original_owner, original_receipt, instructions_complete, minifigures_complete, passport_status, lego_set_id),
         collectors!listings_seller_id_fkey(display_name, username, collector_level, confidence_score, completed_trades, average_dispatch_days, disputes, identity_verified, address_verified, payment_verified)
       `)
       .eq("id", listingId)
@@ -34,7 +34,15 @@ export default async function ProductDetailPage({ params }: Props) {
     if (data) {
       const asset = Array.isArray(data.assets) ? data.assets[0] : data.assets;
       const seller = Array.isArray(data.collectors) ? data.collectors[0] : data.collectors;
-      const legoSet = Array.isArray(asset?.lego_sets) ? asset.lego_sets[0] : asset?.lego_sets;
+      let catalogueImageUrl: string | null = null;
+      if (asset?.lego_set_id) {
+        const { data: legoSet } = await supabase
+          .from("lego_sets")
+          .select("image_url")
+          .eq("id", asset.lego_set_id)
+          .maybeSingle();
+        catalogueImageUrl = legoSet?.image_url ?? null;
+      }
       const quote = data.value_quote && typeof data.value_quote === "object" && !Array.isArray(data.value_quote)
         ? data.value_quote as Record<string, unknown>
         : {};
@@ -51,7 +59,7 @@ export default async function ProductDetailPage({ params }: Props) {
         category: asset?.theme ?? "Collection",
         priceZar: Number(data.asking_price),
         condition,
-        imageUrl: legoSet?.image_url ?? null,
+        imageUrl: catalogueImageUrl,
         verified: asset?.passport_status === "TBX Certified",
         publishedAt: data.published_at ?? new Date().toISOString(),
         rarityRank: seller?.confidence_score ?? 50,
@@ -119,7 +127,7 @@ export default async function ProductDetailPage({ params }: Props) {
           <div className="mt-6 rounded-2xl bg-slate-950 p-4 text-white"><p className="text-xs uppercase tracking-[0.16em] text-yellow-300">Seller trust</p><p className="mt-2 text-3xl font-semibold">{listing.seller.trustScore} <span className="text-sm text-white/50">{listing.seller.level}</span></p></div>
           <p className="mt-6 text-4xl font-semibold text-slate-950">{formatZar(listing.priceZar)}</p>
           <p className="mt-2 text-sm leading-6 text-slate-500">Funds are held securely until delivery and your inspection window is complete.</p>
-          <Button asChild className="mt-6 h-13 w-full rounded-xl bg-yellow-400 font-semibold text-slate-950 hover:bg-yellow-300"><Link href={`/checkout/${listing.id}`}>Buy Protected <ArrowRight className="h-4 w-4" /></Link></Button>
+          <Button asChild className="mt-6 h-14 w-full rounded-xl bg-yellow-400 text-lg font-bold text-slate-950 shadow-[0_12px_30px_rgba(250,204,21,0.18)] hover:bg-yellow-300"><Link href={`/checkout/${listing.id}`}>Buy Protected <ArrowRight className="h-4 w-4" /></Link></Button>
           <div className="mt-6 space-y-3 text-sm text-slate-600">
             <p className="flex justify-between"><span>Shipping</span><strong>{listing.shipping.estimate}</strong></p>
             <div><p className="flex justify-between"><span>Delivery</span><strong>Buyer chooses</strong></p><p className="mt-2 text-xs text-slate-500">{enabledShipping.map((method) => method.name).join(" · ")}</p></div>
