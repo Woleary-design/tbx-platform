@@ -14,6 +14,8 @@ type Listing = {
   setName: string;
   theme: string | null;
   imageUrl: string | null;
+  sellerName: string;
+  sellerLevel: string;
 };
 
 export function BuyLegoBrowser({ listings, initialQuery = "" }: { listings: Listing[]; initialQuery?: string }) {
@@ -68,12 +70,13 @@ export function BuyLegoBrowser({ listings, initialQuery = "" }: { listings: List
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-yellow-600">LEGO {listing.setNumber}</p>
                   <h3 className="mt-2 text-xl font-semibold text-slate-950">{listing.setName}</h3>
                   <p className="mt-2 text-sm text-slate-500">{listing.condition}{listing.theme ? ` · ${listing.theme}` : ""}</p>
+                  <p className="mt-3 text-sm font-semibold text-slate-700">{listing.sellerName} <span className="font-normal text-slate-400">· {listing.sellerLevel}</span></p>
                   <div className="mt-5 flex items-center justify-between">
                     <p className="text-2xl font-semibold text-slate-950">R{listing.priceZar.toLocaleString("en-ZA")}</p>
-                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">Confidence {listing.confidenceScore}</span>
+                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">Trust {listing.confidenceScore}</span>
                   </div>
                   <p className="mt-3 text-sm text-slate-500">Dispatches within {listing.dispatchDays} day{listing.dispatchDays === 1 ? "" : "s"}</p>
-                  <span className="mt-5 inline-flex font-semibold text-slate-950">Buy now →</span>
+                  <div className="mt-5 flex items-center justify-between"><span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700"><ShieldCheck className="h-4 w-4" /> Protected by TBX</span><span className="font-semibold text-slate-950">View listing →</span></div>
                 </div>
               </Link>
             ))}
