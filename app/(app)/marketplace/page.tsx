@@ -16,7 +16,7 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
       asking_price,
       published_at,
       value_quote,
-      assets!listings_asset_id_fkey(set_number, set_name, theme, condition, lego_sets!assets_lego_set_id_fkey(image_url)),
+      assets!listings_asset_id_fkey(set_number, set_name, theme, condition, lego_set_id),
       collectors!listings_seller_id_fkey(display_name, username, collector_level, confidence_score, average_dispatch_days)
     `)
     .eq("status", "Active")
@@ -24,10 +24,19 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
 
   if (error) console.error("Marketplace listings could not be loaded", error.message);
 
+  const legoSetIds = (liveListings ?? [])
+    .flatMap((listing) => {
+      const asset = Array.isArray(listing.assets) ? listing.assets[0] : listing.assets;
+      return asset?.lego_set_id ? [asset.lego_set_id] : [];
+    });
+  const { data: legoSets } = legoSetIds.length
+    ? await supabase.from("lego_sets").select("id, image_url").in("id", legoSetIds)
+    : { data: [] as Array<{ id: string; image_url: string | null }> };
+  const imageBySetId = new Map((legoSets ?? []).map((set) => [set.id, set.image_url]));
+
   const databaseListings = (liveListings ?? []).map((listing) => {
     const asset = Array.isArray(listing.assets) ? listing.assets[0] : listing.assets;
     const seller = Array.isArray(listing.collectors) ? listing.collectors[0] : listing.collectors;
-    const legoSet = Array.isArray(asset?.lego_sets) ? asset.lego_sets[0] : asset?.lego_sets;
     const valueQuote = listing.value_quote && typeof listing.value_quote === "object" && !Array.isArray(listing.value_quote)
       ? listing.value_quote as Record<string, unknown>
       : {};
@@ -40,7 +49,7 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
       setNumber: asset?.set_number ?? "Collection",
       setName: listing.title || asset?.set_name || "LEGO collection",
       theme: asset?.theme ?? null,
-      imageUrl: legoSet?.image_url ?? null,
+      imageUrl: asset?.lego_set_id ? imageBySetId.get(asset.lego_set_id) ?? null : null,
       sellerName: seller?.display_name || seller?.username || "TBX Collector",
       sellerLevel: seller?.collector_level ?? "Collector",
     };
