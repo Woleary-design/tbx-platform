@@ -5,6 +5,7 @@ import { ArrowRight, Heart, ShieldCheck, ShoppingBag, Truck } from "lucide-react
 import { Button } from "@/components/ui/button";
 import { ConditionReport, ProvenanceCard, SellerTrustCard, VerifiedLabel } from "@/features/marketplace/components/listing-detail-sections";
 import { formatZar, getListingById, marketplaceListings } from "@/features/marketplace/data/marketplace.mock";
+import { getEnabledShippingMethods } from "@/features/marketplace/data/shipping-options";
 
 type Props = { params: Promise<{ listingId: string }> };
 
@@ -16,6 +17,7 @@ export default async function ProductDetailPage({ params }: Props) {
   const { listingId } = await params;
   const listing = getListingById(listingId);
   if (!listing) notFound();
+  const enabledShipping = getEnabledShippingMethods(listing.shipping.enabledMethods);
 
   return (
     <div className="space-y-9">
@@ -51,7 +53,7 @@ export default async function ProductDetailPage({ params }: Props) {
           <Button asChild className="mt-6 h-13 w-full rounded-xl bg-yellow-400 font-semibold text-slate-950 hover:bg-yellow-300"><Link href={`/checkout/${listing.id}`}>Buy Protected <ArrowRight className="h-4 w-4" /></Link></Button>
           <div className="mt-6 space-y-3 text-sm text-slate-600">
             <p className="flex justify-between"><span>Shipping</span><strong>{listing.shipping.estimate}</strong></p>
-            <p className="flex justify-between"><span>Courier</span><strong>{listing.shipping.courierIncluded ? "Included" : "Quoted separately"}</strong></p>
+            <div><p className="flex justify-between"><span>Delivery</span><strong>Buyer chooses</strong></p><p className="mt-2 text-xs text-slate-500">{enabledShipping.map((method) => method.name).join(" · ")}</p></div>
             <p className="flex justify-between"><span>Insurance</span><strong>{listing.shipping.insuranceIncluded ? "Included" : "Not included"}</strong></p>
             <p className="flex justify-between"><span>Dispatch</span><strong>{listing.dispatchDays} day{listing.dispatchDays === 1 ? "" : "s"}</strong></p>
           </div>

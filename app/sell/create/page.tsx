@@ -14,10 +14,12 @@ import {
   PackageOpen,
   Search,
   Sparkles,
+  Truck,
   Zap,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { legoCatalogue, type LegoCatalogueSet } from "@/lib/lego/catalog";
+import { courierCodes, shippingMethods, type CourierCode } from "@/features/marketplace/data/shipping-options";
 
 type ItemKind = "known-set" | "mixed-box" | "unknown";
 type Draft = {
@@ -28,8 +30,9 @@ type Draft = {
   description: string;
   weight: string;
   price: string;
-  delivery: string;
+  shippingMethods: CourierCode[];
 };
+type TextDraftField = Exclude<keyof Draft, "shippingMethods">;
 type Pricing = {
   fast: number;
   recommended: number;
@@ -54,7 +57,7 @@ const emptyDraft: Draft = {
   description: "",
   weight: "",
   price: "",
-  delivery: "Seller ships",
+  shippingMethods: ["courier-guy", "paxi", "pargo"],
 };
 
 const steps = ["Item", "Details", "Photos", "Price", "Delivery", "Preview"];
@@ -208,7 +211,7 @@ export default function CreateListingPage() {
     return () => controller.abort();
   }, [step, draft.itemKind, draft.title, draft.condition, draft.weight]);
 
-  const update = (field: keyof Draft, value: string) =>
+  const update = (field: TextDraftField, value: string) =>
     setDraft((current) => ({ ...current, [field]: value }));
 
   const price = Number(draft.price || 0);
@@ -280,6 +283,18 @@ export default function CreateListingPage() {
 
   function choosePrice(value: number) {
     update("price", String(value));
+  }
+
+  function toggleShippingMethod(code: CourierCode) {
+    setDraft((current) => {
+      const enabled = current.shippingMethods.includes(code);
+      return {
+        ...current,
+        shippingMethods: enabled
+          ? current.shippingMethods.filter((method) => method !== code)
+          : [...current.shippingMethods, code],
+      };
+    });
   }
 
   function publish() {
@@ -605,13 +620,39 @@ export default function CreateListingPage() {
           ) : null}
 
           {step === 4 ? (
-            <Field label="Delivery option">
-              <select value={draft.delivery} onChange={(event) => update("delivery", event.target.value)} className="input">
-                <option>Seller ships</option>
-                <option>Collection only</option>
-                <option>TBX-managed delivery</option>
-              </select>
-            </Field>
+            <div>
+              <div className="flex items-center gap-3">
+                <Truck className="h-6 w-6 text-[#e8c86a]" />
+                <div>
+                  <h2 className="text-3xl font-black">How can buyers receive it?</h2>
+                  <p className="mt-2 text-white/45">Enable every courier you can use. The buyer chooses and pays at checkout.</p>
+                </div>
+              </div>
+              <div className="mt-7 grid gap-4 md:grid-cols-3">
+                {courierCodes.map((code) => {
+                  const method = shippingMethods[code];
+                  const enabled = draft.shippingMethods.includes(code);
+                  return (
+                    <button
+                      key={code}
+                      type="button"
+                      aria-pressed={enabled}
+                      onClick={() => toggleShippingMethod(code)}
+                      className={enabled ? "rounded-2xl border border-[#e8c86a] bg-[#e8c86a]/10 p-5 text-left" : "rounded-2xl border border-white/10 bg-white/[0.025] p-5 text-left hover:border-white/25"}
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#e8c86a]/10 text-[#e8c86a]"><Truck className="h-5 w-5" /></span>
+                        {enabled ? <Check className="h-5 w-5 text-[#e8c86a]" /> : null}
+                      </div>
+                      <p className="mt-5 font-black">{method.name}</p>
+                      <p className="mt-2 text-sm leading-6 text-white/45">{method.service}</p>
+                      <p className="mt-3 text-sm font-bold text-[#e8c86a]">{money(method.priceZar)} · buyer pays</p>
+                    </button>
+                  );
+                })}
+              </div>
+              {draft.shippingMethods.length === 0 ? <p role="alert" className="mt-4 text-sm font-semibold text-red-300">Enable at least one delivery method.</p> : null}
+            </div>
           ) : null}
 
           {step === 5 ? (
@@ -626,7 +667,7 @@ export default function CreateListingPage() {
               <div className="mt-7 grid gap-4 sm:grid-cols-3">
                 <Summary label="Type" value={draft.itemKind === "known-set" ? "Known set" : draft.itemKind === "mixed-box" ? "Mixed box" : "Unidentified collection"} />
                 <Summary label="Condition" value={draft.condition} />
-                <Summary label="Delivery" value={draft.delivery} />
+                <Summary label="Delivery" value={draft.shippingMethods.map((code) => shippingMethods[code].name).join(", ")} />
               </div>
               <p className="mt-6 leading-7 text-white/50">{draft.description || draft.included}</p>
               <div className="mt-8 rounded-2xl border border-white/10 bg-[#050912] p-5">
@@ -644,7 +685,7 @@ export default function CreateListingPage() {
           <div className="mt-8 flex items-center justify-between border-t border-white/[0.07] pt-6">
             <button onClick={() => setStep((value) => Math.max(0, value - 1))} disabled={step === 0} className="rounded-xl border border-white/10 px-5 py-3 font-bold disabled:opacity-30">Back</button>
             {step < 5 ? (
-              <button onClick={() => setStep((value) => Math.min(5, value + 1))} disabled={(step === 0 && !itemReady) || (step === 3 && !price)} className="inline-flex items-center gap-2 rounded-xl bg-[#e8c86a] px-5 py-3 font-bold text-[#050912] disabled:cursor-not-allowed disabled:opacity-40">
+              <button onClick={() => setStep((value) => Math.min(5, value + 1))} disabled={(step === 0 && !itemReady) || (step === 3 && !price) || (step === 4 && draft.shippingMethods.length === 0)} className="inline-flex items-center gap-2 rounded-xl bg-[#e8c86a] px-5 py-3 font-bold text-[#050912] disabled:cursor-not-allowed disabled:opacity-40">
                 Continue <ArrowRight className="h-4 w-4" />
               </button>
             ) : (
