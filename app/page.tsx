@@ -27,25 +27,25 @@ const valueRoutes = [
   {
     title: "Complete LEGO set",
     text: "Search by set number or name and use live Atlas pricing.",
-    href: "/value#known-set",
+    href: "/value#complete-set",
     icon: Boxes,
   },
   {
     title: "Mixed box or loose parts",
     text: "Describe bulk bricks, spare parts and unknown sets.",
-    href: "/value/manual",
+    href: "/value/manual?type=mixed",
     icon: PackageOpen,
   },
   {
     title: "Minifigures",
     text: "Start with one figure or an entire collection.",
-    href: "/value/manual",
+    href: "/value/manual?type=minifigures",
     icon: Users,
   },
   {
     title: "Instructions and boxes",
     text: "Record manuals, packaging and accessories.",
-    href: "/value/manual",
+    href: "/value/manual?type=instructions",
     icon: BookOpen,
   },
   {
