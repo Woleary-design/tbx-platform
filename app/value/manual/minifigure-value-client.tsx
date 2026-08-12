@@ -175,7 +175,7 @@ export function MinifigureValueClient({ resume }: { resume?: string }) {
           itemKind: "minifigure",
           legoMinifigureId: item.legoMinifigureId,
         }));
-        router.push("/sell/create?source=manual");
+        router.push("/sell/atlas");
         return;
       }
       setSubmitted(true);
