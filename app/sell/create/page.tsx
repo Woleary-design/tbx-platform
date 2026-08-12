@@ -107,6 +107,8 @@ export default function CreateListingPage() {
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const [signedIn, setSignedIn] = useState(false);
   const [ready, setReady] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [publishError, setPublishError] = useState("");
   const [pricing, setPricing] = useState<Pricing | null>(null);
   const [pricingLoading, setPricingLoading] = useState(false);
   const [atlasMatches, setAtlasMatches] = useState<AtlasSet[]>([]);
@@ -312,13 +314,67 @@ export default function CreateListingPage() {
     });
   }
 
-  function publish() {
+  async function publish() {
     if (!signedIn) {
       window.location.href = `/sign-in?next=${encodeURIComponent("/sell/create?publish=1")}`;
       return;
     }
-    window.localStorage.setItem("tbx-listing-ready-to-publish", "true");
-    alert("Your listing draft is complete. The final marketplace database publish action is the next integration step.");
+    if (!draft.sourceAssetId) {
+      setPublishError("This listing is not linked to a collection item yet. Add it to My Collection first, then choose List for Sale.");
+      return;
+    }
+
+    setPublishing(true);
+    setPublishError("");
+    const supabase = createClient();
+
+    try {
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError || !authData.user) throw new Error("Your session has expired. Please sign in again.");
+
+      const listingValues = {
+        asset_id: draft.sourceAssetId,
+        seller_id: authData.user.id,
+        title: draft.title.trim(),
+        description: draft.description.trim() || draft.included,
+        asking_price: Number(draft.price),
+        currency: "ZAR",
+        status: "Active",
+        published_at: new Date().toISOString(),
+        lifecycle_state: "listed",
+        value_quote: {
+          shippingMethods: draft.shippingMethods,
+          condition: draft.condition,
+          included: draft.included,
+        },
+      };
+
+      const { data: existing } = await supabase
+        .from("listings")
+        .select("id")
+        .eq("asset_id", draft.sourceAssetId)
+        .in("status", ["Draft", "Active"])
+        .maybeSingle();
+
+      const request = existing
+        ? supabase.from("listings").update(listingValues).eq("id", existing.id).select("id").single()
+        : supabase.from("listings").insert(listingValues).select("id").single();
+      const { data: listing, error: listingError } = await request;
+      if (listingError) throw listingError;
+
+      const { error: assetError } = await supabase
+        .from("assets")
+        .update({ lifecycle_status: "listed", is_public: true })
+        .eq("id", draft.sourceAssetId);
+      if (assetError) throw assetError;
+
+      window.localStorage.removeItem("tbx-listing-draft");
+      window.localStorage.removeItem("tbx-listing-ready-to-publish");
+      window.location.href = `/marketplace?published=${listing.id}`;
+    } catch (error) {
+      setPublishError(error instanceof Error ? error.message : "TBX could not publish this listing. Please try again.");
+      setPublishing(false);
+    }
   }
 
   const itemReady =
@@ -689,11 +745,12 @@ export default function CreateListingPage() {
                 <div className="flex items-center gap-3">
                   <LockKeyhole className="h-5 w-5 text-[#e8c86a]" />
                   <div>
-                    <p className="font-bold">Publishing requires a free TBX account</p>
-                    <p className="text-sm text-white/38">Your complete draft remains saved on this device.</p>
+                    <p className="font-bold">{signedIn ? "Ready to publish to Marketplace" : "Publishing requires a free TBX account"}</p>
+                    <p className="text-sm text-white/38">{signedIn ? "Your collection item and sale details will be linked securely." : "Your complete draft remains saved on this device."}</p>
                   </div>
                 </div>
               </div>
+              {publishError ? <p role="alert" className="mt-4 rounded-xl border border-red-400/25 bg-red-400/10 p-4 text-sm font-semibold text-red-200">{publishError}</p> : null}
             </div>
           ) : null}
 
@@ -704,8 +761,8 @@ export default function CreateListingPage() {
                 Continue <ArrowRight className="h-4 w-4" />
               </button>
             ) : (
-              <button onClick={publish} disabled={!ready} className="inline-flex items-center gap-2 rounded-xl bg-[#e8c86a] px-6 py-3 font-bold text-[#050912] disabled:opacity-50">
-                {signedIn ? "Finish publishing" : "Create account to publish"} <Check className="h-4 w-4" />
+              <button onClick={publish} disabled={!ready || publishing} className="inline-flex items-center gap-2 rounded-xl bg-[#e8c86a] px-6 py-3 font-bold text-[#050912] disabled:opacity-50">
+                {publishing ? "Publishing…" : signedIn ? "Finish publishing" : "Create account to publish"} {publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
               </button>
             )}
           </div>
