@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Heart, Search, ShieldCheck, ShoppingBag } from "lucide-react";
@@ -60,11 +61,12 @@ export function BuyLegoBrowser({ listings, initialQuery = "" }: { listings: List
         </div>
 
         {filtered.length ? (
-          <div className="mt-6 grid gap-6 md:grid-cols-2 2xl:grid-cols-3">
+          <div className="mt-6 grid grid-cols-[repeat(auto-fit,minmax(min(100%,320px),1fr))] gap-6">
             {filtered.map((listing) => (
-              <Link key={listing.id} href={`/marketplace/${listing.id}`} className="group overflow-hidden rounded-[1.75rem] border border-[#eadfce] bg-white shadow-[0_20px_65px_rgba(43,30,18,0.07)] transition hover:-translate-y-1">
-                <div className="flex aspect-[4/3] items-center justify-center bg-[#fffaf1] p-6">
-                  {listing.imageUrl ? <img src={listing.imageUrl} alt={listing.setName} className="h-full w-full object-contain" /> : <ShoppingBag className="h-14 w-14 text-yellow-500" />}
+              <Link key={listing.id} href={`/marketplace/${listing.id}`} className="group min-w-0 overflow-hidden rounded-[1.75rem] border border-[#eadfce] bg-white shadow-[0_20px_65px_rgba(43,30,18,0.07)] transition hover:-translate-y-1">
+                <div className="relative aspect-[16/10] overflow-hidden bg-[#fffaf1]">
+                  {listing.imageUrl ? <Image src={listing.imageUrl} alt={listing.setName} fill sizes="(max-width: 768px) 100vw, (max-width: 1536px) 50vw, 33vw" className="object-cover transition duration-700 group-hover:scale-[1.035]" /> : <ShoppingBag className="absolute left-1/2 top-1/2 h-14 w-14 -translate-x-1/2 -translate-y-1/2 text-yellow-500" />}
+                  <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-slate-950/30 to-transparent" />
                 </div>
                 <div className="p-5">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-yellow-600">LEGO {listing.setNumber}</p>

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, Heart, ShieldCheck, ShoppingBag, Truck } from "lucide-react";
@@ -23,7 +24,8 @@ export default async function ProductDetailPage({ params }: Props) {
         <div className="space-y-8">
           <div className="overflow-hidden rounded-[2.25rem] border border-[#eadfce] bg-white shadow-[0_30px_100px_rgba(43,30,18,0.12)]">
             <div className="relative grid aspect-[16/10] place-items-center overflow-hidden bg-[radial-gradient(circle_at_35%_22%,rgba(250,204,21,0.34),transparent_30%),linear-gradient(135deg,#fff8e8,#ecd1a8)]">
-              {listing.imageUrl ? <img src={listing.imageUrl} alt={listing.title} className="h-full w-full object-contain p-8" /> : <ShoppingBag className="h-28 w-28 text-yellow-600/70" />}
+              {listing.imageUrl ? <Image src={listing.imageUrl} alt={listing.title} fill priority sizes="(max-width: 1024px) 100vw, 70vw" className="object-cover" /> : <ShoppingBag className="h-28 w-28 text-yellow-600/70" />}
+              <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-slate-950/35 to-transparent" />
               <div className="absolute left-5 top-5"><VerifiedLabel /></div>
             </div>
             <div className="grid grid-cols-4 gap-3 p-4">{["Hero", "Box", "Details", "Evidence"].map((label) => <div key={label} className="rounded-xl border border-[#eadfce] bg-[#fffaf1] p-3 text-center text-xs font-semibold text-slate-500">{label}</div>)}</div>
