@@ -35,7 +35,7 @@ export const marketplaceListings: MarketplaceListing[] = [
     category: "Star Wars UCS",
     priceZar: 24500,
     condition: "Sealed box, collector stored",
-    imageUrl: null,
+    imageUrl: "/marketplace/falcon-display.png",
     publishedAt: "2026-08-11T08:00:00Z",
     rarityRank: 98,
     seller: {
@@ -62,7 +62,7 @@ export const marketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "lego-titanic-10294", setNumber: "10294", title: "Titanic 10294", category: "Icons Display",
-    priceZar: 18900, condition: "New sealed, display-grade box", imageUrl: null,
+    priceZar: 18900, condition: "New sealed, display-grade box", imageUrl: "/marketplace/titanic-display.png",
     publishedAt: "2026-08-10T08:00:00Z", rarityRank: 91,
     seller: { name: "Cape Collector Co.", level: "Verified Seller", trustScore: 94, rating: 4.8, sales: 88, averageDispatchDays: 1.8, disputes: 0, repeatBuyerPercent: 64, checks: [{ label: "Identity verified", verified: true }, { label: "Address verified", verified: true }, { label: "Payout verified", verified: true }] },
     dispatchDays: 2,
@@ -72,7 +72,7 @@ export const marketplaceListings: MarketplaceListing[] = [
   },
   {
     id: "cafe-corner-10182", setNumber: "10182", title: "Café Corner 10182", category: "Modular Grails",
-    priceZar: 42000, condition: "Used complete, instructions included", imageUrl: null,
+    priceZar: 42000, condition: "Used complete, instructions included", imageUrl: "/marketplace/cafe-corner-display.png",
     publishedAt: "2026-08-09T08:00:00Z", rarityRank: 100,
     seller: { name: "Modular Museum", level: "Premier Seller", trustScore: 98, rating: 5, sales: 231, averageDispatchDays: 1.2, disputes: 0, repeatBuyerPercent: 81, checks: [{ label: "Identity verified", verified: true }, { label: "Address verified", verified: true }, { label: "Payout verified", verified: true }] },
     dispatchDays: 1,
