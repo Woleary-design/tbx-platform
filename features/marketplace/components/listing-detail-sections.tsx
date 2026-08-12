@@ -13,7 +13,7 @@ export function SellerTrustCard({ seller }: { seller: MarketplaceListing["seller
         <ShieldCheck className="h-12 w-12 text-yellow-300" />
       </div>
       <div className="mt-6 grid gap-3 sm:grid-cols-3">
-        {seller.checks.map((check) => <div key={check.label} className="flex items-center gap-2 rounded-xl bg-white/[0.07] p-3 text-sm text-white/75"><CheckCircle2 className="h-4 w-4 text-yellow-300" />{check.label}</div>)}
+        {seller.checks.map((check) => <div key={check.label} className="flex items-center gap-2 rounded-xl bg-white/[0.07] p-3 text-sm text-white/75"><CheckCircle2 className={`h-4 w-4 ${check.verified ? "text-yellow-300" : "text-white/25"}`} />{check.label}{check.verified ? "" : " pending"}</div>)}
       </div>
       <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-5">
         {[["Sales", seller.sales], ["Dispatch", `${seller.averageDispatchDays} days`], ["Disputes", seller.disputes], ["Repeat buyers", `${seller.repeatBuyerPercent}%`], ["Rating", seller.rating]].map(([label, value]) => (
