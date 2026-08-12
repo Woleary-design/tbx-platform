@@ -19,7 +19,7 @@ type Listing = {
   sellerLevel: string;
 };
 
-export function BuyLegoBrowser({ listings, initialQuery = "" }: { listings: Listing[]; initialQuery?: string }) {
+export function BuyLegoBrowser({ listings, initialQuery = "", publishedId }: { listings: Listing[]; initialQuery?: string; publishedId?: string }) {
   const [query, setQuery] = useState(initialQuery);
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -32,6 +32,11 @@ export function BuyLegoBrowser({ listings, initialQuery = "" }: { listings: List
 
   return (
     <div className="space-y-8">
+      {publishedId ? (
+        <div role="status" className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 font-semibold text-emerald-800">
+          Your listing is live in Marketplace.
+        </div>
+      ) : null}
       <section className="overflow-hidden rounded-[2rem] bg-slate-950 p-7 text-white shadow-[0_28px_100px_rgba(15,23,42,0.16)] md:p-10">
         <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-yellow-300">
           <ShieldCheck className="h-4 w-4" /> Fixed-price marketplace
