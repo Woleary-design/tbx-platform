@@ -4,8 +4,9 @@ import { notFound } from "next/navigation";
 import { ArrowRight, Heart, ShieldCheck, ShoppingBag, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConditionReport, ProvenanceCard, SellerTrustCard, VerifiedLabel } from "@/features/marketplace/components/listing-detail-sections";
-import { formatZar, getListingById, marketplaceListings } from "@/features/marketplace/data/marketplace.mock";
-import { getEnabledShippingMethods } from "@/features/marketplace/data/shipping-options";
+import { formatZar, getListingById, marketplaceListings, type MarketplaceListing } from "@/features/marketplace/data/marketplace.mock";
+import { getEnabledShippingMethods, type CourierCode } from "@/features/marketplace/data/shipping-options";
+import { createClient } from "@/lib/supabase/server";
 
 type Props = { params: Promise<{ listingId: string }> };
 
@@ -15,7 +16,73 @@ export function generateStaticParams() {
 
 export default async function ProductDetailPage({ params }: Props) {
   const { listingId } = await params;
-  const listing = getListingById(listingId);
+  let listing: MarketplaceListing | undefined = getListingById(listingId);
+
+  if (!listing) {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("listings")
+      .select(`
+        id, title, description, asking_price, published_at, value_quote,
+        assets!listings_asset_id_fkey(set_number, set_name, theme, condition, original_owner, original_receipt, instructions_complete, minifigures_complete),
+        collectors!listings_seller_id_fkey(display_name, username, collector_level, confidence_score, completed_trades, average_dispatch_days, disputes, identity_verified, address_verified, payment_verified)
+      `)
+      .eq("id", listingId)
+      .eq("status", "Active")
+      .maybeSingle();
+
+    if (data) {
+      const asset = Array.isArray(data.assets) ? data.assets[0] : data.assets;
+      const seller = Array.isArray(data.collectors) ? data.collectors[0] : data.collectors;
+      const quote = data.value_quote && typeof data.value_quote === "object" && !Array.isArray(data.value_quote)
+        ? data.value_quote as Record<string, unknown>
+        : {};
+      const methods = Array.isArray(quote.shippingMethods)
+        ? quote.shippingMethods.filter((method): method is CourierCode => ["courier-guy", "paxi", "pargo"].includes(String(method)))
+        : ["courier-guy", "paxi", "pargo"] as CourierCode[];
+      const condition = typeof quote.condition === "string" ? quote.condition : asset?.condition ?? "Used";
+      const included = typeof quote.included === "string" ? quote.included : data.description ?? "Collection item";
+
+      listing = {
+        id: data.id,
+        setNumber: asset?.set_number ?? "Collection",
+        title: data.title || asset?.set_name || "LEGO collection",
+        category: asset?.theme ?? "Collection",
+        priceZar: Number(data.asking_price),
+        condition,
+        imageUrl: null,
+        publishedAt: data.published_at ?? new Date().toISOString(),
+        rarityRank: seller?.confidence_score ?? 50,
+        seller: {
+          name: seller?.display_name || seller?.username || "TBX Collector",
+          level: seller?.collector_level ?? "Collector",
+          trustScore: seller?.confidence_score ?? 50,
+          rating: 0,
+          sales: seller?.completed_trades ?? 0,
+          averageDispatchDays: Number(seller?.average_dispatch_days ?? 2),
+          disputes: seller?.disputes ?? 0,
+          repeatBuyerPercent: 0,
+          checks: [
+            { label: "Identity verified", verified: Boolean(seller?.identity_verified) },
+            { label: "Address verified", verified: Boolean(seller?.address_verified) },
+            { label: "Payout verified", verified: Boolean(seller?.payment_verified) },
+          ],
+        },
+        dispatchDays: Math.max(1, Math.round(Number(seller?.average_dispatch_days ?? 2))),
+        conditionReport: [
+          { label: "Condition", value: condition, detail: included },
+          { label: "Instructions", value: asset?.instructions_complete ? "Included" : "Not confirmed", detail: "Seller supplied collection record" },
+          { label: "Minifigures", value: asset?.minifigures_complete ? "Complete" : "Not confirmed", detail: "Seller supplied collection record" },
+        ],
+        provenance: [
+          { label: "Original owner", value: asset?.original_owner ? "Yes" : "Not confirmed" },
+          { label: "Receipt", value: asset?.original_receipt ? "Included" : "Not supplied" },
+        ],
+        shipping: { estimate: "1–5 business days", courierIncluded: false, insuranceIncluded: true, enabledMethods: methods },
+      };
+    }
+  }
+
   if (!listing) notFound();
   const enabledShipping = getEnabledShippingMethods(listing.shipping.enabledMethods);
 
