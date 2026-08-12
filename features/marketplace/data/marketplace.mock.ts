@@ -10,6 +10,7 @@ export type MarketplaceListing = {
   priceZar: number;
   condition: string;
   imageUrl: string | null;
+  verified?: boolean;
   publishedAt: string;
   rarityRank: number;
   seller: {
