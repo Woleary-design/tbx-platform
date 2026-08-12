@@ -58,7 +58,7 @@ export default function OrderTimelinePage() {
               <Button variant="outline" className="rounded-xl border-[#eadfce]">Report Issue</Button>
             </div>
           </div>
-          <div className="rounded-[1.75rem] border border-[#eadfce] bg-[#fffaf1] p-6">
+          <div className="rounded-[1.75rem] border border-[#eadfce] bg-white p-6 shadow-[0_18px_55px_rgba(43,30,18,0.08)]">
             <div className="flex items-center gap-3"><Star className="h-6 w-6 fill-yellow-400 text-yellow-400" /><h2 className="text-xl font-semibold text-slate-950">After completion</h2></div>
             <p className="mt-4 text-sm leading-6 text-slate-600">Funds release, seller is paid, trust scores update and both collectors can review each other.</p>
           </div>
