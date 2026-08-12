@@ -29,7 +29,7 @@ export function ConditionReport({ rows }: { rows: MarketplaceListing["conditionR
     <section className="rounded-[2rem] border border-[#eadfce] bg-white p-7 shadow-[0_24px_80px_rgba(43,30,18,0.08)]">
       <div className="flex items-center gap-3"><BadgeCheck className="h-6 w-6 text-yellow-600" /><h2 className="text-2xl font-semibold">Condition Report</h2></div>
       <div className="mt-5 grid gap-3">
-        {rows.map((row) => <div key={row.label} className="grid gap-2 rounded-xl border border-[#eadfce] bg-[#fffaf1] p-4 text-sm sm:grid-cols-[150px_140px_1fr]"><strong>{row.label}</strong><span className="font-semibold text-yellow-700">{row.value}</span><span className="text-slate-600">{row.detail}</span></div>)}
+        {rows.map((row) => <div key={row.label} className="grid gap-2 rounded-xl border border-[#eadfce] bg-white p-4 text-sm sm:grid-cols-[150px_140px_1fr]"><strong>{row.label}</strong><span className="font-semibold text-yellow-700">{row.value}</span><span className="text-slate-600">{row.detail}</span></div>)}
       </div>
     </section>
   );
@@ -41,7 +41,7 @@ export function ProvenanceCard({ rows }: { rows: MarketplaceListing["provenance"
       <h2 className="text-2xl font-semibold">Provenance</h2>
       <p className="mt-2 text-sm text-slate-500">Ownership, storage and documentation history supplied for this collectible.</p>
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
-        {rows.map((row) => <div key={row.label} className="flex items-center justify-between gap-4 rounded-xl bg-[#fffaf1] p-4"><span className="text-sm text-slate-500">{row.label}</span><strong className="text-sm text-slate-950">{row.value}</strong></div>)}
+        {rows.map((row) => <div key={row.label} className="flex items-center justify-between gap-4 rounded-xl border border-[#eadfce] bg-white p-4"><span className="text-sm text-slate-500">{row.label}</span><strong className="text-sm text-slate-950">{row.value}</strong></div>)}
       </div>
     </section>
   );
