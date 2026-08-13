@@ -22,7 +22,7 @@ export function MobileSellNow() {
 
   return (
     <Link
-      href="/sell/create"
+      href="/sell/quick"
       aria-label="Sell now"
       className="fixed bottom-[calc(env(safe-area-inset-bottom)+1rem)] right-4 z-[70] flex h-12 items-center justify-center gap-2 rounded-full bg-[#e8c86a] px-5 text-sm font-black text-[#050912] shadow-[0_12px_35px_rgba(0,0,0,0.45)] transition hover:-translate-y-0.5 hover:bg-[#f1d478] active:scale-95 md:bottom-6 md:right-6 md:h-14 md:px-7 md:text-base md:shadow-[0_18px_55px_rgba(0,0,0,0.5)]"
     >

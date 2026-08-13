@@ -119,7 +119,7 @@ export default async function HomePage() {
                 Start with a complete set, a mixed box, loose parts, minifigures or an unknown collection. Photos are only required when you publish an item for sale.
               </p>
               <div className="mt-10 grid gap-3 sm:grid-cols-2">
-                <Link href="/sell" className="group inline-flex h-16 items-center justify-center gap-3 rounded-2xl bg-[#e8c86a] px-7 text-lg font-black text-[#050912] shadow-[0_16px_50px_rgba(232,200,106,0.2)] transition hover:-translate-y-0.5 hover:bg-[#f1d478]">
+                <Link href="/sell/quick" className="group inline-flex h-16 items-center justify-center gap-3 rounded-2xl bg-[#e8c86a] px-7 text-lg font-black text-[#050912] shadow-[0_16px_50px_rgba(232,200,106,0.2)] transition hover:-translate-y-0.5 hover:bg-[#f1d478]">
                   Sell LEGO <ArrowRight className="h-5 w-5 transition group-hover:translate-x-1" />
                 </Link>
                 <Link href="/value" className="inline-flex h-16 items-center justify-center gap-3 rounded-2xl border border-[#e8c86a]/25 bg-[#e8c86a]/[0.06] px-7 text-lg font-bold text-[#e8c86a] transition hover:-translate-y-0.5 hover:bg-[#e8c86a]/10">

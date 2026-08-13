@@ -72,7 +72,7 @@ export function AppShell({ children, collector, isAdmin = false }: AppShellProps
 
           <div className="p-4 pb-1">
             <Button asChild className="h-12 w-full rounded-2xl bg-[#ffd84d] font-semibold text-[#050915] shadow-[0_12px_30px_rgba(255,216,77,0.14)] hover:bg-[#ffe374]">
-              <Link href="/sell"><Tag className="h-4 w-4" /> Sell</Link>
+              <Link href="/sell/quick"><Tag className="h-4 w-4" /> Sell</Link>
             </Button>
           </div>
 
@@ -137,7 +137,7 @@ export function AppShell({ children, collector, isAdmin = false }: AppShellProps
                   </Button>
                 ) : null}
                 <Button asChild className="h-12 rounded-full bg-[#ffd84d] px-5 text-base font-bold text-[#050915] shadow-[0_10px_30px_rgba(255,216,77,0.18)] hover:bg-[#ffe374]">
-                  <Link href="/sell"><Tag className="h-4 w-4" /> Sell</Link>
+                  <Link href="/sell/quick"><Tag className="h-4 w-4" /> Sell</Link>
                 </Button>
               </div>
             </div>
@@ -149,7 +149,7 @@ export function AppShell({ children, collector, isAdmin = false }: AppShellProps
                   <Link href="/admin"><LayoutDashboard className="h-4 w-4" /> Command</Link>
                 </Button>
               ) : null}
-              <Button asChild className="hidden rounded-full bg-[#ffd84d] px-5 font-semibold text-[#050915] hover:bg-[#ffe374] sm:inline-flex"><Link href="/sell"><Tag className="h-4 w-4" /> Sell</Link></Button>
+              <Button asChild className="hidden rounded-full bg-[#ffd84d] px-5 font-semibold text-[#050915] hover:bg-[#ffe374] sm:inline-flex"><Link href="/sell/quick"><Tag className="h-4 w-4" /> Sell</Link></Button>
               <Button asChild variant="outline" size="sm" className="rounded-full border-white/10 bg-white/[0.04] px-3 text-white hover:border-[#ffd84d]/30 hover:bg-[#ffd84d]/[0.06] hover:text-[#ffd84d]"><Link href="/notifications" aria-label="Notifications"><Bell className="h-4 w-4" /></Link></Button>
               <Button asChild variant="outline" size="sm" className="rounded-full border-white/10 bg-white/[0.04] pl-1.5 pr-3 text-white hover:border-[#ffd84d]/30 hover:bg-[#ffd84d]/[0.06]"><Link href="/profile" title={collector.displayName}><span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-[#ffd84d] text-xs font-semibold text-[#050915]">{collector.avatarUrl ? <img src={collector.avatarUrl} alt="" className="h-full w-full object-cover" /> : collector.initials}</span><ChevronDown className="h-4 w-4" /></Link></Button>
             </div>
