@@ -13,6 +13,8 @@ export function MobileSellNow() {
     pathname.startsWith("/sign-in") ||
     pathname.startsWith("/sign-up") ||
     pathname.startsWith("/admin") ||
+    pathname.startsWith("/checkout") ||
+    pathname.startsWith("/orders") ||
     /^\/marketplace\/[^/]+$/.test(pathname)
   ) {
     return null;
