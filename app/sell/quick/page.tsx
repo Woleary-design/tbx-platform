@@ -15,6 +15,7 @@ export default function QuickSellPage() {
           </Link>
         </div>
         <SellEntry />
+        <p className="mt-8 text-center text-xs text-white/30">Simple selling first. Collector tools remain available when you need them.</p>
       </main>
     </div>
   );
