@@ -202,7 +202,7 @@ export function QuickAddSetForm({ initialSetNumber, intent = "collect" }: { init
         .single();
 
       if (insertError || !asset) throw insertError ?? new Error("The Collection Record could not be created.");
-      router.push(intent === "sell" ? `/sell/create?asset=${encodeURIComponent(asset.id)}` : `/collection/${asset.id}`);
+      router.push(intent === "sell" ? `/sell/from-collection/${encodeURIComponent(asset.id)}` : `/collection/${asset.id}`);
       router.refresh();
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "The set could not be saved.");
@@ -267,7 +267,7 @@ export function QuickAddSetForm({ initialSetNumber, intent = "collect" }: { init
 
       {estimate != null ? <p className="rounded-xl border border-emerald-400/20 bg-emerald-400/[0.07] px-4 py-3 text-sm text-emerald-100">Atlas will save an estimated collection value of <strong>R{Math.round(estimate).toLocaleString("en-ZA")}</strong>. You can update it later.</p> : null}
       {error ? <p className="rounded-xl border border-red-400/20 bg-red-400/[0.08] px-4 py-3 text-sm text-red-200">{error}</p> : null}
-      <Button disabled={saving || !selectedSet || marketLoading} className="h-12 w-full rounded-xl bg-[#e8c86a] font-black text-[#050912] hover:bg-[#f1d478]">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}{saving ? "Adding to Collection…" : "Add to My Collection"}{!saving ? <ArrowRight className="h-4 w-4" /> : null}</Button>
+      <Button disabled={saving || !selectedSet || marketLoading} className="h-12 w-full rounded-xl bg-[#e8c86a] font-black text-[#050912] hover:bg-[#f1d478]">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}{saving ? (intent === "sell" ? "Preparing your listing…" : "Adding to Collection…") : (intent === "sell" ? "Continue with this set" : "Add to My Collection")}{!saving ? <ArrowRight className="h-4 w-4" /> : null}</Button>
       {intent === "collect" ? <button type="button" onClick={() => setShowFullForm(true)} className="w-full text-sm font-semibold text-white/45 underline hover:text-white">Add with photos and documentation instead</button> : null}
     </form>
   );
