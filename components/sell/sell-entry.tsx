@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowLeft, FileQuestion, Search, Sparkles } from "lucide-react";
+import { ArrowLeft, Boxes, FileQuestion, Search, Sparkles } from "lucide-react";
 import { QuickAddSetForm } from "@/components/collection/quick-add-set-form";
 
 type SellMode = "search" | null;
@@ -30,11 +30,11 @@ export function SellEntry() {
         </div>
         <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[0.98] tracking-[-0.055em] sm:text-6xl">What LEGO have you got?</h1>
         <p className="mt-4 max-w-2xl text-base leading-7 text-white/52">
-          Choose the simple option that matches what you know. Photos are added later for buyers—they are not used to identify the set.
+          Choose a set, sell loose LEGO by weight, or describe what you have. Photos are added later for buyers.
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-3">
         <button
           type="button"
           onClick={() => setMode("search")}
@@ -46,6 +46,13 @@ export function SellEntry() {
           <p className="mt-2 max-w-sm text-sm leading-6 text-white/45">Type anything from the box, instructions or LEGO set.</p>
           <span className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#ffd84d]">Start here <span aria-hidden>→</span></span>
         </button>
+
+        <Link href="/value/manual?type=mixed" className="group min-h-52 rounded-[1.75rem] border border-[#ffd84d]/20 bg-[#ffd84d]/[0.04] p-6 transition hover:border-[#ffd84d]/40 hover:bg-[#ffd84d]/[0.08]">
+          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#ffd84d]/12 text-[#ffd84d]"><Boxes className="h-5 w-5" /></span>
+          <h2 className="mt-8 text-2xl font-black tracking-[-0.035em]">Loose LEGO — sell by weight</h2>
+          <p className="mt-2 max-w-sm text-sm leading-6 text-white/45">No set number or sorting needed. Tell us roughly how much you have and enter the weight in kilograms.</p>
+          <span className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#ffd84d]">Sell loose LEGO <span aria-hidden>→</span></span>
+        </Link>
 
         <Link href="/value/manual?type=unknown" className="group min-h-52 rounded-[1.75rem] border border-white/[0.08] bg-[#0b1223] p-6 transition hover:border-[#ffd84d]/25 hover:bg-[#10192b]">
           <span className="grid h-12 w-12 place-items-center rounded-2xl bg-white/[0.055] text-[#ffd84d]"><FileQuestion className="h-5 w-5" /></span>
