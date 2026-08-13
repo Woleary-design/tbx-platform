@@ -1,18 +1,14 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  BookOpen,
   Boxes,
   Check,
   CircleDollarSign,
   Heart,
-  HelpCircle,
-  PackageOpen,
   Search,
   ShieldCheck,
   Store,
   UserRound,
-  Users,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 
@@ -21,39 +17,6 @@ const navItems = [
   { label: "Atlas", href: "/atlas" },
   { label: "Market", href: "/marketplace" },
   { label: "Collection", href: "/collection" },
-];
-
-const valueRoutes = [
-  {
-    title: "Complete LEGO set",
-    text: "Search by set number or name and use live Atlas pricing.",
-    href: "/value#complete-set",
-    icon: Boxes,
-  },
-  {
-    title: "Mixed box or loose parts",
-    text: "Describe bulk bricks, spare parts and unknown sets.",
-    href: "/value/manual?type=mixed",
-    icon: PackageOpen,
-  },
-  {
-    title: "Minifigures",
-    text: "Start with one figure or an entire collection.",
-    href: "/value/manual?type=minifigures",
-    icon: Users,
-  },
-  {
-    title: "Instructions and boxes",
-    text: "Record manuals, packaging and accessories.",
-    href: "/value/manual?type=instructions",
-    icon: BookOpen,
-  },
-  {
-    title: "I am not sure what I have",
-    text: "Use a guided description without choosing a listed set.",
-    href: "/value/manual",
-    icon: HelpCircle,
-  },
 ];
 
 function Brand() {
@@ -106,7 +69,7 @@ export default async function HomePage() {
       <main>
         <section className="relative overflow-hidden border-b border-white/[0.06]">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_24%,rgba(232,200,106,0.15),transparent_31rem)]" />
-          <div className="relative mx-auto grid min-h-[790px] max-w-[1440px] items-center gap-14 px-5 py-20 lg:grid-cols-[0.88fr_1.12fr] lg:px-10 lg:py-28">
+          <div className="relative mx-auto flex min-h-[790px] max-w-[1440px] items-center px-5 py-20 lg:px-10 lg:py-28">
             <div className="max-w-3xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-[#e8c86a]/20 bg-[#e8c86a]/[0.06] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-[#e8c86a]">
                 <CircleDollarSign className="h-3.5 w-3.5" /> TBX Value
@@ -141,21 +104,6 @@ export default async function HomePage() {
               </div>
             </div>
 
-            <div className="rounded-[2rem] border border-white/[0.09] bg-[#09111f]/95 p-5 shadow-[0_40px_120px_rgba(0,0,0,0.48)] sm:p-7">
-              <div className="border-b border-white/[0.07] px-1 pb-5">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#e8c86a]">Start here</p>
-                <h2 className="mt-2 text-2xl font-black tracking-[-0.04em]">What would you like to value?</h2>
-              </div>
-              <div className="mt-5 grid gap-3">
-                {valueRoutes.map(({ title, text, href, icon: Icon }) => (
-                  <Link key={title} href={href} className="group flex items-center gap-4 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4 transition hover:-translate-y-0.5 hover:border-[#e8c86a]/30 hover:bg-[#e8c86a]/[0.045]">
-                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-[#e8c86a]/18 bg-[#e8c86a]/[0.06] text-[#e8c86a]"><Icon className="h-5 w-5" /></span>
-                    <span className="min-w-0 flex-1"><span className="block font-bold">{title}</span><span className="mt-1 block text-sm leading-5 text-white/38">{text}</span></span>
-                    <ArrowRight className="h-5 w-5 shrink-0 text-white/20 transition group-hover:translate-x-1 group-hover:text-[#e8c86a]" />
-                  </Link>
-                ))}
-              </div>
-            </div>
           </div>
         </section>
 
