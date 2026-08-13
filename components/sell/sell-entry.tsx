@@ -7,15 +7,6 @@ import { QuickAddSetForm } from "@/components/collection/quick-add-set-form";
 
 type SellMode = "search" | null;
 
-const entryOptions = [
-  {
-    id: "search" as const,
-    icon: Search,
-    title: "I know the set or number",
-    description: "Type anything from the box, instructions or LEGO set.",
-    badge: "Fastest",
-  },
-];
 
 export function SellEntry() {
   const [mode, setMode] = useState<SellMode>(null);
@@ -44,37 +35,25 @@ export function SellEntry() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        {entryOptions.map(({ id, icon: Icon, title, description, badge }) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setMode(id)}
-            className="group relative min-h-52 overflow-hidden rounded-[1.75rem] border border-[#ffd84d]/30 bg-[#ffd84d]/[0.07] p-6 text-left transition hover:bg-[#ffd84d]/[0.11]"
-          >
-            {badge ? <span className="absolute right-5 top-5 rounded-full bg-[#ffd84d] px-3 py-1 text-[10px] font-black uppercase tracking-wider text-[#050915]">{badge}</span> : null}
-            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#ffd84d] text-[#050915]">
-              <Icon className="h-5 w-5" />
-            </span>
-            <h2 className="mt-8 text-2xl font-black tracking-[-0.035em]">{title}</h2>
-            <p className="mt-2 max-w-sm text-sm leading-6 text-white/45">{description}</p>
-            <span className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#ffd84d]">Start here <span aria-hidden>→</span></span>
-          </button>
-        ))}
-      </div>
-
-      <Link
-        href="/value/manual?type=unknown"
-        className="group flex min-h-52 items-start gap-5 rounded-[1.75rem] border border-white/[0.08] bg-[#0b1223] p-6 transition hover:border-[#ffd84d]/25 hover:bg-[#10192b] md:-mt-[224px] md:ml-[calc(50%+0.5rem)]"
-      >
-        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/[0.055] text-[#ffd84d]">
-          <FileQuestion className="h-5 w-5" />
-        </span>
-        <span>
-          <span className="block text-2xl font-black tracking-[-0.035em]">I don’t know what it is</span>
-          <span className="mt-2 block text-sm leading-6 text-white/45">Tell TBX what you can see. A set number is not required.</span>
+        <button
+          type="button"
+          onClick={() => setMode("search")}
+          className="group relative min-h-52 overflow-hidden rounded-[1.75rem] border border-[#ffd84d]/30 bg-[#ffd84d]/[0.07] p-6 text-left transition hover:bg-[#ffd84d]/[0.11]"
+        >
+          <span className="absolute right-5 top-5 rounded-full bg-[#ffd84d] px-3 py-1 text-[10px] font-black uppercase tracking-wider text-[#050915]">Fastest</span>
+          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#ffd84d] text-[#050915]"><Search className="h-5 w-5" /></span>
+          <h2 className="mt-8 text-2xl font-black tracking-[-0.035em]">I know the set or number</h2>
+          <p className="mt-2 max-w-sm text-sm leading-6 text-white/45">Type anything from the box, instructions or LEGO set.</p>
           <span className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#ffd84d]">Start here <span aria-hidden>→</span></span>
-        </span>
-      </Link>
+        </button>
+
+        <Link href="/value/manual?type=unknown" className="group min-h-52 rounded-[1.75rem] border border-white/[0.08] bg-[#0b1223] p-6 transition hover:border-[#ffd84d]/25 hover:bg-[#10192b]">
+          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-white/[0.055] text-[#ffd84d]"><FileQuestion className="h-5 w-5" /></span>
+          <h2 className="mt-8 text-2xl font-black tracking-[-0.035em]">I don’t know what it is</h2>
+          <p className="mt-2 max-w-sm text-sm leading-6 text-white/45">Tell TBX what you can see. A set number is not required.</p>
+          <span className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#ffd84d]">Start here <span aria-hidden>→</span></span>
+        </Link>
+      </div>
     </section>
   );
 }
