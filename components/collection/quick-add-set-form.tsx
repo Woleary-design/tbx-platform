@@ -178,7 +178,7 @@ export function QuickAddSetForm({ initialSetNumber, intent = "collect" }: { init
         .maybeSingle();
 
       if (existing) {
-        router.push(`/collection/${existing.id}`);
+        router.push(intent === "sell" ? `/sell/from-collection/${encodeURIComponent(existing.id)}` : `/collection/${existing.id}`);
         return;
       }
 
