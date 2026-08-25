@@ -1,5 +1,4 @@
 import { BuyLegoBrowser } from "@/components/marketplace/buy-lego-browser";
-import { marketplaceListings } from "@/features/marketplace/data/marketplace.mock";
 import { createClient } from "@/lib/supabase/server";
 
 type MarketplacePageProps = { searchParams?: Promise<{ set?: string; published?: string }> };
@@ -71,7 +70,7 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
 
   return (
     <BuyLegoBrowser
-      listings={[...databaseListings, ...demoListings]}
+      listings={databaseListings}
       initialQuery={params?.set?.trim() ?? ""}
       publishedId={params?.published}
     />
