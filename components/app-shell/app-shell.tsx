@@ -51,6 +51,7 @@ function FourDotLogo({ small = false }: { small?: boolean }) {
 
 export function AppShell({ children, collector, isAdmin = false }: AppShellProps) {
   const pathname = usePathname();
+  const isGuest = collector.level === "Guest browsing";
   const visibleNavigation = isAdmin
     ? [{ href: "/admin", label: "Command", icon: LayoutDashboard }, ...navigation]
     : navigation;
@@ -102,7 +103,7 @@ export function AppShell({ children, collector, isAdmin = false }: AppShellProps
           </nav>
 
           <div className="m-4 space-y-3 border-t border-white/[0.07] pt-4">
-            <Link href="/profile" className="block rounded-2xl border border-white/[0.08] bg-white/[0.035] p-4 transition hover:border-[#ffd84d]/30 hover:bg-[#ffd84d]/[0.045]">
+            <Link href={isGuest ? "/sign-in" : "/profile"} className="block rounded-2xl border border-white/[0.08] bg-white/[0.035] p-4 transition hover:border-[#ffd84d]/30 hover:bg-[#ffd84d]/[0.045]">
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-[#ffd84d] text-sm font-semibold text-[#050915]">
                   {collector.avatarUrl ? <img src={collector.avatarUrl} alt="" className="h-full w-full object-cover" /> : collector.initials}
@@ -118,9 +119,11 @@ export function AppShell({ children, collector, isAdmin = false }: AppShellProps
               <div className="flex items-center gap-2 text-sm font-medium text-white"><Sparkles className="h-4 w-4 text-[#ffd84d]" /> Secure &amp; Private</div>
               <p className="mt-2 text-xs leading-5 text-white/45">Your collection stays private. Selling is always a fixed-price transaction.</p>
             </div>
-            <div className="text-white/55 [&_button]:text-white/55 hover:[&_button]:text-white">
-              <SignOutButton />
-            </div>
+            {isGuest ? (
+              <Button asChild variant="outline" className="w-full border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"><Link href="/sign-in">Sign in</Link></Button>
+            ) : (
+              <div className="text-white/55 [&_button]:text-white/55 hover:[&_button]:text-white"><SignOutButton /></div>
+            )}
           </div>
         </div>
       </aside>
@@ -151,7 +154,7 @@ export function AppShell({ children, collector, isAdmin = false }: AppShellProps
               ) : null}
               <Button asChild className="hidden rounded-full bg-[#ffd84d] px-5 font-semibold text-[#050915] hover:bg-[#ffe374] sm:inline-flex"><Link href="/sell/quick"><Tag className="h-4 w-4" /> Sell</Link></Button>
               <Button asChild variant="outline" size="sm" className="rounded-full border-white/10 bg-white/[0.04] px-3 text-white hover:border-[#ffd84d]/30 hover:bg-[#ffd84d]/[0.06] hover:text-[#ffd84d]"><Link href="/notifications" aria-label="Notifications"><Bell className="h-4 w-4" /></Link></Button>
-              <Button asChild variant="outline" size="sm" className="rounded-full border-white/10 bg-white/[0.04] pl-1.5 pr-3 text-white hover:border-[#ffd84d]/30 hover:bg-[#ffd84d]/[0.06]"><Link href="/profile" title={collector.displayName}><span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-[#ffd84d] text-xs font-semibold text-[#050915]">{collector.avatarUrl ? <img src={collector.avatarUrl} alt="" className="h-full w-full object-cover" /> : collector.initials}</span><ChevronDown className="h-4 w-4" /></Link></Button>
+              <Button asChild variant="outline" size="sm" className="rounded-full border-white/10 bg-white/[0.04] pl-1.5 pr-3 text-white hover:border-[#ffd84d]/30 hover:bg-[#ffd84d]/[0.06]"><Link href={isGuest ? "/sign-in" : "/profile"} title={isGuest ? "Sign in" : collector.displayName}><span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-[#ffd84d] text-xs font-semibold text-[#050915]">{collector.avatarUrl ? <img src={collector.avatarUrl} alt="" className="h-full w-full object-cover" /> : collector.initials}</span><ChevronDown className="h-4 w-4" /></Link></Button>
             </div>
           </div>
 
