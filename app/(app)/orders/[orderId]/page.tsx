@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Clock3, PackageCheck, ShieldCheck, Truck } from "lucide-react";
+import { SellerConfirmationActions } from "@/components/orders/seller-confirmation-actions";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 
@@ -9,11 +10,11 @@ type Props = { params: Promise<{ orderId: string }> };
 const statusCopy: Record<string, { title: string; body: string }> = {
   awaiting_seller: {
     title: "Waiting for seller confirmation",
-    body: "Your item is reserved. The seller must confirm that it is still available before any payment step opens.",
+    body: "The item is reserved while the seller confirms that it is still available. No payment is taken at this stage.",
   },
   awaiting_payment: {
     title: "Seller confirmed availability",
-    body: "The seller has confirmed the item. Payment is the next step, but TBX will not claim payment is available until a real payment integration is enabled.",
+    body: "The item is confirmed. Payment is the next step, but TBX will not claim payment is available until a real payment integration is enabled.",
   },
   ready_to_ship: {
     title: "Preparing for dispatch",
@@ -70,6 +71,7 @@ export default async function OrderTimelinePage({ params }: Props) {
 
   const asset = Array.isArray(reservation.assets) ? reservation.assets[0] : reservation.assets;
   const isBuyer = reservation.buyer_id === userData.user.id;
+  const isSeller = reservation.seller_id === userData.user.id;
   const copy = statusCopy[reservation.status] ?? {
     title: "Purchase in progress",
     body: "This page reflects the verified state stored in TBX.",
@@ -108,6 +110,10 @@ export default async function OrderTimelinePage({ params }: Props) {
           {deadline ? <p className="mt-5 rounded-xl bg-[#fffaf1] p-4 text-sm text-slate-600">Current deadline: <strong>{new Date(deadline).toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short" })}</strong></p> : null}
         </div>
       </section>
+
+      {reservation.status === "awaiting_seller" && isSeller ? (
+        <SellerConfirmationActions reservationId={reservation.id} />
+      ) : null}
 
       {reservation.tracking_number || reservation.carrier ? (
         <section className="rounded-[1.75rem] border border-[#eadfce] bg-white p-6">
