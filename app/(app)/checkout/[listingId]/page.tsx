@@ -9,7 +9,8 @@ type Props = { params: Promise<{ listingId: string }> };
 
 export default async function CheckoutPage({ params }: Props) {
   const { listingId } = await params;
-  let listing: MarketplaceListing | undefined = getListingById(listingId);
+  if (getListingById(listingId)) notFound();
+  let listing: MarketplaceListing | undefined;
 
   if (!listing) {
     const supabase = await createClient();

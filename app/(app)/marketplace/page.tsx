@@ -1,5 +1,4 @@
 import { BuyLegoBrowser } from "@/components/marketplace/buy-lego-browser";
-import { marketplaceListings } from "@/features/marketplace/data/marketplace.mock";
 import { createClient } from "@/lib/supabase/server";
 
 type MarketplacePageProps = { searchParams?: Promise<{ set?: string; published?: string }> };
@@ -55,23 +54,9 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
     };
   });
 
-  const demoListings = marketplaceListings.map((listing) => ({
-    id: listing.id,
-    priceZar: listing.priceZar,
-    condition: listing.condition,
-    confidenceScore: listing.seller.trustScore,
-    dispatchDays: listing.dispatchDays,
-    setNumber: listing.setNumber,
-    setName: listing.title,
-    theme: listing.category,
-    imageUrl: listing.imageUrl,
-    sellerName: listing.seller.name,
-    sellerLevel: listing.seller.level,
-  }));
-
   return (
     <BuyLegoBrowser
-      listings={[...databaseListings, ...demoListings]}
+      listings={databaseListings}
       initialQuery={params?.set?.trim() ?? ""}
       publishedId={params?.published}
     />
