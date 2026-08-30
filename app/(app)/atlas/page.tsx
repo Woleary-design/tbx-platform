@@ -16,11 +16,11 @@ type AtlasSet = {
   atlas_visibility: string | null;
 };
 
-type AtlasDirectoryPageProps = { searchParams?: Promise<{ theme?: string }> };
+type AtlasDirectoryPageProps = { searchParams?: Promise<{ theme?: string; q?: string }> };
 
 export default async function AtlasDirectoryPage({ searchParams }: AtlasDirectoryPageProps) {
   const params = searchParams ? await searchParams : undefined;
-  const initialTheme = params?.theme?.trim() ?? "";
+  const initialQuery = params?.q?.trim() || params?.theme?.trim() || "";
   const supabase = await createClient();
   const { data } = await supabase
     .from("lego_sets")
@@ -71,7 +71,7 @@ export default async function AtlasDirectoryPage({ searchParams }: AtlasDirector
           </div>
         </div>
       </section>
-      <AtlasLiveSearch initialResults={initialResults} initialQuery={initialTheme} />
+      <AtlasLiveSearch initialResults={initialResults} initialQuery={initialQuery} />
     </div>
   );
 }
