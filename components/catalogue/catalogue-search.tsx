@@ -47,33 +47,33 @@ export function CatalogueSearch() {
 
   return (
     <div ref={containerRef} className="relative flex-1">
-      <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+      <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#ffd84d]" />
       <input
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         placeholder="Search LEGO sets by name, number or theme…"
-        className="h-11 w-full rounded-full border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200"
+        className="h-12 w-full rounded-full border border-white/35 bg-[#101827] pl-12 pr-4 text-sm font-medium text-white shadow-[0_0_0_1px_rgba(255,255,255,0.05)] outline-none transition placeholder:text-white/62 focus:border-[#ffd84d] focus:bg-[#121c2d] focus:ring-2 focus:ring-[#ffd84d]/25 sm:h-11"
       />
 
       {query.trim().length >= 2 ? (
-        <div className="absolute left-0 right-0 top-[calc(100%+0.6rem)] z-50 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
-          {loading ? <p className="px-4 py-5 text-sm text-slate-500">Searching LEGO directory…</p> : null}
-          {!loading && results.length === 0 ? <p className="px-4 py-5 text-sm text-slate-500">No LEGO sets found.</p> : null}
+        <div className="absolute left-0 right-0 top-[calc(100%+0.6rem)] z-50 overflow-hidden rounded-2xl border border-white/15 bg-[#0a1220] shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
+          {loading ? <p className="px-4 py-5 text-sm text-white/55">Searching LEGO directory…</p> : null}
+          {!loading && results.length === 0 ? <p className="px-4 py-5 text-sm text-white/55">No LEGO sets found.</p> : null}
           {!loading && results.length > 0 ? (
-            <div className="max-h-[28rem] overflow-y-auto p-2">
+            <div className="max-h-[31rem] overflow-y-auto p-2">
               {results.map((set) => (
                 <Link
                   key={set.id}
                   href={`/atlas/${encodeURIComponent(set.setNumber)}`}
                   onClick={() => setQuery("")}
-                  className="flex items-center gap-3 rounded-xl p-3 transition hover:bg-slate-50"
+                  className="flex min-h-[84px] items-center gap-4 rounded-xl px-3 py-3 transition hover:bg-white/[0.06] active:bg-white/[0.08]"
                 >
-                  <div className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-[#fffaf1] p-2">
-                    {set.imageUrl ? <img src={set.imageUrl} alt="" className="h-full w-full object-contain" /> : <Search className="h-5 w-5 text-slate-300" />}
+                  <div className="grid h-[72px] w-[72px] shrink-0 place-items-center overflow-hidden rounded-2xl border border-black/5 bg-white p-2 shadow-[0_8px_24px_rgba(0,0,0,0.18)] sm:h-16 sm:w-16">
+                    {set.imageUrl ? <img src={set.imageUrl} alt="" className="h-full w-full object-contain" /> : <Search className="h-6 w-6 text-slate-300" />}
                   </div>
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-slate-950">{set.name}</p>
-                    <p className="mt-1 truncate text-xs text-slate-500">LEGO {set.setNumber} · {set.theme}{set.year ? ` · ${set.year}` : ""}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-base font-bold text-white">{set.name}</p>
+                    <p className="mt-1 truncate text-sm text-white/55">LEGO {set.setNumber} · {set.theme}{set.year ? ` · ${set.year}` : ""}</p>
                   </div>
                 </Link>
               ))}
