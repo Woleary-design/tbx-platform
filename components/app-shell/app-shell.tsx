@@ -57,7 +57,7 @@ export function AppShell({ children, collector, isAdmin = false }: AppShellProps
     : navigation;
 
   return (
-    <div className="min-h-screen bg-[#050915] text-white">
+    <div className="min-h-screen bg-[#0b1220] text-white">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 border-r border-[#ffd84d]/20 bg-[linear-gradient(180deg,#08111f_0%,#050915_58%,#030711_100%)] shadow-[18px_0_70px_rgba(0,0,0,0.30)] lg:block">
         <div className="flex h-full flex-col">
           <div className="border-b border-white/[0.07] px-6 py-7">
@@ -129,7 +129,7 @@ export function AppShell({ children, collector, isAdmin = false }: AppShellProps
       </aside>
 
       <div className="lg:pl-72">
-        <header className="sticky top-0 z-20 border-b border-white/[0.07] bg-[#050915]/92 backdrop-blur-xl">
+        <header className="sticky top-0 z-20 border-b border-white/[0.07] bg-[#07101c]/95 backdrop-blur-xl">
           <div className="px-4 py-3 lg:px-8">
             <div className="flex items-center justify-between gap-3 lg:hidden">
               <Link href="/" aria-label="Go to Home" className="flex items-center gap-2 font-semibold text-white"><FourDotLogo small /> TBX</Link>
@@ -166,7 +166,7 @@ export function AppShell({ children, collector, isAdmin = false }: AppShellProps
           </nav>
         </header>
 
-        <main className="px-4 py-4 sm:px-6 sm:py-6 lg:px-8">{children}</main>
+        <main className="min-h-[calc(100vh-5rem)] bg-[linear-gradient(180deg,#0d1626_0%,#101a2b_100%)] px-4 py-4 sm:px-6 sm:py-6 lg:px-8">{children}</main>
       </div>
     </div>
   );
