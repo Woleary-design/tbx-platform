@@ -32,10 +32,6 @@ html {
   background: var(--tbx-bg);
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
 body {
   min-height: 100vh;
   background:
@@ -59,6 +55,12 @@ body::before {
     linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
   background-size: 44px 44px;
   mask-image: linear-gradient(to bottom, black, transparent 82%);
+}
+
+/* Homepage hero: a deliberate warm yellow shine, visible on desktop and mobile. */
+main > section:first-child > .absolute.inset-0 {
+  background:
+    radial-gradient(circle at 76% 24%, rgba(255, 216, 77, 0.42) 0%, rgba(232, 200, 106, 0.22) 18%, rgba(232, 200, 106, 0.08) 36%, transparent 58%) !important;
 }
 
 ::selection {
