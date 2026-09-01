@@ -51,6 +51,7 @@ export function buildAtlasPricing({ internalQuote, livePrices, externalMarket }:
     ? [...livePrices].sort((a, b) => a - b)[Math.floor(livePrices.length / 2)]
     : null;
   const externalAvailable = externalMarket?.status === "available";
+  const enoughListingEvidenceForValuation = livePrices.length >= 2;
 
   const evidence: AtlasEvidence[] = [
     {
@@ -67,11 +68,15 @@ export function buildAtlasPricing({ internalQuote, livePrices, externalMarket }:
       source: "tbx_listings",
       status: livePrices.length ? "available" : "empty",
       count: livePrices.length,
-      confidence: livePrices.length ? clamp(45 + livePrices.length * 5, 0, 80) : 0,
+      confidence: enoughListingEvidenceForValuation ? clamp(45 + livePrices.length * 5, 0, 80) : 25,
       low: listingLow,
       recommended: listingMid,
       high: listingHigh,
-      note: livePrices.length ? "Current TBX asking prices" : "No live TBX listings for this product",
+      note: livePrices.length
+        ? enoughListingEvidenceForValuation
+          ? "Current TBX asking prices"
+          : "One current TBX asking price — useful context, but not enough to set an Atlas value"
+        : "No live TBX listings for this product",
     },
     {
       source: "external_retail",
@@ -93,7 +98,9 @@ export function buildAtlasPricing({ internalQuote, livePrices, externalMarket }:
 
   const chosen = evidence.find((item) => item.source === "tbx_sales" && item.recommended)
     ?? evidence.find((item) => item.source === "external_retail" && item.recommended)
-    ?? evidence.find((item) => item.source === "tbx_listings" && item.recommended);
+    ?? (enoughListingEvidenceForValuation
+      ? evidence.find((item) => item.source === "tbx_listings" && item.recommended)
+      : undefined);
 
   const quote: AtlasQuote = chosen
     ? {
@@ -128,9 +135,11 @@ export function buildAtlasPricing({ internalQuote, livePrices, externalMarket }:
       evidenceCount: evidence.reduce((total, item) => total + item.count, 0),
       message: chosen
         ? `Atlas selected ${chosen.source.replaceAll("_", " ")} as the strongest available evidence.`
-        : externalMarket?.status === "not_configured"
-          ? "Atlas identified the product, but the external pricing provider is not configured in the deployment environment."
-          : "Atlas identified the product but does not yet have reliable pricing evidence.",
+        : livePrices.length === 1
+          ? "Atlas found one TBX asking price, but will not treat a single asking price as a reliable valuation."
+          : externalMarket?.status === "not_configured"
+            ? "Atlas identified the product, but the external pricing provider is not configured in the deployment environment."
+            : "Atlas identified the product but does not yet have reliable pricing evidence.",
     },
   };
 }
