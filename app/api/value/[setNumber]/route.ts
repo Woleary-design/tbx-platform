@@ -212,6 +212,67 @@ async function getOfficialLegoMarket(setNumber: string, name: string, condition:
   }
 }
 
+function absoluteCertifiedStoreUrl(href: string) {
+  if (href.startsWith("http://") || href.startsWith("https://")) return href;
+  return `https://lego-gybc.co.za${href.startsWith("/") ? href : `/${href}`}`;
+}
+
+async function getCertifiedStoreMarket(setNumber: string, name: string, condition: string) {
+  const canonical = canonicalSetNumber(setNumber);
+  const searchUrl = `https://lego-gybc.co.za/search?q=${encodeURIComponent(canonical)}&type=product`;
+  const headers = {
+    "user-agent": "Mozilla/5.0 (compatible; TBXAtlas/1.0; +https://tbx-platform.vercel.app)",
+    "accept-language": "en-ZA,en;q=0.9",
+  };
+
+  try {
+    const searchResponse = await fetch(searchUrl, {
+      signal: AbortSignal.timeout(5000),
+      headers,
+      next: { revalidate: 21600 },
+    });
+    if (!searchResponse.ok) return null;
+
+    const searchHtml = await searchResponse.text();
+    const hrefPatterns = [
+      new RegExp(`href=["']([^"']*\\/products\\/[^"']*${canonical}[^"']*)["']`, "i"),
+      new RegExp(`["']url["']\\s*:\\s*["']([^"']*\\/products\\/[^"']*${canonical}[^"']*)["']`, "i"),
+    ];
+    const href = hrefPatterns.map((pattern) => searchHtml.match(pattern)?.[1]).find(Boolean);
+    if (!href) return null;
+
+    const productUrl = absoluteCertifiedStoreUrl(href.replace(/\\u0026/g, "&").replace(/\\\//g, "/"));
+    const productResponse = await fetch(productUrl, {
+      signal: AbortSignal.timeout(5000),
+      headers,
+      next: { revalidate: 21600 },
+    });
+    if (!productResponse.ok) return null;
+
+    const productHtml = await productResponse.text();
+    const titleMatch = productHtml.match(/<title[^>]*>([^<]+)<\/title>/i);
+    const title = titleMatch?.[1]?.replace(/&amp;/g, "&").trim() || `LEGO ${canonical} ${name}`;
+    if (!exactSetMatch(`${canonical} ${title}`, canonical)) return null;
+
+    const retailPrice = extractOfficialPrice(productHtml);
+    if (!retailPrice) return null;
+
+    const listing: ExternalListing = {
+      id: `lego-certified-store-${canonical}`,
+      title: `LEGO ${canonical} ${name}`,
+      source: "LEGO Certified Stores South Africa",
+      price: retailPrice,
+      href: productUrl,
+      thumbnail: null,
+      condition: "New retail",
+      relevance: 1,
+    };
+    return buildMarket("lego_certified_store_za", productUrl, [listing], condition);
+  } catch {
+    return null;
+  }
+}
+
 function parsePublicShoppingHtml(html: string, setNumber: string, name: string, searchUrl: string) {
   const canonical = canonicalSetNumber(setNumber);
   const decoded = html.replace(/&quot;/g, "\"").replace(/&amp;/g, "&").replace(/&#39;/g, "'").replace(/<[^>]+>/g, " ");
@@ -254,6 +315,12 @@ async function getExternalRetailMarket(setNumber: string, name: string, conditio
   const searchUrl = `https://www.google.com/search?tbm=shop&gl=za&hl=en&q=${encodeURIComponent(`LEGO ${canonical}`)}`;
   const emptyResult = (status: string) => ({ provider: "google_shopping", status, searchUrl, retailLow: null, retailMedian: null, retailHigh: null, adjustedLow: null, adjustedRecommended: null, adjustedHigh: null, listings: [], queries });
 
+  const [certifiedStoreMarket, publicMarket, officialMarket] = await Promise.all([
+    getCertifiedStoreMarket(canonical, name, condition),
+    getPublicGoogleShoppingMarket(canonical, name, condition),
+    getOfficialLegoMarket(canonical, name, condition),
+  ]);
+
   if (apiKey) {
     const collected: ExternalListing[] = [];
     const results = await Promise.allSettled(queries.map((query) => runShoppingSearch(query, apiKey)));
@@ -267,14 +334,18 @@ async function getExternalRetailMarket(setNumber: string, name: string, conditio
         collected.push({ id: `external-${item.position ?? index}`, title: item.title, source: item.source ?? "Online retailer", price, href: item.product_link ?? item.link ?? searchUrl, thumbnail: item.thumbnail ?? null, condition: "New retail", relevance });
       }
     });
-    const serpMarket = buildMarket("google_shopping", searchUrl, collected, condition);
-    if (serpMarket) return { ...serpMarket, queries };
+
+    const combinedListings = [
+      ...(certifiedStoreMarket?.listings ?? []),
+      ...collected,
+      ...(publicMarket?.listings ?? []),
+      ...(officialMarket?.listings ?? []),
+    ];
+    const combinedMarket = buildMarket("south_africa_retail", certifiedStoreMarket?.searchUrl ?? searchUrl, combinedListings, condition);
+    if (combinedMarket) return { ...combinedMarket, queries };
   }
 
-  const [publicMarket, officialMarket] = await Promise.all([
-    getPublicGoogleShoppingMarket(canonical, name, condition),
-    getOfficialLegoMarket(canonical, name, condition),
-  ]);
+  if (certifiedStoreMarket) return { ...certifiedStoreMarket, queries };
   if (publicMarket) return { ...publicMarket, queries };
   if (officialMarket) return { ...officialMarket, queries };
   return emptyResult(apiKey ? "no_exact_matches" : "not_configured");
