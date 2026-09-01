@@ -1,34 +1,32 @@
 import Link from "next/link";
-import { ArrowLeft, BadgeCheck, BookOpen, Camera, PackageCheck } from "lucide-react";
+import { ArrowLeft, BadgeCheck, PackageCheck, SearchCheck } from "lucide-react";
 import { AddSetForm } from "@/components/collection/add-set-form";
 
 export default function AddSetPage() {
   return (
-    <div className="mx-auto max-w-5xl space-y-8">
-      <Link href="/vault" className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-950">
+    <div className="mx-auto max-w-5xl space-y-6">
+      <Link href="/collection" className="inline-flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-white">
         <ArrowLeft className="h-4 w-4" /> Back to My Collection
       </Link>
 
-      <section className="overflow-hidden rounded-[2rem] border border-[#eadfce] bg-slate-950 text-white shadow-[0_28px_100px_rgba(15,23,42,0.16)]">
-        <div className="grid gap-8 p-7 md:p-10 lg:grid-cols-[1fr_320px]">
+      <section className="overflow-hidden rounded-[28px] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,216,77,.10),transparent_32%),linear-gradient(135deg,rgba(255,255,255,.045),rgba(255,255,255,.015))] p-6 text-white sm:p-8 lg:p-10">
+        <div className="grid gap-7 lg:grid-cols-[1fr_300px] lg:items-center">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-300">New TBX Passport</p>
-            <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">Add your first real set.</h1>
-            <p className="mt-4 max-w-2xl text-base leading-7 text-white/70">Start with the facts you know today. You can add photos, documents and more detail later.</p>
+            <p className="text-sm font-semibold text-[#ffd84d]">My Collection</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Add a LEGO set</h1>
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-400 sm:text-base">Add the set details and condition you know now. TBX will keep it in your private collection until you choose to list it for sale.</p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-            {[ [BadgeCheck, "Ownership"], [Camera, "Condition"], [BookOpen, "Documentation"] ].map(([Icon, label]) => {
-              const IconComponent = Icon as typeof BadgeCheck;
-              return <div key={label as string} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/8 p-4"><IconComponent className="h-5 w-5 text-yellow-300" /><span className="text-sm font-medium">{label as string}</span></div>;
-            })}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+            <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-4"><SearchCheck className="h-5 w-5 text-[#ffd84d]" /><span className="text-sm font-medium">Identify the set</span></div>
+            <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-4"><BadgeCheck className="h-5 w-5 text-[#ffd84d]" /><span className="text-sm font-medium">Record its condition</span></div>
           </div>
         </div>
       </section>
 
-      <section className="rounded-[2rem] border border-[#eadfce] bg-white p-6 shadow-[0_24px_80px_rgba(43,30,18,0.08)] md:p-8">
+      <section className="rounded-[28px] border border-white/10 bg-[#0b1220] p-5 shadow-[0_24px_80px_rgba(0,0,0,.18)] sm:p-7 md:p-8">
         <div className="mb-6 flex items-center gap-3">
-          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-yellow-400 text-slate-950"><PackageCheck className="h-5 w-5" /></span>
-          <div><p className="font-semibold text-slate-950">Set details</p><p className="text-sm text-slate-500">Saved directly to your Supabase collection.</p></div>
+          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#ffd84d] text-[#050915]"><PackageCheck className="h-5 w-5" /></span>
+          <div><p className="font-semibold text-white">Set details</p><p className="text-sm text-slate-500">Saved to your TBX collection.</p></div>
         </div>
         <AddSetForm />
       </section>
