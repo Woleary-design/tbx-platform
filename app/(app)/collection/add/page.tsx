@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, BadgeCheck, BookOpen, Camera, PackageCheck, Sparkles } from "lucide-react";
+import { ArrowLeft, BadgeCheck, BookOpen, PackageCheck, Sparkles } from "lucide-react";
 import { QuickAddSetForm } from "@/components/collection/quick-add-set-form";
 
 export default async function AddSetPage({
@@ -39,7 +39,7 @@ export default async function AddSetPage({
 
       <section className="rounded-[2rem] border border-white/[0.09] bg-[#09111f] p-5 shadow-[0_30px_100px_rgba(0,0,0,0.3)] sm:p-7 md:p-8">
         <div className="mb-6 flex items-center gap-3 border-b border-white/[0.07] pb-5">
-          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#e8c86a] text-[#050912]"><Camera className="h-5 w-5" /></span>
+          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#e8c86a] text-[#050912]"><PackageCheck className="h-5 w-5" /></span>
           <div><p className="font-bold">Add a collection item</p><p className="mt-1 text-sm text-white/42">Search, choose the condition and review Atlas pricing before saving.</p></div>
         </div>
         <QuickAddSetForm initialSetNumber={set} />

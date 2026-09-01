@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, BadgeCheck, BookOpen, Box, Camera, CircleDollarSign, FilePenLine, FileText, MapPin, PackageCheck, ShoppingBag, Sparkles } from "lucide-react";
+import { ArrowLeft, BadgeCheck, BookOpen, Box, CircleDollarSign, FilePenLine, FileText, MapPin, PackageCheck, ShoppingBag, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { MinifigureMarketValue } from "./minifigure-market-value";
@@ -31,79 +31,44 @@ export default async function CollectionItemPage({ params }: { params: Promise<{
   const health = Math.round((checks.filter(Boolean).length / checks.length) * 100);
   const gain = Number(asset.estimated_value ?? 0) - Number(asset.purchase_price ?? 0);
   const recordId = isMinifigure ? String(asset.asset_id || "TBX-MINIFIG").replace(/^TBX-SET-/, "TBX-MINIFIG-") : asset.asset_id;
+  const details = isMinifigure
+    ? [[Box, "Condition", asset.condition], [BadgeCheck, "Original owner", asset.original_owner ? "Yes" : "Not recorded"], [FileText, "Notes", asset.notes ? "Added" : "Not added"]]
+    : [[Box, "Build / condition", asset.condition], [BadgeCheck, "Original owner", asset.original_owner ? "Yes" : "Not recorded"], [FileText, "Receipt", asset.original_receipt ? "Available" : "Missing"], [BookOpen, "Instructions", asset.instructions_complete ? "Included and complete" : "Not confirmed"], [PackageCheck, "Minifigures", asset.minifigures_complete ? "Complete" : "Not confirmed"]];
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8">
+    <div className="mx-auto max-w-7xl space-y-8 text-white">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link href="/collection" className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-950"><ArrowLeft className="h-4 w-4" /> Back to My Collection</Link>
-        <Button asChild variant="outline" className="rounded-xl border-[#eadfce] bg-white"><Link href={`/collection/${asset.id}/edit`}><FilePenLine className="h-4 w-4" /> Edit Collection Record</Link></Button>
+        <Link href="/collection" className="inline-flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-white"><ArrowLeft className="h-4 w-4" /> Back to My Collection</Link>
+        <Button asChild variant="outline" className="rounded-xl border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.07]"><Link href={`/collection/${asset.id}/edit`}><FilePenLine className="h-4 w-4" /> Edit item</Link></Button>
       </div>
 
-      <section className="overflow-hidden rounded-[2rem] border border-[#eadfce] bg-slate-950 text-white shadow-[0_28px_100px_rgba(15,23,42,0.16)]">
+      <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#07101d] shadow-[0_28px_100px_rgba(0,0,0,0.2)]">
         <div className="grid lg:grid-cols-[1fr_380px]">
           <div className="p-7 md:p-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-300">{isMinifigure ? `MINIFIGURE ${asset.set_number}` : `LEGO ${asset.set_number}`}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#e8c86a]">{isMinifigure ? `MINIFIGURE ${asset.set_number}` : `LEGO ${asset.set_number}`}</p>
             <h1 className="mt-4 text-4xl font-semibold md:text-6xl">{asset.set_name}</h1>
-            <p className="mt-3 text-lg text-white/60">{asset.theme || "Uncategorised"}</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <span className="rounded-full bg-white/10 px-4 py-2 text-sm">{asset.condition}</span>
-              <span className="rounded-full bg-white/10 px-4 py-2 text-sm">{asset.is_public ? "Public" : "Private"}</span>
-              <span className="rounded-full bg-yellow-400 px-4 py-2 text-sm font-semibold text-slate-950">{health}% Collection Health</span>
-            </div>
+            <p className="mt-3 text-lg text-white/55">{asset.theme || "Uncategorised"}</p>
+            <div className="mt-8 flex flex-wrap gap-3"><span className="rounded-full bg-white/[0.06] px-4 py-2 text-sm">{asset.condition}</span><span className="rounded-full bg-white/[0.06] px-4 py-2 text-sm">{asset.is_public ? "Public" : "Private"}</span><span className="rounded-full bg-[#e8c86a] px-4 py-2 text-sm font-semibold text-[#050912]">{health}% Collection Health</span></div>
           </div>
           <div className="grid grid-cols-2 gap-px bg-white/10">
-            <div className="bg-white/5 p-6"><p className="text-xs uppercase tracking-[0.16em] text-white/45">Market value</p><p className="mt-3 text-xl font-semibold">{isMinifigure && asset.lego_minifigure_id ? <MinifigureMarketValue assetId={asset.id} minifigureId={asset.lego_minifigure_id} condition={asset.condition} initialValue={asset.estimated_value == null ? null : Number(asset.estimated_value)} /> : money(asset.estimated_value)}</p></div>
-            <div className="bg-white/5 p-6"><p className="text-xs uppercase tracking-[0.16em] text-white/45">Purchase price</p><p className="mt-3 text-xl font-semibold">{money(asset.purchase_price)}</p></div>
-            <div className="bg-white/5 p-6"><p className="text-xs uppercase tracking-[0.16em] text-white/45">Value difference</p><p className="mt-3 text-xl font-semibold">{money(gain)}</p></div>
-            <div className="bg-white/5 p-6"><p className="text-xs uppercase tracking-[0.16em] text-white/45">Record ID</p><p className="mt-3 text-xl font-semibold">{recordId}</p></div>
+            <div className="bg-white/[0.035] p-6"><p className="text-xs uppercase tracking-[0.16em] text-white/40">Market value</p><p className="mt-3 text-xl font-semibold">{isMinifigure && asset.lego_minifigure_id ? <MinifigureMarketValue assetId={asset.id} minifigureId={asset.lego_minifigure_id} condition={asset.condition} initialValue={asset.estimated_value == null ? null : Number(asset.estimated_value)} /> : money(asset.estimated_value)}</p></div>
+            <div className="bg-white/[0.035] p-6"><p className="text-xs uppercase tracking-[0.16em] text-white/40">Purchase price</p><p className="mt-3 text-xl font-semibold">{money(asset.purchase_price)}</p></div>
+            <div className="bg-white/[0.035] p-6"><p className="text-xs uppercase tracking-[0.16em] text-white/40">Value difference</p><p className="mt-3 text-xl font-semibold">{money(gain)}</p></div>
+            <div className="bg-white/[0.035] p-6"><p className="text-xs uppercase tracking-[0.16em] text-white/40">Record ID</p><p className="mt-3 break-words text-xl font-semibold">{recordId}</p></div>
           </div>
         </div>
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
         <div className="space-y-6">
-          <div className="rounded-[2rem] border border-[#eadfce] bg-white p-6 shadow-[0_24px_80px_rgba(43,30,18,0.08)]">
-            <div className="flex items-center gap-3"><PackageCheck className="h-6 w-6 text-yellow-600" /><div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-600">Your copy</p><h2 className="text-2xl font-semibold">Condition and completeness</h2></div></div>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              {isMinifigure ? (
-                <>
-                  <div className="rounded-2xl border border-[#eadfce] bg-[#fffaf1] p-4"><Box className="h-5 w-5 text-yellow-600" /><p className="mt-3 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Condition</p><p className="mt-1 font-semibold text-slate-950">{asset.condition}</p></div>
-                  <div className="rounded-2xl border border-[#eadfce] bg-[#fffaf1] p-4"><BadgeCheck className="h-5 w-5 text-yellow-600" /><p className="mt-3 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Original owner</p><p className="mt-1 font-semibold text-slate-950">{asset.original_owner ? "Yes" : "Not recorded"}</p></div>
-                  <div className="rounded-2xl border border-[#eadfce] bg-[#fffaf1] p-4"><Camera className="h-5 w-5 text-yellow-600" /><p className="mt-3 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Photos</p><p className="mt-1 font-semibold text-slate-950">Open photo manager next</p></div>
-                </>
-              ) : [[Box, "Build / condition", asset.condition], [BadgeCheck, "Original owner", asset.original_owner ? "Yes" : "Not recorded"], [FileText, "Receipt", asset.original_receipt ? "Available" : "Missing"], [BookOpen, "Instructions", asset.instructions_complete ? "Included and complete" : "Not confirmed"], [PackageCheck, "Minifigures", asset.minifigures_complete ? "Complete" : "Not confirmed"], [Camera, "Photos", "Open photo manager next"]].map(([Icon, label, value]) => { const ItemIcon = Icon as typeof Box; return <div key={label as string} className="rounded-2xl border border-[#eadfce] bg-[#fffaf1] p-4"><ItemIcon className="h-5 w-5 text-yellow-600" /><p className="mt-3 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{label as string}</p><p className="mt-1 font-semibold text-slate-950">{value as string}</p></div>; })}
-            </div>
-          </div>
-
-          <div className="rounded-[2rem] border border-[#eadfce] bg-white p-6 shadow-[0_24px_80px_rgba(43,30,18,0.08)]">
-            <div className="flex items-center gap-3"><FileText className="h-6 w-6 text-yellow-600" /><h2 className="text-2xl font-semibold">Notes</h2></div>
-            <p className="mt-4 whitespace-pre-wrap leading-7 text-slate-600">{asset.notes || "No notes have been added yet."}</p>
-          </div>
+          <div className="rounded-[2rem] border border-white/10 bg-[#0b1220] p-6"><div className="flex items-center gap-3"><PackageCheck className="h-6 w-6 text-[#e8c86a]" /><div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#e8c86a]">Your copy</p><h2 className="text-2xl font-semibold">Condition and completeness</h2></div></div><div className="mt-6 grid gap-3 sm:grid-cols-2">{details.map(([Icon, label, value]) => { const ItemIcon = Icon as typeof Box; return <div key={label as string} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"><ItemIcon className="h-5 w-5 text-[#e8c86a]" /><p className="mt-3 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{label as string}</p><p className="mt-1 font-semibold text-white">{value as string}</p></div>; })}</div></div>
+          <div className="rounded-[2rem] border border-white/10 bg-[#0b1220] p-6"><div className="flex items-center gap-3"><FileText className="h-6 w-6 text-[#e8c86a]" /><h2 className="text-2xl font-semibold">Notes</h2></div><p className="mt-4 whitespace-pre-wrap leading-7 text-slate-400">{asset.notes || "No notes have been added yet."}</p></div>
         </div>
 
         <div className="space-y-6">
-          <div className="rounded-[2rem] border border-[#eadfce] bg-white p-6 shadow-[0_24px_80px_rgba(43,30,18,0.08)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-600">Collection Health</p>
-            <div className="mt-3 flex items-end justify-between"><p className="text-5xl font-semibold">{health}%</p><Sparkles className="h-7 w-7 text-yellow-500" /></div>
-            <div className="mt-5 h-3 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-yellow-400" style={{ width: `${health}%` }} /></div>
-            <div className="mt-5 space-y-2 text-sm text-slate-600">
-              {isMinifigure ? <>{!asset.notes && <p>• Add identification or accessory notes</p>}{!asset.original_owner && <p>• Add ownership information</p>}</> : <>{!asset.original_receipt && <p>• Add receipt or proof of purchase</p>}{!asset.instructions_complete && <p>• Confirm instruction status</p>}{!asset.minifigures_complete && <p>• Confirm minifigure completeness</p>}{!asset.original_owner && <p>• Add ownership information</p>}</>}
-              {health === 100 && <p>Everything currently requested is complete.</p>}
-            </div>
-            {health < 100 ? <Button asChild variant="outline" className="mt-5 w-full rounded-xl border-[#eadfce]"><Link href={`/collection/${asset.id}/edit`}>Improve Collection Health</Link></Button> : null}
-          </div>
-
-          <div className="rounded-[2rem] border border-[#eadfce] bg-slate-950 p-6 text-white shadow-[0_24px_80px_rgba(15,23,42,0.14)]">
-            <ShoppingBag className="h-7 w-7 text-yellow-300" />
-            <h2 className="mt-4 text-2xl font-semibold">Ready to sell?</h2>
-            <p className="mt-3 text-sm leading-6 text-white/65">Your collection record will pre-fill the listing. Confirm the sale details, add the required photos and choose the price and delivery options.</p>
-            <Button asChild className="mt-6 h-12 w-full rounded-xl bg-yellow-400 font-semibold text-slate-950 hover:bg-yellow-300"><Link href={`/sell/from-collection/${encodeURIComponent(asset.id)}`}>List for Sale</Link></Button>
-          </div>
-
-          <div className="rounded-[2rem] border border-[#eadfce] bg-white p-6 text-sm text-slate-600">
-            <p className="flex items-center gap-2"><CircleDollarSign className="h-4 w-4 text-yellow-600" /> Atlas value is stored with this collection record.</p>
-            <p className="mt-3 flex items-center gap-2"><MapPin className="h-4 w-4 text-yellow-600" /> Storage and delivery details are confirmed when listing.</p>
-          </div>
+          <div className="rounded-[2rem] border border-white/10 bg-[#0b1220] p-6"><p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#e8c86a]">Collection Health</p><div className="mt-3 flex items-end justify-between"><p className="text-5xl font-semibold">{health}%</p><Sparkles className="h-7 w-7 text-[#e8c86a]" /></div><div className="mt-5 h-3 overflow-hidden rounded-full bg-white/[0.06]"><div className="h-full rounded-full bg-[#e8c86a]" style={{ width: `${health}%` }} /></div><div className="mt-5 space-y-2 text-sm text-slate-400">{isMinifigure ? <>{!asset.notes && <p>• Add identification or accessory notes</p>}{!asset.original_owner && <p>• Add ownership information</p>}</> : <>{!asset.original_receipt && <p>• Add receipt or proof of purchase</p>}{!asset.instructions_complete && <p>• Confirm instruction status</p>}{!asset.minifigures_complete && <p>• Confirm minifigure completeness</p>}{!asset.original_owner && <p>• Add ownership information</p>}</>}{health === 100 && <p>Everything currently requested is complete.</p>}</div>{health < 100 ? <Button asChild variant="outline" className="mt-5 w-full rounded-xl border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.07]"><Link href={`/collection/${asset.id}/edit`}>Improve Collection Health</Link></Button> : null}</div>
+          <div className="rounded-[2rem] border border-[#e8c86a]/20 bg-[#0a101a] p-6"><ShoppingBag className="h-7 w-7 text-[#e8c86a]" /><h2 className="mt-4 text-2xl font-semibold">Ready to sell?</h2><p className="mt-3 text-sm leading-6 text-white/60">Your collection record will pre-fill the listing. Confirm the condition, asking price and delivery option, then publish.</p><Button asChild className="mt-6 h-12 w-full rounded-xl bg-[#e8c86a] font-semibold text-[#050912] hover:bg-[#f1d77f]"><Link href={`/sell/from-collection/${encodeURIComponent(asset.id)}`}>List for Sale</Link></Button></div>
+          <div className="rounded-[2rem] border border-white/10 bg-white/[0.025] p-6 text-sm text-slate-400"><p className="flex items-center gap-2"><CircleDollarSign className="h-4 w-4 text-[#e8c86a]" /> Atlas value is stored with this collection record.</p><p className="mt-3 flex items-center gap-2"><MapPin className="h-4 w-4 text-[#e8c86a]" /> Delivery details are confirmed when listing.</p></div>
         </div>
       </section>
     </div>
