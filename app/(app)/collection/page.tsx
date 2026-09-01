@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, BookOpen, Camera, CirclePlus, LibraryBig, Sparkles } from "lucide-react";
+import { ArrowRight, BadgeCheck, BookOpen, CirclePlus, LibraryBig, PackageCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 
@@ -59,7 +59,7 @@ export default async function CollectionPage() {
           <div className="p-7 text-white md:p-10">
             <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-medium text-yellow-300"><LibraryBig className="h-4 w-4" /> My Collection</p>
             <h1 className="mt-6 max-w-3xl text-4xl font-semibold leading-tight md:text-6xl">Build your collection. Track its value. Sell with confidence.</h1>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-white/70">Every set has one clear home for its condition, documentation, value and sale status.</p>
+            <p className="mt-5 max-w-2xl text-base leading-7 text-white/70">Every set has one clear home for its condition, value and sale status.</p>
             <Button asChild className="mt-8 h-12 rounded-xl bg-yellow-400 px-6 font-semibold text-slate-950 hover:bg-yellow-300"><Link href="/collection/add"><CirclePlus className="h-4 w-4" /> Add to Collection</Link></Button>
           </div>
 
@@ -86,20 +86,20 @@ export default async function CollectionPage() {
             <div className="absolute bottom-5 left-5 right-5 rounded-2xl border border-white/10 bg-slate-950/90 p-4 text-white shadow-xl backdrop-blur">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-yellow-300">Your cabinet</p>
               <p className="mt-1 text-xl font-semibold">{assets.length ? `${assets.length} set${assets.length === 1 ? "" : "s"} collected` : "Ready for your first set"}</p>
-              <p className="mt-1 text-sm text-white/55">New collection records appear in the cabinet automatically.</p>
+              <p className="mt-1 text-sm text-white/55">New collection records appear here automatically.</p>
             </div>
           </div>
         </div>
       </section>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {[["Collection Value", money(collectionValue), "Current estimated value"], ["Sets", String(assets.length), "Items in your collection"], ["Collection Health", `${averageHealth}%`, "Average documentation progress"], ["Value Difference", money(collectionValue - purchaseValue), "Estimated value less purchase cost"]].map(([label, value, detail]) => (
+        {[["Collection Value", money(collectionValue), "Current estimated value"], ["Sets", String(assets.length), "Items in your collection"], ["Collection Health", `${averageHealth}%`, "Average item completeness"], ["Value Difference", money(collectionValue - purchaseValue), "Estimated value less purchase cost"]].map(([label, value, detail]) => (
           <div key={label} className="rounded-[1.5rem] border border-[#eadfce] bg-white p-5 shadow-[0_18px_55px_rgba(43,30,18,0.08)]"><p className="text-sm font-medium text-slate-500">{label}</p><p className="mt-3 text-3xl font-semibold text-slate-950">{value}</p><p className="mt-2 text-sm text-slate-600">{detail}</p></div>
         ))}
       </section>
 
       {assets.length === 0 ? (
-        <section className="rounded-[2rem] border border-dashed border-[#d9c9af] bg-white p-10 text-center"><CirclePlus className="mx-auto h-8 w-8 text-yellow-600" /><h2 className="mt-4 text-3xl font-semibold">Add your first LEGO set.</h2><p className="mt-3 text-slate-600">Search Atlas or add it manually with photos.</p><Button asChild className="mt-6 rounded-xl bg-slate-950 text-white"><Link href="/collection/add">Add to Collection <ArrowRight className="h-4 w-4" /></Link></Button></section>
+        <section className="rounded-[2rem] border border-dashed border-[#d9c9af] bg-white p-10 text-center"><CirclePlus className="mx-auto h-8 w-8 text-yellow-600" /><h2 className="mt-4 text-3xl font-semibold">Add your first LEGO set.</h2><p className="mt-3 text-slate-600">Search Atlas or enter the set details you know.</p><Button asChild className="mt-6 rounded-xl bg-slate-950 text-white"><Link href="/collection/add">Add to Collection <ArrowRight className="h-4 w-4" /></Link></Button></section>
       ) : (
         <section>
           <div className="flex items-end justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Live Collection</p><h2 className="mt-2 text-3xl font-semibold text-slate-950">Your LEGO sets</h2></div><Button asChild variant="outline" className="rounded-xl"><Link href="/collection/add">Add another set</Link></Button></div>
@@ -112,18 +112,16 @@ export default async function CollectionPage() {
                   <div className="relative grid h-52 grid-cols-[1fr_42%] overflow-hidden bg-slate-950 text-white">
                     <div className="p-5"><p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-300">LEGO {asset.set_number}</p><h3 className="mt-5 text-2xl font-semibold">{asset.set_name}</h3><p className="mt-1 text-sm text-white/60">{asset.theme || "Uncategorised"}</p><span className="absolute bottom-5 left-5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white">{health}% health</span></div>
                     <div className="relative flex items-center justify-center bg-gradient-to-br from-white/[0.08] to-transparent p-4">
-                      {image ? <img src={image} alt={asset.set_name} className="max-h-40 w-full object-contain drop-shadow-2xl transition duration-300 group-hover:scale-105" /> : <Camera className="h-9 w-9 text-white/20" />}
+                      {image ? <img src={image} alt={asset.set_name} className="max-h-40 w-full object-contain drop-shadow-2xl transition duration-300 group-hover:scale-105" /> : <PackageCheck className="h-9 w-9 text-white/20" />}
                     </div>
                   </div>
-                  <div className="p-5"><div className="flex items-center justify-between gap-4"><div><p className="text-sm text-slate-500">Estimated value</p><p className="mt-1 text-2xl font-semibold text-slate-950">{money(asset.estimated_value)}</p></div><span className="rounded-full bg-[#fffaf1] px-3 py-1 text-xs font-semibold text-slate-600">{asset.condition}</span></div><div className="mt-5 h-2 overflow-hidden rounded-full bg-[#fffaf1]"><div className="h-full rounded-full bg-yellow-400" style={{ width: `${health}%` }} /></div><div className="mt-5 grid grid-cols-3 gap-2 text-center text-xs text-slate-600"><div className="rounded-xl bg-slate-50 p-3"><BadgeCheck className="mx-auto mb-1 h-4 w-4 text-yellow-500" /> Owner</div><div className="rounded-xl bg-slate-50 p-3"><BookOpen className="mx-auto mb-1 h-4 w-4 text-yellow-500" /> Details</div><div className="rounded-xl bg-slate-50 p-3"><Camera className="mx-auto mb-1 h-4 w-4 text-yellow-500" /> Photos</div></div><p className="mt-4 flex items-center justify-between text-xs text-slate-400"><span>{asset.asset_id}</span><span className="font-semibold text-slate-700 group-hover:text-yellow-700">View item →</span></p></div>
+                  <div className="p-5"><div className="flex items-center justify-between gap-4"><div><p className="text-sm text-slate-500">Estimated value</p><p className="mt-1 text-2xl font-semibold text-slate-950">{money(asset.estimated_value)}</p></div><span className="rounded-full bg-[#fffaf1] px-3 py-1 text-xs font-semibold text-slate-600">{asset.condition}</span></div><div className="mt-5 h-2 overflow-hidden rounded-full bg-[#fffaf1]"><div className="h-full rounded-full bg-yellow-400" style={{ width: `${health}%` }} /></div><div className="mt-5 grid grid-cols-3 gap-2 text-center text-xs text-slate-600"><div className="rounded-xl bg-slate-50 p-3"><BadgeCheck className="mx-auto mb-1 h-4 w-4 text-yellow-500" /> Owner</div><div className="rounded-xl bg-slate-50 p-3"><BookOpen className="mx-auto mb-1 h-4 w-4 text-yellow-500" /> Details</div><div className="rounded-xl bg-slate-50 p-3"><PackageCheck className="mx-auto mb-1 h-4 w-4 text-yellow-500" /> Condition</div></div><p className="mt-4 flex items-center justify-between text-xs text-slate-400"><span>{asset.asset_id}</span><span className="font-semibold text-slate-700 group-hover:text-yellow-700">View item →</span></p></div>
                 </Link>
               );
             })}
           </div>
         </section>
       )}
-
-      <section className="rounded-[2rem] bg-slate-950 p-6 text-white"><p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-yellow-300"><Sparkles className="h-4 w-4" /> Collection intelligence — coming later</p><p className="mt-3 text-lg font-semibold">First we make every collection item complete and easy to use.</p></section>
     </div>
   );
 }
