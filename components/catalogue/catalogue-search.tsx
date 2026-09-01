@@ -13,15 +13,23 @@ type SearchResult = {
   imageUrl: string | null;
 };
 
+type SearchPayload = {
+  results?: SearchResult[];
+  correctedQuery?: string | null;
+  didYouMean?: string | null;
+};
+
 export function CatalogueSearch() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
+  const [correction, setCorrection] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (query.trim().length < 2) {
       setResults([]);
+      setCorrection(null);
       return;
     }
 
@@ -30,12 +38,17 @@ export function CatalogueSearch() {
       setLoading(true);
       try {
         const response = await fetch(`/api/catalogue/search?q=${encodeURIComponent(query.trim())}`, { signal: controller.signal });
-        const payload = await response.json();
+        if (!response.ok) throw new Error("Search failed");
+        const payload = (await response.json()) as SearchPayload;
         setResults(Array.isArray(payload.results) ? payload.results : []);
+        setCorrection(payload.correctedQuery ?? null);
       } catch (error) {
-        if ((error as Error).name !== "AbortError") setResults([]);
+        if ((error as Error).name !== "AbortError") {
+          setResults([]);
+          setCorrection(null);
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     }, 220);
 
@@ -69,39 +82,31 @@ export function CatalogueSearch() {
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#ffd84d]">Atlas search</p>
               <p className="mt-1 text-sm font-semibold text-white">Results for “{query.trim()}”</p>
             </div>
-            <button type="button" onClick={() => setQuery("")} className="grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-white/70" aria-label="Close search results">
-              <X className="h-4 w-4" />
-            </button>
+            <button type="button" onClick={() => setQuery("")} className="grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-white/70" aria-label="Close search results"><X className="h-4 w-4" /></button>
           </div>
+
+          {correction && !loading ? (
+            <button type="button" onClick={() => setQuery(correction)} className="mx-3 mt-3 w-[calc(100%-1.5rem)] rounded-xl border border-[#ffd84d]/20 bg-[#ffd84d]/[0.07] px-3 py-2 text-left text-xs text-white/65">
+              Showing results for <span className="font-bold text-[#ffd84d]">{correction.toUpperCase()}</span> — tap to search that term.
+            </button>
+          ) : null}
 
           {loading ? <p className="px-4 py-5 text-sm text-white/55">Searching LEGO directory…</p> : null}
           {!loading && results.length === 0 ? <p className="px-4 py-5 text-sm text-white/55">No LEGO sets found. Try a set number, name or theme.</p> : null}
           {!loading && results.length > 0 ? (
             <div className="min-h-0 flex-1 overflow-y-auto p-2 sm:max-h-[31rem]">
               {results.map((set) => (
-                <Link
-                  key={set.id}
-                  href={`/atlas/${encodeURIComponent(set.setNumber)}`}
-                  onClick={() => setQuery("")}
-                  className="flex min-h-[96px] items-center gap-4 rounded-2xl border-b border-white/[0.05] px-3 py-3 transition last:border-b-0 hover:bg-white/[0.06] active:bg-white/[0.08] sm:min-h-[84px] sm:rounded-xl"
-                >
+                <Link key={set.id} href={`/atlas/${encodeURIComponent(set.setNumber)}`} onClick={() => setQuery("")} className="flex min-h-[96px] items-center gap-4 rounded-2xl border-b border-white/[0.05] px-3 py-3 transition last:border-b-0 hover:bg-white/[0.06] active:bg-white/[0.08] sm:min-h-[84px] sm:rounded-xl">
                   <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl border border-black/5 bg-white p-2 shadow-[0_8px_24px_rgba(0,0,0,0.18)] sm:h-16 sm:w-16">
                     {set.imageUrl ? <img src={set.imageUrl} alt="" className="h-full w-full object-contain" /> : <Search className="h-6 w-6 text-slate-300" />}
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-base font-bold leading-5 text-white sm:truncate">{set.name}</p>
-                    <p className="mt-1 text-sm text-white/58 sm:truncate">LEGO {set.setNumber} · {set.theme}{set.year ? ` · ${set.year}` : ""}</p>
-                  </div>
+                  <div className="min-w-0 flex-1"><p className="text-base font-bold leading-5 text-white sm:truncate">{set.name}</p><p className="mt-1 text-sm text-white/58 sm:truncate">LEGO {set.setNumber} · {set.theme}{set.year ? ` · ${set.year}` : ""}</p></div>
                 </Link>
               ))}
             </div>
           ) : null}
 
-          {!loading ? (
-            <Link href={`/atlas?theme=${encodeURIComponent(query.trim())}`} onClick={() => setQuery("")} className="m-3 mt-auto inline-flex min-h-12 items-center justify-center rounded-xl bg-[#ffd84d] px-4 text-sm font-bold text-[#050915] sm:hidden">
-              View all Atlas results
-            </Link>
-          ) : null}
+          {!loading ? <Link href={`/atlas?theme=${encodeURIComponent(correction ?? query.trim())}`} onClick={() => setQuery("")} className="m-3 mt-auto inline-flex min-h-12 items-center justify-center rounded-xl bg-[#ffd84d] px-4 text-sm font-bold text-[#050915] sm:hidden">View all Atlas results</Link> : null}
         </div>
       ) : null}
     </div>
