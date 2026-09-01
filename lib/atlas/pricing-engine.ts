@@ -68,7 +68,11 @@ export function buildAtlasPricing({ internalQuote, livePrices, externalMarket }:
       source: "tbx_listings",
       status: livePrices.length ? "available" : "empty",
       count: livePrices.length,
-      confidence: enoughListingEvidenceForValuation ? clamp(45 + livePrices.length * 5, 0, 80) : 25,
+      confidence: livePrices.length === 0
+        ? 0
+        : enoughListingEvidenceForValuation
+          ? clamp(45 + livePrices.length * 5, 0, 80)
+          : 25,
       low: listingLow,
       recommended: listingMid,
       high: listingHigh,
