@@ -8,7 +8,7 @@ type ShoppingResult = { position?: number; title?: string; source?: string; extr
 type LegoSet = { id: string; set_number: string; name: string; image_url: string | null };
 type ExternalListing = { id: string; title: string; source: string; price: number; href: string; thumbnail: string | null; condition: string; relevance: number };
 
-const accessoryTerms = ["light kit","lighting kit","led kit","light set","nameplate","display plaque","display stand","wall mount","display case","instructions","instruction manual","replacement","sticker","stickers","minifigure only","compatible with","for lego","motorize","motorised","motorized","dust cover","acrylic case","frame","keyring","keychain","poster","display shelf","protective case"];
+const accessoryTerms = ["light kit","lighting kit","led kit","light set","nameplate","display plaque","display stand","wall mount","display case","instructions","instruction manual","replacement","sticker","stickers","minifigure only","compatible with","for lego","motorize","motorised","motorized","dust cover","acrylic case","frame","keyring","keychain","poster","display shelf","protective case","ring light","with background","scoparius"];
 const cloneTerms = ["building blocks","building block","model bricks","brick model","compatible bricks","compatible blocks","construction blocks","construction bricks","block set","blocks set","moc set","moc model","custom bricks","unbranded","clone","replica","alternative bricks","lepin","mould king","mouldking","cada","reobrix","joytoy","gobricks","jiestar","king building blocks"];
 const stopWords = new Set(["lego","icons","classic","architecture","technic","ninjago","the","and","with","set"]);
 
