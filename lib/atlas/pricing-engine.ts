@@ -92,8 +92,8 @@ export function buildAtlasPricing({ internalQuote, livePrices, externalMarket }:
   ];
 
   const chosen = evidence.find((item) => item.source === "tbx_sales" && item.recommended)
-    ?? evidence.find((item) => item.source === "tbx_listings" && item.recommended)
-    ?? evidence.find((item) => item.source === "external_retail" && item.recommended);
+    ?? evidence.find((item) => item.source === "external_retail" && item.recommended)
+    ?? evidence.find((item) => item.source === "tbx_listings" && item.recommended);
 
   const quote: AtlasQuote = chosen
     ? {
