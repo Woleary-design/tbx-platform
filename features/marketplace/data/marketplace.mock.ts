@@ -61,7 +61,7 @@ export const marketplaceListings: MarketplaceListing[] = [
       { label: "Inspection", value: "TBX Certified" }, { label: "Previous owners", value: "1" },
       { label: "Documentation", value: "Complete" },
     ],
-    shipping: { estimate: "1–5 business days", courierIncluded: false, insuranceIncluded: true, enabledMethods: ["courier-guy", "paxi", "pargo"] },
+    shipping: { estimate: "1–5 business days", courierIncluded: false, insuranceIncluded: true, enabledMethods: ["courier-guy", "pudo"] },
   },
   {
     id: "lego-titanic-10294", setNumber: "10294", title: "Titanic 10294", category: "Icons Display",
@@ -71,7 +71,7 @@ export const marketplaceListings: MarketplaceListing[] = [
     dispatchDays: 2,
     conditionReport: [{ label: "Box", value: "5 stars", detail: "Display-grade sealed box" }, { label: "Pieces", value: "100%", detail: "Factory sealed" }, { label: "Inspection", value: "TBX Verified", detail: "Listing evidence reviewed" }],
     provenance: [{ label: "Purchased", value: "2023" }, { label: "Original invoice", value: "Included" }, { label: "Storage", value: "Dry indoor cabinet" }, { label: "Smoke free", value: "Yes" }],
-    shipping: { estimate: "1–5 business days", courierIncluded: false, insuranceIncluded: true, enabledMethods: ["courier-guy", "paxi"] },
+    shipping: { estimate: "1–5 business days", courierIncluded: false, insuranceIncluded: true, enabledMethods: ["courier-guy", "pudo"] },
   },
   {
     id: "cafe-corner-10182", setNumber: "10182", title: "Café Corner 10182", category: "Modular Grails",
@@ -81,7 +81,7 @@ export const marketplaceListings: MarketplaceListing[] = [
     dispatchDays: 1,
     conditionReport: [{ label: "Pieces", value: "100%", detail: "Inventory checked" }, { label: "Instructions", value: "4 stars", detail: "Complete with light age wear" }, { label: "Minifigures", value: "5 stars", detail: "All figures verified" }, { label: "Inspection", value: "TBX Verified", detail: "Collector-grade inspection complete" }],
     provenance: [{ label: "Purchased", value: "2008" }, { label: "Previous owners", value: "1" }, { label: "Storage", value: "Display cabinet" }, { label: "Smoke free", value: "Yes" }],
-    shipping: { estimate: "1–4 business days", courierIncluded: false, insuranceIncluded: true, enabledMethods: ["courier-guy", "pargo"] },
+    shipping: { estimate: "1–4 business days", courierIncluded: false, insuranceIncluded: true, enabledMethods: ["courier-guy", "pudo"] },
   },
 ];
 
