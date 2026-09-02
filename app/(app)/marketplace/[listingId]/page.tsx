@@ -25,7 +25,7 @@ export default async function ProductDetailPage({ params }: Props) {
       .from("listings")
       .select(`
         id, title, description, asking_price, published_at, value_quote,
-        assets!listings_asset_id_fkey(set_number, set_name, theme, condition, original_owner, original_receipt, instructions_complete, minifigures_complete, passport_status, lego_set_id),
+        assets!listings_asset_id_fkey(id, set_number, set_name, theme, condition, original_owner, original_receipt, instructions_complete, minifigures_complete, passport_status, lego_set_id),
         collectors!listings_seller_id_fkey(display_name, username, collector_level, confidence_score, completed_trades, average_dispatch_days, disputes, identity_verified, address_verified, payment_verified)
       `)
       .eq("id", listingId)
@@ -43,6 +43,10 @@ export default async function ProductDetailPage({ params }: Props) {
           .eq("id", asset.lego_set_id)
           .maybeSingle();
         catalogueImageUrl = legoSet?.image_url ?? null;
+      }
+      if (asset?.id) {
+        const { data: photo } = await supabase.from("asset_evidence").select("storage_bucket, storage_path").eq("asset_id", asset.id).order("created_at", { ascending: true }).limit(1).maybeSingle();
+        if (photo?.storage_bucket && photo.storage_path) catalogueImageUrl = supabase.storage.from(photo.storage_bucket).getPublicUrl(photo.storage_path).data.publicUrl;
       }
       const quote = data.value_quote && typeof data.value_quote === "object" && !Array.isArray(data.value_quote)
         ? data.value_quote as Record<string, unknown>
@@ -65,7 +69,7 @@ export default async function ProductDetailPage({ params }: Props) {
         publishedAt: data.published_at ?? new Date().toISOString(),
         rarityRank: seller?.confidence_score ?? 50,
         seller: {
-          name: seller?.display_name || seller?.username || "TBX Collector",
+          name: "Verified seller",
           level: seller?.collector_level ?? "Collector",
           trustScore: seller?.confidence_score ?? 50,
           rating: 0,
@@ -108,7 +112,7 @@ export default async function ProductDetailPage({ params }: Props) {
               <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-slate-950/35 to-transparent" />
               {listing.verified !== false ? <div className="absolute left-5 top-5"><VerifiedLabel /></div> : null}
             </div>
-            <div className="border-t border-[#eadfce] p-4 text-center text-xs font-semibold text-slate-500">{listing.imageUrl ? "LEGO catalogue image" : "Seller photos pending"}</div>
+            <div className="border-t border-[#eadfce] p-4 text-center text-xs font-semibold text-slate-500">{listing.imageUrl ? (listing.setNumber === "BULK" ? "Seller photo" : "Listing image") : "Seller photo unavailable"}</div>
           </div>
 
           <div className="rounded-[2rem] border border-[#eadfce] bg-white p-7 shadow-[0_24px_80px_rgba(43,30,18,0.08)]">
