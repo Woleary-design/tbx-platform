@@ -69,7 +69,7 @@ export default async function ProductDetailPage({ params }: Props) {
         publishedAt: data.published_at ?? new Date().toISOString(),
         rarityRank: seller?.confidence_score ?? 50,
         seller: {
-          name: "Verified seller",
+          name: "Private seller",
           level: seller?.collector_level ?? "Collector",
           trustScore: seller?.confidence_score ?? 50,
           rating: 0,

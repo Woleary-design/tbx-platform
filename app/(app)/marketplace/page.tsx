@@ -53,7 +53,7 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
       setName: listing.title || asset?.set_name || "LEGO collection",
       theme: asset?.theme ?? null,
       imageUrl: asset?.id && imageByAssetId.has(asset.id) ? imageByAssetId.get(asset.id)! : asset?.lego_set_id ? imageBySetId.get(asset.lego_set_id) ?? null : null,
-      sellerName: "Verified seller",
+      sellerName: "Private seller",
       sellerLevel: seller?.collector_level ?? "Collector",
     };
   });
