@@ -33,7 +33,7 @@ export default async function CheckoutPage({ params }: Props) {
         : {};
       const enabledMethods = Array.isArray(quote.shippingMethods)
         ? quote.shippingMethods.filter((method): method is CourierCode =>
-            ["courier-guy", "paxi", "pargo"].includes(String(method)),
+            ["courier-guy", "pudo"].includes(String(method)),
           )
         : [];
       const shippingMethods: CourierCode[] = enabledMethods.length ? enabledMethods : ["courier-guy"];

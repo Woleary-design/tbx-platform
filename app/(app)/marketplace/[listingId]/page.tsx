@@ -52,8 +52,8 @@ export default async function ProductDetailPage({ params }: Props) {
         ? data.value_quote as Record<string, unknown>
         : {};
       const methods = Array.isArray(quote.shippingMethods)
-        ? quote.shippingMethods.filter((method): method is CourierCode => ["courier-guy", "paxi", "pargo"].includes(String(method)))
-        : ["courier-guy", "paxi", "pargo"] as CourierCode[];
+        ? quote.shippingMethods.filter((method): method is CourierCode => ["courier-guy", "pudo"].includes(String(method)))
+        : ["courier-guy", "pudo"] as CourierCode[];
       const condition = typeof quote.condition === "string" ? quote.condition : asset?.condition ?? "Used";
       const included = typeof quote.included === "string" ? quote.included : data.description ?? "Collection item";
 
