@@ -157,7 +157,8 @@ export function AtlasDescribeClient({ resume }: { resume?: string }) {
           description: data.description ?? "",
           price: price ? String(price) : "",
           delivery: "Seller ships",
-          itemKind: data.matchedName ? "known-set" : "manual",
+          itemKind: data.weightKg ? "loose" : data.matchedName ? "known-set" : "manual",
+          weight: data.weightKg ? String(data.weightKg) : "",
         }));
         router.push("/sell/atlas");
         return;
