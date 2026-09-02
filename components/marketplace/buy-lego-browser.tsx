@@ -42,7 +42,7 @@ export function BuyLegoBrowser({ listings, initialQuery = "", publishedId }: { l
           <ShieldCheck className="h-4 w-4" /> Fixed-price marketplace
         </p>
         <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-6xl">Buy LEGO with confidence.</h1>
-        <p className="mt-4 max-w-2xl text-white/70">Only sets currently listed for sale appear here. No offers, no chat and no catalogue clutter.</p>
+        <p className="mt-4 max-w-2xl text-white/70">Only LEGO currently listed for sale appears here, including sets and loose collections. No offers, no chat and no catalogue clutter.</p>
       </section>
 
       <section className="sticky top-20 z-10 rounded-[1.5rem] border border-[#eadfce] bg-white/95 p-4 shadow-[0_16px_50px_rgba(43,30,18,0.08)] backdrop-blur">
@@ -51,7 +51,7 @@ export function BuyLegoBrowser({ listings, initialQuery = "", publishedId }: { l
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search sets currently for sale…"
+            placeholder="Search sets, loose LEGO or collections…"
             className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-12 pr-4 text-base outline-none focus:border-slate-400 focus:bg-white"
           />
         </div>
@@ -61,7 +61,7 @@ export function BuyLegoBrowser({ listings, initialQuery = "", publishedId }: { l
         <div className="flex items-end justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Live listings</p>
-            <h2 className="mt-2 text-3xl font-semibold text-slate-950">{filtered.length} set{filtered.length === 1 ? "" : "s"} available</h2>
+            <h2 className="mt-2 text-3xl font-semibold text-slate-950">{filtered.length} listing{filtered.length === 1 ? "" : "s"} available</h2>
           </div>
         </div>
 
@@ -77,7 +77,7 @@ export function BuyLegoBrowser({ listings, initialQuery = "", publishedId }: { l
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-yellow-600">LEGO {listing.setNumber}</p>
                   <h3 className="mt-2 text-xl font-semibold text-slate-950">{listing.setName}</h3>
                   <p className="mt-2 text-sm text-slate-500">{listing.condition}{listing.theme ? ` · ${listing.theme}` : ""}</p>
-                  <p className="mt-3 text-sm font-semibold text-slate-700">{listing.sellerName} <span className="font-normal text-slate-400">· {listing.sellerLevel}</span></p>
+                  <p className="mt-3 text-sm font-semibold text-slate-700">Verified seller <span className="font-normal text-slate-400">· {listing.sellerLevel}</span></p>
                   <div className="mt-5 flex items-center justify-between">
                     <p className="text-2xl font-semibold text-slate-950">R{listing.priceZar.toLocaleString("en-ZA")}</p>
                     <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">Trust {listing.confidenceScore}</span>
@@ -91,8 +91,8 @@ export function BuyLegoBrowser({ listings, initialQuery = "", publishedId }: { l
         ) : (
           <div className="mt-6 rounded-[2rem] border border-dashed border-[#d9c9af] bg-white p-10 text-center">
             <Heart className="mx-auto h-9 w-9 text-yellow-600" />
-            <h3 className="mt-4 text-2xl font-semibold text-slate-950">No matching sets are for sale.</h3>
-            <p className="mt-2 text-slate-600">Add the set to your Wishlist and TBX will notify you when a matching listing appears.</p>
+            <h3 className="mt-4 text-2xl font-semibold text-slate-950">No matching listings are available.</h3>
+            <p className="mt-2 text-slate-600">Try another set number, name, theme or “loose LEGO”.</p>
             <Link href="/wishlist" className="mt-5 inline-flex rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white">Open Wishlist</Link>
           </div>
         )}
