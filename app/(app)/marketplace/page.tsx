@@ -15,7 +15,7 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
       asking_price,
       published_at,
       value_quote,
-      assets!listings_asset_id_fkey(set_number, set_name, theme, condition, lego_set_id),
+      assets!listings_asset_id_fkey(id, set_number, set_name, theme, condition, lego_set_id),
       collectors!listings_seller_id_fkey(display_name, username, collector_level, confidence_score, average_dispatch_days)
     `)
     .eq("status", "Active")
@@ -32,6 +32,10 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
     ? await supabase.from("lego_sets").select("id, image_url").in("id", legoSetIds)
     : { data: [] as Array<{ id: string; image_url: string | null }> };
   const imageBySetId = new Map((legoSets ?? []).map((set) => [set.id, set.image_url]));
+  const assetIds = (liveListings ?? []).flatMap((listing) => { const asset = Array.isArray(listing.assets) ? listing.assets[0] : listing.assets; return asset?.id ? [asset.id] : []; });
+  const { data: evidence } = assetIds.length ? await supabase.from("asset_evidence").select("asset_id, storage_bucket, storage_path, evidence_type").in("asset_id", assetIds).order("created_at", { ascending: true }) : { data: [] as Array<{ asset_id:string; storage_bucket:string; storage_path:string; evidence_type:string }> };
+  const imageByAssetId = new Map<string,string>();
+  for (const photo of evidence ?? []) if (!imageByAssetId.has(photo.asset_id)) imageByAssetId.set(photo.asset_id, supabase.storage.from(photo.storage_bucket).getPublicUrl(photo.storage_path).data.publicUrl);
 
   const databaseListings = (liveListings ?? []).map((listing) => {
     const asset = Array.isArray(listing.assets) ? listing.assets[0] : listing.assets;
@@ -48,8 +52,8 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
       setNumber: asset?.set_number ?? "Collection",
       setName: listing.title || asset?.set_name || "LEGO collection",
       theme: asset?.theme ?? null,
-      imageUrl: asset?.lego_set_id ? imageBySetId.get(asset.lego_set_id) ?? null : null,
-      sellerName: seller?.display_name || seller?.username || "TBX Collector",
+      imageUrl: asset?.id && imageByAssetId.has(asset.id) ? imageByAssetId.get(asset.id)! : asset?.lego_set_id ? imageBySetId.get(asset.lego_set_id) ?? null : null,
+      sellerName: "Verified seller",
       sellerLevel: seller?.collector_level ?? "Collector",
     };
   });
