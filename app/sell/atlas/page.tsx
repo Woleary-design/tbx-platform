@@ -17,7 +17,7 @@ const shippingOptions:{id:ShippingMethod;label:string;detail:string;estimate:num
 ];
 
 function normaliseCondition(value?:string){const v=(value||"").toLowerCase();if(v.includes("sealed")||v.includes("new"))return "New Sealed";if(v.includes("incomplete")||v.includes("damaged"))return "Used Incomplete";if(v.includes("complete")||v.includes("clean")||v.includes("usable"))return "Used Complete";return "Unknown";}
-function isLooseDraft(draft:ListingDraft){return draft.itemKind==="loose"||(draft.itemKind==="mixed-box"&&/loose lego/i.test(draft.title||""));}
+function isLooseDraft(draft:ListingDraft){return draft.itemKind==="loose"||draft.itemKind==="mixed-box"||/loose lego|bulk lego/i.test(draft.title||"");}
 function titleIdentity(draft:ListingDraft){if(isLooseDraft(draft))return {setNumber:"BULK",setName:draft.title?.trim()||"Loose LEGO"};const match=(draft.title||"").match(/^\s*([A-Za-z0-9-]+)\s*[·-]\s*(.+)$/);return {setNumber:draft.setNumber||match?.[1]||(draft.itemKind==="minifigure"?"MINIFIG":"ATLAS"),setName:match?.[2]?.trim()||draft.title?.trim()||"LEGO item"};}
 
 export default function AtlasSellPage(){
