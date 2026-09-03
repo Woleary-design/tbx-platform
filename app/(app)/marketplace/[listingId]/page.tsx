@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, Heart, ShieldCheck, ShoppingBag, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ConditionReport, ProvenanceCard, SellerTrustCard, VerifiedLabel } from "@/features/marketplace/components/listing-detail-sections";
+import { ConditionReport, ProvenanceCard, SellerProtectedLabel, SellerTrustCard } from "@/features/marketplace/components/listing-detail-sections";
 import { formatZar, getListingById, marketplaceListings, type MarketplaceListing } from "@/features/marketplace/data/marketplace.mock";
 import { getEnabledShippingMethods, type CourierCode } from "@/features/marketplace/data/shipping-options";
 import { createClient } from "@/lib/supabase/server";
@@ -25,7 +25,7 @@ export default async function ProductDetailPage({ params }: Props) {
       .from("listings")
       .select(`
         id, title, description, asking_price, published_at, value_quote,
-        assets!listings_asset_id_fkey(id, set_number, set_name, theme, condition, original_owner, original_receipt, instructions_complete, minifigures_complete, passport_status, lego_set_id),
+        assets!listings_asset_id_fkey(id, set_number, set_name, theme, condition, original_owner, original_receipt, instructions_complete, minifigures_complete, lego_set_id),
         collectors!listings_seller_id_fkey(display_name, username, collector_level, confidence_score, completed_trades, average_dispatch_days, disputes, identity_verified, address_verified, payment_verified)
       `)
       .eq("id", listingId)
@@ -68,7 +68,6 @@ export default async function ProductDetailPage({ params }: Props) {
         imageUrl: sellerImageUrl ?? catalogueImageUrl,
         sellerImageUrl,
         catalogueImageUrl,
-        verified: asset?.passport_status === "TBX Certified",
         publishedAt: data.published_at ?? new Date().toISOString(),
         rarityRank: seller?.confidence_score ?? 50,
         seller: {
@@ -117,7 +116,6 @@ export default async function ProductDetailPage({ params }: Props) {
               <div className="relative grid aspect-[4/3] place-items-center overflow-hidden bg-slate-100">
                 {sellerImageUrl ? <a href={sellerImageUrl} target="_blank" rel="noreferrer" className="absolute inset-0"><Image src={sellerImageUrl} alt={`Seller photo of ${listing.title}`} fill priority sizes={hasSplitImages ? "(max-width: 768px) 100vw, 42vw" : "(max-width: 1024px) 100vw, 70vw"} className="object-cover" /></a> : catalogueImageUrl ? <a href={catalogueImageUrl} target="_blank" rel="noreferrer" className="absolute inset-0"><Image src={catalogueImageUrl} alt={`Atlas reference for ${listing.title}`} fill priority sizes="(max-width: 1024px) 100vw, 70vw" className="object-contain p-5 sm:p-8" /></a> : <ShoppingBag className="h-28 w-28 text-yellow-600/70" />}
                 <span className="absolute bottom-4 left-4 rounded-full bg-slate-950/85 px-3 py-1.5 text-xs font-bold text-white">{sellerImageUrl ? "Seller photo" : catalogueImageUrl ? "Atlas reference" : "Photo unavailable"}</span>
-                {listing.verified !== false ? <div className="absolute left-5 top-5"><VerifiedLabel /></div> : null}
               </div>
               {hasSplitImages ? <div className="relative grid aspect-[4/3] place-items-center overflow-hidden border-t border-[#eadfce] bg-[radial-gradient(circle_at_35%_22%,rgba(250,204,21,0.28),transparent_30%),linear-gradient(135deg,#fff8e8,#ecd1a8)] md:border-l md:border-t-0">
                 <a href={catalogueImageUrl!} target="_blank" rel="noreferrer" className="absolute inset-0"><Image src={catalogueImageUrl!} alt={`Atlas reference for ${listing.title}`} fill sizes="(max-width: 768px) 100vw, 28vw" className="object-contain p-5 sm:p-7" /></a>
@@ -140,7 +138,7 @@ export default async function ProductDetailPage({ params }: Props) {
         </div>
 
         <aside className="h-fit rounded-[1.9rem] border border-[#eadfce] bg-white p-6 shadow-[0_30px_100px_rgba(43,30,18,0.13)] lg:sticky lg:top-24">
-          <div className="flex items-center justify-between">{listing.verified !== false ? <VerifiedLabel /> : <span className="text-xs font-semibold text-slate-500">Seller supplied listing</span>}<button aria-label="Add to watchlist" className="rounded-full border border-[#eadfce] p-2 text-slate-500 hover:text-red-500"><Heart className="h-4 w-4" /></button></div>
+          <div className="flex items-center justify-between gap-3"><SellerProtectedLabel /><button aria-label="Add to watchlist" className="rounded-full border border-[#eadfce] p-2 text-slate-500 hover:text-red-500"><Heart className="h-4 w-4" /></button></div>
           <div className="mt-6 rounded-2xl bg-slate-950 p-4 text-white"><p className="text-xs uppercase tracking-[0.16em] text-yellow-300">Seller trust</p><p className="mt-2 text-3xl font-semibold">{listing.seller.trustScore} <span className="text-sm text-white/50">{listing.seller.level}</span></p></div>
           <p className="mt-6 text-4xl font-semibold text-slate-950">{formatZar(listing.priceZar)}</p>
           <p className="mt-2 text-sm leading-6 text-slate-500">Funds are held securely until delivery and your inspection window is complete.</p>
@@ -151,7 +149,7 @@ export default async function ProductDetailPage({ params }: Props) {
             <p className="flex justify-between"><span>Insurance</span><strong>{listing.shipping.insuranceIncluded ? "Included" : "Not included"}</strong></p>
             <p className="flex justify-between"><span>Dispatch</span><strong>{listing.dispatchDays} day{listing.dispatchDays === 1 ? "" : "s"}</strong></p>
           </div>
-          <div className="mt-6 flex gap-2 rounded-2xl border border-[#eadfce] bg-white p-4 text-sm leading-6 text-slate-600"><ShieldCheck className="mt-1 h-4 w-4 shrink-0 text-emerald-700" /><span><strong className="text-slate-950">TBX Secure:</strong> the seller is paid only after delivery and buyer inspection.</span></div>
+          <div className="mt-6 flex gap-2 rounded-2xl border border-[#eadfce] bg-white p-4 text-sm leading-6 text-slate-600"><ShieldCheck className="mt-1 h-4 w-4 shrink-0 text-emerald-700" /><span><strong className="text-slate-950">TBX Secure:</strong> the seller is paid only after delivery and buyer inspection. TBX has not physically inspected this item.</span></div>
           <div className="mt-4 flex items-center gap-2 text-xs text-slate-500"><Truck className="h-4 w-4" /> Protected delivery within South Africa</div>
         </aside>
       </section>
