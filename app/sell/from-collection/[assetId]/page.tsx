@@ -54,7 +54,7 @@ export default function SellFromCollectionPage() {
         sourceAssetId: asset.id,
       }));
 
-      router.replace("/sell/create?source=collection");
+      router.replace("/sell/atlas?source=collection");
     })();
   }, [params.assetId, router]);
 
