@@ -36,6 +36,7 @@ export default async function ProductDetailPage({ params }: Props) {
       const asset = Array.isArray(data.assets) ? data.assets[0] : data.assets;
       const seller = Array.isArray(data.collectors) ? data.collectors[0] : data.collectors;
       let catalogueImageUrl: string | null = null;
+      let sellerImageUrl: string | null = null;
       if (asset?.lego_set_id) {
         const { data: legoSet } = await supabase
           .from("lego_sets")
@@ -46,7 +47,7 @@ export default async function ProductDetailPage({ params }: Props) {
       }
       if (asset?.id) {
         const { data: photo } = await supabase.from("asset_evidence").select("storage_bucket, storage_path").eq("asset_id", asset.id).order("created_at", { ascending: true }).limit(1).maybeSingle();
-        if (photo?.storage_bucket && photo.storage_path) catalogueImageUrl = supabase.storage.from(photo.storage_bucket).getPublicUrl(photo.storage_path).data.publicUrl;
+        if (photo?.storage_bucket && photo.storage_path) sellerImageUrl = supabase.storage.from(photo.storage_bucket).getPublicUrl(photo.storage_path).data.publicUrl;
       }
       const quote = data.value_quote && typeof data.value_quote === "object" && !Array.isArray(data.value_quote)
         ? data.value_quote as Record<string, unknown>
@@ -64,7 +65,9 @@ export default async function ProductDetailPage({ params }: Props) {
         category: asset?.theme ?? "Collection",
         priceZar: Number(data.asking_price),
         condition,
-        imageUrl: catalogueImageUrl,
+        imageUrl: sellerImageUrl ?? catalogueImageUrl,
+        sellerImageUrl,
+        catalogueImageUrl,
         verified: asset?.passport_status === "TBX Certified",
         publishedAt: data.published_at ?? new Date().toISOString(),
         rarityRank: seller?.confidence_score ?? 50,
@@ -100,6 +103,9 @@ export default async function ProductDetailPage({ params }: Props) {
 
   if (!listing) notFound();
   const enabledShipping = getEnabledShippingMethods(listing.shipping.enabledMethods);
+  const sellerImageUrl = listing.sellerImageUrl ?? null;
+  const catalogueImageUrl = listing.catalogueImageUrl ?? (sellerImageUrl ? null : listing.imageUrl);
+  const hasSplitImages = Boolean(sellerImageUrl && catalogueImageUrl);
 
   return (
     <div className="space-y-9">
@@ -107,12 +113,18 @@ export default async function ProductDetailPage({ params }: Props) {
       <section className="grid gap-8 lg:grid-cols-[1fr_390px]">
         <div className="space-y-8">
           <div className="overflow-hidden rounded-[2.25rem] border border-[#eadfce] bg-white shadow-[0_30px_100px_rgba(43,30,18,0.12)]">
-            <div className="relative grid aspect-[16/10] place-items-center overflow-hidden bg-[radial-gradient(circle_at_35%_22%,rgba(250,204,21,0.34),transparent_30%),linear-gradient(135deg,#fff8e8,#ecd1a8)]">
-              {listing.imageUrl ? <Image src={listing.imageUrl} alt={listing.title} fill priority sizes="(max-width: 1024px) 100vw, 70vw" className="object-contain p-5 sm:p-8" /> : <ShoppingBag className="h-28 w-28 text-yellow-600/70" />}
-              <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-slate-950/35 to-transparent" />
-              {listing.verified !== false ? <div className="absolute left-5 top-5"><VerifiedLabel /></div> : null}
+            <div className={`grid ${hasSplitImages ? "md:grid-cols-[3fr_2fr]" : ""}`}>
+              <div className="relative grid aspect-[4/3] place-items-center overflow-hidden bg-slate-100">
+                {sellerImageUrl ? <a href={sellerImageUrl} target="_blank" rel="noreferrer" className="absolute inset-0"><Image src={sellerImageUrl} alt={`Seller photo of ${listing.title}`} fill priority sizes={hasSplitImages ? "(max-width: 768px) 100vw, 42vw" : "(max-width: 1024px) 100vw, 70vw"} className="object-cover" /></a> : catalogueImageUrl ? <a href={catalogueImageUrl} target="_blank" rel="noreferrer" className="absolute inset-0"><Image src={catalogueImageUrl} alt={`Atlas reference for ${listing.title}`} fill priority sizes="(max-width: 1024px) 100vw, 70vw" className="object-contain p-5 sm:p-8" /></a> : <ShoppingBag className="h-28 w-28 text-yellow-600/70" />}
+                <span className="absolute bottom-4 left-4 rounded-full bg-slate-950/85 px-3 py-1.5 text-xs font-bold text-white">{sellerImageUrl ? "Seller photo" : catalogueImageUrl ? "Atlas reference" : "Photo unavailable"}</span>
+                {listing.verified !== false ? <div className="absolute left-5 top-5"><VerifiedLabel /></div> : null}
+              </div>
+              {hasSplitImages ? <div className="relative grid aspect-[4/3] place-items-center overflow-hidden border-t border-[#eadfce] bg-[radial-gradient(circle_at_35%_22%,rgba(250,204,21,0.28),transparent_30%),linear-gradient(135deg,#fff8e8,#ecd1a8)] md:border-l md:border-t-0">
+                <a href={catalogueImageUrl!} target="_blank" rel="noreferrer" className="absolute inset-0"><Image src={catalogueImageUrl!} alt={`Atlas reference for ${listing.title}`} fill sizes="(max-width: 768px) 100vw, 28vw" className="object-contain p-5 sm:p-7" /></a>
+                <span className="absolute bottom-4 left-4 rounded-full bg-white/90 px-3 py-1.5 text-xs font-bold text-slate-800 shadow-sm">Atlas reference</span>
+              </div> : null}
             </div>
-            <div className="border-t border-[#eadfce] p-4 text-center text-xs font-semibold text-slate-500">{listing.imageUrl ? (listing.setNumber === "BULK" ? "Seller photo" : "Listing image") : "Seller photo unavailable"}</div>
+            <div className="border-t border-[#eadfce] p-4 text-center text-xs font-semibold text-slate-500">Seller photos show the actual item. Atlas imagery identifies the set and does not represent its condition.</div>
           </div>
 
           <div className="rounded-[2rem] border border-[#eadfce] bg-white p-7 shadow-[0_24px_80px_rgba(43,30,18,0.08)]">
