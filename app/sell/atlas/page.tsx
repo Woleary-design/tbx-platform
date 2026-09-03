@@ -46,6 +46,10 @@ type MinifigureQuote = {
   evidenceCount?: number | null;
   basis?: string | null;
 };
+type PhotoCheckResult = {
+  accepted: boolean;
+  reason?: string;
+};
 const setStages = ["Confirm", "Details", "Delivery", "Photos", "Preview"];
 const looseStages = ["Price", "Delivery", "Photos", "Preview"];
 const money = (value: number) =>
@@ -113,6 +117,8 @@ export default function AtlasSellPage() {
     shippingMethods: [],
   });
   const [photos, setPhotos] = useState<File[]>([]);
+  const [photosConfirmed, setPhotosConfirmed] = useState(false);
+  const [checkingPhotos, setCheckingPhotos] = useState(false);
   const [atlasPrice, setAtlasPrice] = useState<number | null>(null);
   const [pricingLoading, setPricingLoading] = useState(false);
   const [pricingChecked, setPricingChecked] = useState(false);
@@ -257,6 +263,42 @@ export default function AtlasSellPage() {
       return { ...c, delivery: "TBX delivery", shippingMethods };
     });
   }
+  async function choosePhotos(files: File[]) {
+    setPhotos([]);
+    setPhotosConfirmed(false);
+    setPublishError("");
+    if (!files.length) return;
+    setCheckingPhotos(true);
+    try {
+      const accepted: File[] = [];
+      for (const file of files) {
+        const body = new FormData();
+        body.append("photo", file);
+        if (draft.legoSetId) body.append("legoSetId", draft.legoSetId);
+        if (draft.legoMinifigureId)
+          body.append("legoMinifigureId", draft.legoMinifigureId);
+        const response = await fetch("/api/sell/photo-check", {
+          method: "POST",
+          body,
+        });
+        const result = (await response.json()) as PhotoCheckResult;
+        if (!response.ok || !result.accepted)
+          throw new Error(
+            result.reason || "TBX could not check that photo. Try another one.",
+          );
+        accepted.push(file);
+      }
+      setPhotos(accepted);
+    } catch (error) {
+      setPublishError(
+        error instanceof Error
+          ? error.message
+          : "TBX could not check those photos. Try again.",
+      );
+    } finally {
+      setCheckingPhotos(false);
+    }
+  }
   async function uploadPhotos(
     supabase: ReturnType<typeof createClient>,
     userId: string,
@@ -297,6 +339,10 @@ export default function AtlasSellPage() {
     }
     if (!photos.length) {
       setPublishError("Add at least one current seller photo before publishing.");
+      return;
+    }
+    if (!photosConfirmed) {
+      setPublishError("Confirm that the photos are yours before publishing.");
       return;
     }
     setPublishing(true);
@@ -809,6 +855,10 @@ export default function AtlasSellPage() {
                     selling. The first photo becomes the main marketplace
                     image; Atlas imagery is shown separately as a reference.
                   </p>
+                  <p className="mt-2 text-sm leading-6 text-amber-200/70">
+                    Use a photo you took of the actual item—not an Atlas or LEGO
+                    product image, screenshot or AI-generated image.
+                  </p>
                 </div>
               </div>
               {!signedIn ? (
@@ -836,15 +886,16 @@ export default function AtlasSellPage() {
                     <Camera className="h-8 w-8 text-emerald-300" />
                     <span className="mt-3 font-black">Choose photos</span>
                     <span className="mt-1 text-sm text-white/40">
-                      JPG, PNG or WebP
+                      {checkingPhotos ? "Checking photos…" : "JPG, PNG or WebP"}
                     </span>
                     <input
                       type="file"
                       accept="image/jpeg,image/png,image/webp"
                       multiple
                       className="sr-only"
+                      disabled={checkingPhotos}
                       onChange={(e) =>
-                        setPhotos(Array.from(e.target.files || []))
+                        void choosePhotos(Array.from(e.target.files || []))
                       }
                     />
                   </label>
@@ -878,6 +929,22 @@ export default function AtlasSellPage() {
                         </div>
                       ))}
                     </div>
+                  ) : null}
+                  {photos.length ? (
+                    <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-[#050912] p-4">
+                      <input
+                        type="checkbox"
+                        checked={photosConfirmed}
+                        onChange={(event) =>
+                          setPhotosConfirmed(event.target.checked)
+                        }
+                        className="mt-0.5 h-5 w-5 accent-emerald-400"
+                      />
+                      <span className="text-sm leading-6 text-white/65">
+                        I took these photos and they show the actual item I am
+                        selling.
+                      </span>
+                    </label>
                   ) : null}
                 </>
               )}
@@ -958,7 +1025,11 @@ export default function AtlasSellPage() {
                 type="button"
                 disabled={
                   !canContinue ||
-                  (stage === photoStage && (!signedIn || !photos.length))
+                  (stage === photoStage &&
+                    (!signedIn ||
+                      !photos.length ||
+                      !photosConfirmed ||
+                      checkingPhotos))
                 }
                 onClick={() => setStage((v) => Math.min(finalStage, v + 1))}
                 className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-400 px-6 py-3 font-black text-[#050912] disabled:opacity-40 sm:flex-none"
@@ -977,7 +1048,13 @@ export default function AtlasSellPage() {
             ) : (
               <button
                 type="button"
-                disabled={!ready || publishing || !photos.length}
+                disabled={
+                  !ready ||
+                  publishing ||
+                  checkingPhotos ||
+                  !photos.length ||
+                  !photosConfirmed
+                }
                 onClick={publish}
                 className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-400 px-6 py-3 font-black text-[#050912] disabled:opacity-40 sm:flex-none"
               >
