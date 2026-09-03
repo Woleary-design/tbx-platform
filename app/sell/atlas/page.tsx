@@ -72,7 +72,8 @@ const shippingOptions: {
 
 function normaliseCondition(value?: string) {
   const v = (value || "").toLowerCase();
-  if (v.includes("sealed") || v.includes("new")) return "New Sealed";
+  if (v.includes("open box") || v.includes("bags sealed")) return "New Open Box";
+  if (v.includes("factory sealed") || v === "new sealed" || v === "new / sealed") return "New Sealed";
   if (v.includes("incomplete") || v.includes("damaged"))
     return "Used Incomplete";
   if (v.includes("complete") || v.includes("clean") || v.includes("usable"))
@@ -667,14 +668,15 @@ export default function AtlasSellPage() {
                   Condition
                 </span>
                 <select
-                  value={draft.condition || "Not sure"}
+                  value={normaliseCondition(draft.condition)}
                   onChange={(e) => update("condition", e.target.value)}
                   className="mt-2 h-14 w-full rounded-xl border border-white/10 bg-[#050912] px-4"
                 >
-                  <option>Not sure</option>
-                  <option>New / sealed</option>
-                  <option>Complete used</option>
-                  <option>Incomplete</option>
+                  <option value="Unknown">Not sure</option>
+                  <option value="New Sealed">New, factory sealed</option>
+                  <option value="New Open Box">Open box, inner bags sealed</option>
+                  <option value="Used Complete">Used, complete</option>
+                  <option value="Used Incomplete">Used, incomplete</option>
                 </select>
               </label>
             </div>
