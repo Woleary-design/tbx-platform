@@ -96,7 +96,7 @@ export function AtlasHeroRecord({ featuredSet }: AtlasHeroRecordProps) {
         category: "LEGO",
         identifier: featuredSet?.set_number ?? "10317-1",
         name: featuredSet?.name ?? "Land Rover Classic Defender 90",
-        subtitle: "One trusted record for identity, ownership and market intelligence.",
+        subtitle: "One clear reference record for identity, ownership and market intelligence.",
         visual: "image",
         imageUrl: featuredSet?.image_url,
         value: "R4,895",

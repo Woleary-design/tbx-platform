@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { LegalFooter } from "@/components/legal-footer";
 import { MobileSellNow } from "@/components/mobile-sell-now";
 import "./globals.css";
 
@@ -13,6 +14,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
     <html lang="en">
       <body>
         {children}
+        <LegalFooter />
         <MobileSellNow />
       </body>
     </html>
