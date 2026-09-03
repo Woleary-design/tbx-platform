@@ -54,7 +54,7 @@ export default async function AtlasSetPage({ params }: { params: Promise<{ setNu
             {set.image_url ? <img src={set.image_url} alt={set.name} className="max-h-[520px] w-full object-contain" /> : <Boxes className="h-24 w-24 text-yellow-500" />}
           </div>
           <div className="bg-slate-950 p-7 text-white md:p-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-300">Verified Atlas Record · LEGO {set.set_number}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-300">Atlas reference record · LEGO {set.set_number}</p>
             <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-6xl">{set.name}</h1>
             <p className="mt-4 text-lg text-white/60">{[set.theme, set.subtheme].filter(Boolean).join(" · ") || "Uncategorised"}</p>
             <div className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -76,13 +76,13 @@ export default async function AtlasSetPage({ params }: { params: Promise<{ setNu
 
       <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
         <div className="rounded-[2rem] border border-[#eadfce] bg-white p-6 shadow-[0_20px_65px_rgba(43,30,18,0.07)]">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-600">Verified catalogue data</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-600">Catalogue reference data</p>
           <h2 className="mt-2 text-2xl font-semibold text-slate-950">Record information</h2>
           <dl className="mt-6 grid gap-4 sm:grid-cols-2">
             {informationFields.map(({ label, value }) => <div key={label} className="rounded-2xl bg-slate-50 p-4"><dt className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">{label}</dt><dd className="mt-2 font-semibold text-slate-950">{value}</dd></div>)}
             {set.instructions_url ? <div className="rounded-2xl bg-slate-50 p-4"><dt className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Instructions</dt><dd className="mt-2 font-semibold text-slate-950"><a href={set.instructions_url} target="_blank" rel="noreferrer" className="underline decoration-yellow-400 underline-offset-4">View official instructions</a></dd></div> : null}
           </dl>
-          <p className="mt-5 text-sm leading-6 text-slate-500">Atlas shows verified identity and specification data consistently across every collectible category.</p>
+          <p className="mt-5 text-sm leading-6 text-slate-500">Atlas presents identification and specification data from referenced catalogue sources. Seller photos and descriptions represent the actual item for sale.</p>
         </div>
         <div className="rounded-[2rem] border border-[#eadfce] bg-slate-950 p-6 text-white shadow-[0_20px_65px_rgba(15,23,42,0.12)]">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-300">Marketplace availability</p>
