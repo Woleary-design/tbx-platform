@@ -16,7 +16,6 @@ export function ProtectedCheckout({ listing }: { listing: MarketplaceListing }) 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const selectedMethod = shippingMethods[selectedCode];
-  const total = listing.priceZar + selectedMethod.priceZar;
 
   async function reservePurchase() {
     if (submitting) return;
@@ -67,7 +66,7 @@ export function ProtectedCheckout({ listing }: { listing: MarketplaceListing }) 
             <Truck className="h-6 w-6 text-yellow-500" />
             <div>
               <h2 className="text-xl font-semibold text-slate-950">Choose delivery</h2>
-              <p className="mt-1 text-sm text-slate-500">Only methods enabled by this seller are shown.</p>
+              <p className="mt-1 text-sm text-slate-500">Choose one of the seller’s enabled methods. Delivery is included in the listed price.</p>
             </div>
           </div>
           <div className="mt-5 grid gap-3">
@@ -94,7 +93,7 @@ export function ProtectedCheckout({ listing }: { listing: MarketplaceListing }) 
                   </div>
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm">
                     <span className="text-slate-500">{method.estimate}</span>
-                    <strong className="text-slate-950">{formatZar(method.priceZar)}</strong>
+                    <strong className="text-emerald-700">Included</strong>
                   </div>
                 </button>
               );
@@ -135,10 +134,11 @@ export function ProtectedCheckout({ listing }: { listing: MarketplaceListing }) 
         <h2 className="mt-5 text-xl font-semibold text-slate-950">Reservation Summary</h2>
         <div className="mt-5 space-y-3 text-sm text-slate-600">
           <div className="flex justify-between gap-4"><span>{listing.title}</span><strong>{formatZar(listing.priceZar)}</strong></div>
-          <div className="flex justify-between gap-4"><span>{selectedMethod.name}</span><strong>{formatZar(selectedMethod.priceZar)}</strong></div>
+          <div className="flex justify-between gap-4"><span>{selectedMethod.name}</span><strong className="text-emerald-700">Included</strong></div>
           <div className="flex justify-between gap-4"><span>Insurance</span><strong>Included</strong></div>
-          <div className="flex justify-between border-t border-[#eadfce] pt-3 text-base text-slate-950"><span>Expected total</span><strong>{formatZar(total)}</strong></div>
+          <div className="flex justify-between border-t border-[#eadfce] pt-3 text-base text-slate-950"><span>Expected total</span><strong>{formatZar(listing.priceZar)}</strong></div>
         </div>
+        <p className="mt-4 text-xs leading-5 text-slate-500">The seller funds the delivery allowance from their proceeds. You will not be charged delivery on top of the listed price.</p>
         {error ? <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
         <Button type="button" onClick={reservePurchase} disabled={submitting} className="mt-6 h-12 w-full rounded-xl bg-yellow-400 font-semibold text-slate-950 shadow-[0_16px_36px_rgba(245,179,1,0.25)] hover:bg-yellow-300 disabled:opacity-60">
           {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
