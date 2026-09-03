@@ -46,7 +46,6 @@ export default async function CheckoutPage({ params }: Props) {
         priceZar: Number(data.asking_price),
         condition: typeof quote.condition === "string" ? quote.condition : asset?.condition ?? "Used",
         imageUrl: null,
-        verified: false,
         publishedAt: data.published_at ?? new Date().toISOString(),
         rarityRank: seller?.confidence_score ?? 50,
         seller: {
@@ -65,7 +64,7 @@ export default async function CheckoutPage({ params }: Props) {
         provenance: [],
         shipping: {
           estimate: "1–5 business days",
-          courierIncluded: false,
+          courierIncluded: true,
           insuranceIncluded: true,
           enabledMethods: shippingMethods,
         },
@@ -81,7 +80,7 @@ export default async function CheckoutPage({ params }: Props) {
       <section className="rounded-[2rem] border border-[#eadfce] bg-white p-7 shadow-[0_24px_80px_rgba(43,30,18,0.08)]">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-600">Protected Checkout</p>
         <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950">Choose delivery with TBX Secure.</h1>
-        <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-600">Select one of the seller’s enabled delivery methods. Delivery is paid at checkout, tracking follows the order, and funds remain protected through the inspection window.</p>
+        <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-600">Select one of the seller’s enabled delivery methods. Delivery is included in the listed price, tracking follows the order, and funds remain protected through the inspection window.</p>
       </section>
       <ProtectedCheckout listing={listing} />
     </div>

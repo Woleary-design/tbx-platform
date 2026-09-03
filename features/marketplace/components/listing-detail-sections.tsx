@@ -1,4 +1,4 @@
-import { BadgeCheck, CheckCircle2, ShieldCheck, Star } from "lucide-react";
+import { BadgeCheck, CheckCircle2, ShieldCheck } from "lucide-react";
 import type { MarketplaceListing } from "@/features/marketplace/data/marketplace.mock";
 
 export function SellerTrustCard({ seller }: { seller: MarketplaceListing["seller"] }) {
@@ -47,6 +47,6 @@ export function ProvenanceCard({ rows }: { rows: MarketplaceListing["provenance"
   );
 }
 
-export function VerifiedLabel() {
-  return <span className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-3 py-1.5 text-xs font-semibold text-white"><Star className="h-3.5 w-3.5 fill-yellow-300 text-yellow-300" /> TBX Verified</span>;
+export function SellerProtectedLabel() {
+  return <span className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-3 py-1.5 text-xs font-semibold text-white"><ShieldCheck className="h-3.5 w-3.5 text-yellow-300" /> Seller Listed · TBX Protected</span>;
 }
