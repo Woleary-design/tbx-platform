@@ -19,7 +19,13 @@ type EditableCollectionRecord = {
   isPublic: boolean;
 };
 
-const conditionOptions = ["New Sealed", "New Open Box", "Used Complete", "Used Incomplete", "Unknown"];
+const conditionOptions = [
+  { value: "New Sealed", label: "New, factory sealed" },
+  { value: "New Open Box", label: "Open box, inner bags sealed" },
+  { value: "Used Complete", label: "Used, complete" },
+  { value: "Used Incomplete", label: "Used, incomplete" },
+  { value: "Unknown", label: "Not sure" },
+];
 const inputClass = "mt-2 h-12 w-full rounded-xl border border-white/10 bg-[#07101d] px-4 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-[#e8c86a]/45 focus:ring-4 focus:ring-[#e8c86a]/5";
 
 export function EditCollectionRecordForm({ record }: { record: EditableCollectionRecord }) {
@@ -123,7 +129,7 @@ export function EditCollectionRecordForm({ record }: { record: EditableCollectio
             <div><h2 className="font-black text-white">Record details</h2><p className="mt-0.5 text-sm text-white/40">Condition, visibility and value.</p></div>
           </div>
           <div className="grid gap-5 md:grid-cols-2">
-            <label className="block"><span className="text-sm font-semibold text-white/70">Condition</span><select name="condition" defaultValue={record.condition} className={inputClass}>{conditionOptions.map((condition) => <option key={condition} value={condition}>{condition}</option>)}</select></label>
+            <label className="block"><span className="text-sm font-semibold text-white/70">Condition</span><select name="condition" defaultValue={record.condition} className={inputClass}>{conditionOptions.map((condition) => <option key={condition.value} value={condition.value}>{condition.label}</option>)}</select></label>
             <label className="block"><span className="text-sm font-semibold text-white/70">Visibility</span><span className="mt-2 flex h-12 items-center gap-3 rounded-xl border border-white/10 bg-[#07101d] px-4 text-sm text-white/70"><input name="is_public" type="checkbox" defaultChecked={record.isPublic} className="h-4 w-4 accent-[#e8c86a]" /> Public collection record</span></label>
             <label className="block"><span className="text-sm font-semibold text-white/70">Purchase price (R)</span><input name="purchase_price" type="number" min="0" step="0.01" defaultValue={record.purchasePrice ?? ""} placeholder="Optional" className={inputClass} /></label>
             <label className="block"><span className="text-sm font-semibold text-white/70">Atlas estimated value (R)</span><input name="estimated_value" type="number" min="0" step="0.01" defaultValue={record.estimatedValue ?? ""} placeholder="Optional" className={inputClass} /></label>
