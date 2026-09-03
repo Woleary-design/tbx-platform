@@ -17,10 +17,10 @@ type AtlasSet = LegoCatalogueSet & {
 };
 
 const conditions = [
-  { value: "New Sealed", label: "New — factory sealed" },
-  { value: "New Open Box", label: "New — opened box" },
-  { value: "Used Complete", label: "Used — complete" },
-  { value: "Used Incomplete", label: "Used — incomplete" },
+  { value: "New Sealed", label: "New, factory sealed" },
+  { value: "New Open Box", label: "Open box, inner bags sealed" },
+  { value: "Used Complete", label: "Used, complete" },
+  { value: "Used Incomplete", label: "Used, incomplete" },
   { value: "Unknown", label: "Not sure yet" },
 ];
 
