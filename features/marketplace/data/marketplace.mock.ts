@@ -12,7 +12,6 @@ export type MarketplaceListing = {
   imageUrl: string | null;
   sellerImageUrl?: string | null;
   catalogueImageUrl?: string | null;
-  verified?: boolean;
   publishedAt: string;
   rarityRank: number;
   seller: {
@@ -56,12 +55,12 @@ export const marketplaceListings: MarketplaceListing[] = [
       { label: "Pieces", value: "100%", detail: "Factory sealed" },
       { label: "Minifigures", value: "5 stars", detail: "Factory sealed" },
       { label: "Stickers", value: "Excellent", detail: "Unapplied sheet included" },
-      { label: "Inspection", value: "TBX Verified", detail: "Seal and storage evidence reviewed" },
+      { label: "Listing evidence", value: "Seller supplied", detail: "Photos and condition details supplied by the seller" },
     ],
     provenance: [
       { label: "Purchased", value: "2021" }, { label: "Original invoice", value: "Included" },
       { label: "Storage", value: "Climate controlled" }, { label: "Smoke free", value: "Yes" },
-      { label: "Inspection", value: "TBX Certified" }, { label: "Previous owners", value: "1" },
+      { label: "Listing type", value: "Seller listed" }, { label: "Previous owners", value: "1" },
       { label: "Documentation", value: "Complete" },
     ],
     shipping: { estimate: "1–5 business days", courierIncluded: true, insuranceIncluded: true, enabledMethods: ["courier-guy", "pudo"] },
@@ -72,7 +71,7 @@ export const marketplaceListings: MarketplaceListing[] = [
     publishedAt: "2026-08-10T08:00:00Z", rarityRank: 91,
     seller: { name: "Cape Collector Co.", level: "Verified Seller", trustScore: 94, rating: 4.8, sales: 88, averageDispatchDays: 1.8, disputes: 0, repeatBuyerPercent: 64, checks: [{ label: "Identity verified", verified: true }, { label: "Address verified", verified: true }, { label: "Payout verified", verified: true }] },
     dispatchDays: 2,
-    conditionReport: [{ label: "Box", value: "5 stars", detail: "Display-grade sealed box" }, { label: "Pieces", value: "100%", detail: "Factory sealed" }, { label: "Inspection", value: "TBX Verified", detail: "Listing evidence reviewed" }],
+    conditionReport: [{ label: "Box", value: "5 stars", detail: "Display-grade sealed box" }, { label: "Pieces", value: "100%", detail: "Factory sealed" }, { label: "Listing evidence", value: "Seller supplied", detail: "Photos and condition details supplied by the seller" }],
     provenance: [{ label: "Purchased", value: "2023" }, { label: "Original invoice", value: "Included" }, { label: "Storage", value: "Dry indoor cabinet" }, { label: "Smoke free", value: "Yes" }],
     shipping: { estimate: "1–5 business days", courierIncluded: true, insuranceIncluded: true, enabledMethods: ["courier-guy", "pudo"] },
   },
@@ -82,7 +81,7 @@ export const marketplaceListings: MarketplaceListing[] = [
     publishedAt: "2026-08-09T08:00:00Z", rarityRank: 100,
     seller: { name: "Modular Museum", level: "Premier Seller", trustScore: 98, rating: 5, sales: 231, averageDispatchDays: 1.2, disputes: 0, repeatBuyerPercent: 81, checks: [{ label: "Identity verified", verified: true }, { label: "Address verified", verified: true }, { label: "Payout verified", verified: true }] },
     dispatchDays: 1,
-    conditionReport: [{ label: "Pieces", value: "100%", detail: "Inventory checked" }, { label: "Instructions", value: "4 stars", detail: "Complete with light age wear" }, { label: "Minifigures", value: "5 stars", detail: "All figures verified" }, { label: "Inspection", value: "TBX Verified", detail: "Collector-grade inspection complete" }],
+    conditionReport: [{ label: "Pieces", value: "100%", detail: "Seller reports inventory checked" }, { label: "Instructions", value: "4 stars", detail: "Seller reports complete with light age wear" }, { label: "Minifigures", value: "5 stars", detail: "Seller reports all figures included" }, { label: "Listing evidence", value: "Seller supplied", detail: "Photos and condition details supplied by the seller" }],
     provenance: [{ label: "Purchased", value: "2008" }, { label: "Previous owners", value: "1" }, { label: "Storage", value: "Display cabinet" }, { label: "Smoke free", value: "Yes" }],
     shipping: { estimate: "1–4 business days", courierIncluded: true, insuranceIncluded: true, enabledMethods: ["courier-guy", "pudo"] },
   },
