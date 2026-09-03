@@ -96,7 +96,7 @@ export default async function ProductDetailPage({ params }: Props) {
           { label: "Original owner", value: asset?.original_owner ? "Yes" : "Not confirmed" },
           { label: "Receipt", value: asset?.original_receipt ? "Included" : "Not supplied" },
         ],
-        shipping: { estimate: "1–5 business days", courierIncluded: false, insuranceIncluded: true, enabledMethods: methods },
+        shipping: { estimate: "1–5 business days", courierIncluded: true, insuranceIncluded: true, enabledMethods: methods },
       };
     }
   }
@@ -147,7 +147,7 @@ export default async function ProductDetailPage({ params }: Props) {
           <Button asChild className="mt-6 h-14 w-full rounded-xl bg-yellow-400 text-lg font-bold text-slate-950 shadow-[0_12px_30px_rgba(250,204,21,0.18)] hover:bg-yellow-300"><Link href={`/checkout/${listing.id}`}>Buy Protected <ArrowRight className="h-4 w-4" /></Link></Button>
           <div className="mt-6 space-y-3 text-sm text-slate-600">
             <p className="flex justify-between"><span>Shipping</span><strong>{listing.shipping.estimate}</strong></p>
-            <div><p className="flex justify-between"><span>Delivery</span><strong>Buyer chooses</strong></p><p className="mt-2 text-xs text-slate-500">{enabledShipping.map((method) => method.name).join(" · ")}</p></div>
+            <div><p className="flex justify-between"><span>Delivery</span><strong>Included · buyer chooses</strong></p><p className="mt-2 text-xs text-slate-500">{enabledShipping.map((method) => method.name).join(" · ")}</p></div>
             <p className="flex justify-between"><span>Insurance</span><strong>{listing.shipping.insuranceIncluded ? "Included" : "Not included"}</strong></p>
             <p className="flex justify-between"><span>Dispatch</span><strong>{listing.dispatchDays} day{listing.dispatchDays === 1 ? "" : "s"}</strong></p>
           </div>
