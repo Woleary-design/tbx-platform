@@ -12,11 +12,12 @@ type AtlasSet = LegoCatalogueSet & {
   imageUrl?: string | null;
 };
 
-const completenessOptions = [
-  { value: "New Sealed", label: "Factory sealed", detail: "Unopened in the original packaging" },
-  { value: "Used Complete", label: "Complete", detail: "All important pieces are present" },
-  { value: "Used Incomplete", label: "Incomplete", detail: "Some pieces or figures are missing" },
-  { value: "Unknown", label: "Not sure", detail: "TBX can help you work it out later" },
+const conditionOptions = [
+  { value: "New Sealed", label: "New, factory sealed", detail: "The original box seals are intact" },
+  { value: "New Open Box", label: "Open box, inner bags sealed", detail: "The box was opened, but the LEGO bags remain sealed" },
+  { value: "Used Complete", label: "Used, complete", detail: "Previously built or handled, with all essential pieces and minifigures" },
+  { value: "Used Incomplete", label: "Used, incomplete", detail: "Known pieces or minifigures are missing" },
+  { value: "Unknown", label: "Not sure", detail: "You have not checked whether everything is present" },
 ];
 
 const qualityOptions = ["Mint", "Excellent", "Good", "Fair"];
@@ -116,7 +117,7 @@ export function GuidedSellForm() {
 
   function continueToListing() {
     if (!selectedSet) return;
-    const completenessLabel = completenessOptions.find((option) => option.value === completeness)?.label ?? completeness;
+    const completenessLabel = conditionOptions.find((option) => option.value === completeness)?.label ?? completeness;
     window.localStorage.setItem("tbx-listing-draft", JSON.stringify({
       title: `${selectedSet.setNumber} · ${selectedSet.name}`,
       condition: completeness,
@@ -168,10 +169,10 @@ export function GuidedSellForm() {
           </div>
 
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#e8c86a]">Step 2 · Completeness</p>
-            <h3 className="mt-3 text-2xl font-black text-white">How complete is it?</h3>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#e8c86a]">Step 2 · Condition and completeness</p>
+            <h3 className="mt-3 text-2xl font-black text-white">Which best describes your set?</h3>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {completenessOptions.map((option) => (
+              {conditionOptions.map((option) => (
                 <button type="button" key={option.value} onClick={() => setCompleteness(option.value)} className={`rounded-2xl border p-4 text-left transition ${completeness === option.value ? "border-[#e8c86a] bg-[#e8c86a]/10" : "border-white/10 bg-white/2 hover:border-white/20"}`}>
                   <div className="flex items-center justify-between gap-3"><span className="font-bold text-white">{option.label}</span>{completeness === option.value ? <Check className="h-5 w-5 text-[#e8c86a]" /> : null}</div>
                   <p className="mt-2 text-sm text-white/40">{option.detail}</p>
@@ -181,8 +182,8 @@ export function GuidedSellForm() {
           </div>
 
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#e8c86a]">Step 3 · Condition</p>
-            <h3 className="mt-3 text-2xl font-black text-white">How would you describe it?</h3>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#e8c86a]">Step 3 · Overall wear</p>
+            <h3 className="mt-3 text-2xl font-black text-white">What condition is the item itself in?</h3>
             <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
               {qualityOptions.map((option) => <button type="button" key={option} onClick={() => setQuality(option)} className={`rounded-xl border px-4 py-4 text-sm font-bold transition ${quality === option ? "border-[#e8c86a] bg-[#e8c86a]/10 text-[#e8c86a]" : "border-white/10 text-white/60 hover:border-white/20"}`}>{option}</button>)}
             </div>
