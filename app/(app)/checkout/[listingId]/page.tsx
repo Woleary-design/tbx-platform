@@ -46,7 +46,6 @@ export default async function CheckoutPage({ params }: Props) {
         priceZar: Number(data.asking_price),
         condition: typeof quote.condition === "string" ? quote.condition : asset?.condition ?? "Used",
         imageUrl: null,
-        verified: false,
         publishedAt: data.published_at ?? new Date().toISOString(),
         rarityRank: seller?.confidence_score ?? 50,
         seller: {
