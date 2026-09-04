@@ -20,7 +20,8 @@ TBX stays in reservation-only mode until payments, courier quotes and seller ver
 
 The server-side ShipLogic adapter supports rate requests, pickup-point discovery,
 shipment creation, tracking and proof of delivery for The Courier Guy/PUDO. Start
-with a sandbox `SHIPLOGIC_API_TOKEN`. The authenticated `POST /api/shipping/rates`
+with a sandbox `SHIPLOGIC_API_TOKEN`, `SHIPLOGIC_PROVIDER_ID` and
+`SHIPLOGIC_ACCOUNT_ID`. The authenticated `POST /api/shipping/rates`
 route validates addresses and parcel limits and returns normalized quotes without
 exposing credentials to the browser.
 
