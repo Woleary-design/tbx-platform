@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { Bell, BookOpen, ChevronDown, Heart, Home, LayoutDashboard, LibraryBig, ShoppingBag, Sparkles, Tag } from "lucide-react";
+import { Bell, BookOpen, ChevronDown, Heart, Home, LayoutDashboard, LibraryBig, PackageCheck, ShoppingBag, Sparkles, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { CatalogueSearch } from "@/components/catalogue/catalogue-search";
@@ -13,6 +13,7 @@ const navigation = [
   { href: "/", label: "Home", icon: Home },
   { href: "/collection", label: "My Collection", icon: LibraryBig },
   { href: "/marketplace", label: "Marketplace", icon: ShoppingBag },
+  { href: "/orders", label: "Buying & Selling", icon: PackageCheck },
   { href: "/wishlist", label: "Wishlist", icon: Heart },
   { href: "/atlas", label: "Atlas", icon: BookOpen },
 ];

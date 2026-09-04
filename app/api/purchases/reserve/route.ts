@@ -28,6 +28,17 @@ export async function POST(request: NextRequest) {
     target_listing_id: body.listingId,
   });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 409 });
+  if (error) {
+    const expectedMessage = [
+      "Listing not found",
+      "You cannot buy your own listing",
+      "Item is no longer available",
+    ].find((message) => error.message.includes(message));
+
+    return NextResponse.json(
+      { error: expectedMessage ?? "We couldn't reserve this item. Please try again." },
+      { status: 409 },
+    );
+  }
   return NextResponse.json({ reservationId: data, status: "awaiting_seller" });
 }

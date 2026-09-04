@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bell, ChevronRight, CircleUserRound, PackageCheck, ShieldCheck } from "lucide-react";
+import { Bell, ChevronRight, CircleUserRound, MapPin, PackageCheck, ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function SettingsPage() {
@@ -22,6 +22,12 @@ export default async function SettingsPage() {
       icon: CircleUserRound,
       title: "Profile & privacy",
       detail: collector?.profile_public ? "Your public collector profile is visible." : "Your collector profile is private.",
+    },
+    {
+      href: "/settings/delivery",
+      icon: MapPin,
+      title: "Dispatch address",
+      detail: "Save the private address couriers use when you sell.",
     },
     {
       href: "/orders",
