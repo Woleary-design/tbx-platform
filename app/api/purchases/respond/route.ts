@@ -16,6 +16,17 @@ export async function POST(request: NextRequest) {
     confirm_available: body.available,
   });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 409 });
+  if (error) {
+    const expectedMessage = [
+      "Reservation not found",
+      "Only the seller may respond",
+      "Reservation has already been resolved",
+    ].find((message) => error.message.includes(message));
+
+    return NextResponse.json(
+      { error: expectedMessage ?? "We couldn't update this reservation. Please try again." },
+      { status: 409 },
+    );
+  }
   return NextResponse.json({ status: data });
 }
