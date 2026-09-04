@@ -146,11 +146,14 @@ export async function getCourierQuotes(request: CourierQuoteRequest): Promise<Co
   });
 
   return quoteRecords(payload).map((rate, index) => {
-    const serviceCode = String(rate.service_level_code ?? rate.code ?? "");
-    const serviceName = String(rate.service_level_name ?? rate.name ?? serviceCode) || "Courier delivery";
+    const serviceLevel = rate.service_level && typeof rate.service_level === "object"
+      ? rate.service_level as JsonRecord
+      : {};
+    const serviceCode = String(rate.service_level_code ?? serviceLevel.code ?? rate.code ?? "");
+    const serviceName = String(rate.service_level_name ?? serviceLevel.name ?? rate.name ?? serviceCode) || "Courier delivery";
     const pickupPoint = /locker|pudo|pickup|counter/i.test(`${serviceCode} ${serviceName}`);
     return {
-      quoteId: String(rate.id ?? rate.rate_id ?? `${serviceCode}-${index}`),
+      quoteId: String(rate.id ?? rate.rate_id ?? serviceLevel.id ?? `${serviceCode}-${index}`),
       serviceCode,
       serviceName,
       priceZar: numberValue(rate.rate ?? rate.total ?? rate.price),
