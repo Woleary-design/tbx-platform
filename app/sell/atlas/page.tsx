@@ -27,6 +27,11 @@ type ListingDraft = {
   shippingMethods?: ShippingMethod[];
   itemKind?: string;
   weight?: string;
+  parcelPreset?: "small" | "medium" | "large" | "custom";
+  parcelLengthCm?: string;
+  parcelWidthCm?: string;
+  parcelHeightCm?: string;
+  parcelWeightKg?: string;
   legoSetId?: string | null;
   legoMinifigureId?: string | null;
   setNumber?: string;
@@ -73,6 +78,11 @@ const shippingOptions: {
     estimate: 69,
   },
 ];
+const parcelPresets = {
+  small: { label: "Small set", detail: "Shoebox size", length: 30, width: 22, height: 12, weight: 1.5 },
+  medium: { label: "Medium set", detail: "Most boxed sets", length: 45, width: 35, height: 20, weight: 3 },
+  large: { label: "Large set", detail: "Large box or collection", length: 65, width: 45, height: 35, weight: 8 },
+} as const;
 
 function normaliseCondition(value?: string) {
   const v = (value || "").toLowerCase();
@@ -124,6 +134,7 @@ export default function AtlasSellPage() {
   const [pricingChecked, setPricingChecked] = useState(false);
   const [ready, setReady] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
+  const [hasDispatchAddress, setHasDispatchAddress] = useState<boolean | null>(null);
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState("");
   useEffect(() => {
@@ -144,9 +155,13 @@ export default function AtlasSellPage() {
       } catch {}
     createClient()
       .auth.getUser()
-      .then(({ data }) => {
+      .then(async ({ data }) => {
         const authenticated = Boolean(data.user);
         setSignedIn(authenticated);
+        if (data.user) {
+          const { data: address } = await createClient().from("shipping_addresses").select("id").eq("user_id", data.user.id).eq("is_default_dispatch", true).maybeSingle();
+          setHasDispatchAddress(Boolean(address));
+        }
         if (
           authenticated &&
           restoredDraft &&
@@ -251,6 +266,8 @@ export default function AtlasSellPage() {
   const deliveryLabel =
     enabledShipping.map((option) => option.label).join(" + ") ||
     "No delivery method selected";
+  const parcelReady = [draft.parcelLengthCm, draft.parcelWidthCm, draft.parcelHeightCm, draft.parcelWeightKg]
+    .every((value) => Number(value || 0) > 0);
   function update(field: keyof ListingDraft, value: string) {
     setDraft((c) => ({ ...c, [field]: value }));
   }
@@ -262,6 +279,14 @@ export default function AtlasSellPage() {
         : [...current, method];
       return { ...c, delivery: "TBX delivery", shippingMethods };
     });
+  }
+  function chooseParcelPreset(preset: keyof typeof parcelPresets | "custom") {
+    if (preset === "custom") {
+      setDraft((current) => ({ ...current, parcelPreset: preset }));
+      return;
+    }
+    const parcel = parcelPresets[preset];
+    setDraft((current) => ({ ...current, parcelPreset: preset, parcelLengthCm: String(parcel.length), parcelWidthCm: String(parcel.width), parcelHeightCm: String(parcel.height), parcelWeightKg: String(parcel.weight) }));
   }
   async function choosePhotos(files: File[]) {
     setPhotos([]);
@@ -337,6 +362,10 @@ export default function AtlasSellPage() {
       setPublishError("Choose at least one delivery option before publishing.");
       return;
     }
+    if (!parcelReady) {
+      setPublishError("Choose a parcel size and confirm the packed measurements before publishing.");
+      return;
+    }
     if (!photos.length) {
       setPublishError("Add at least one current seller photo before publishing.");
       return;
@@ -353,6 +382,8 @@ export default function AtlasSellPage() {
         await supabase.auth.getUser();
       if (authError || !authData.user)
         throw new Error("Your session has expired. Please sign in again.");
+      const { data: dispatchAddress } = await supabase.from("shipping_addresses").select("id").eq("user_id", authData.user.id).eq("is_default_dispatch", true).maybeSingle();
+      if (!dispatchAddress) throw new Error("Save your dispatch address in Settings before publishing.");
       const identity = titleIdentity(draft);
       let assetId = draft.sourceAssetId || null;
       if (assetId) {
@@ -432,6 +463,13 @@ export default function AtlasSellPage() {
         shippingAllowanceType: "provisional",
         sellerFundsShipping: true,
         tbxFeeRate: 0.1,
+        parcel: {
+          preset: draft.parcelPreset || "custom",
+          lengthCm: Number(draft.parcelLengthCm || 0),
+          widthCm: Number(draft.parcelWidthCm || 0),
+          heightCm: Number(draft.parcelHeightCm || 0),
+          weightKg: Number(draft.parcelWeightKg || weightKg || 0),
+        },
       };
       const listingValues = {
         asset_id: assetId,
@@ -502,6 +540,7 @@ export default function AtlasSellPage() {
       ? Boolean(draft.title?.trim() && price > 0)
       : deliveryStage
         ? Boolean(price > 0 && draft.shippingMethods?.length)
+        && parcelReady
         : true;
   return (
     <main className="min-h-screen bg-[#050912] text-white">
@@ -791,11 +830,23 @@ export default function AtlasSellPage() {
                   );
                 })}
               </div>
+              {signedIn ? <div className={`mt-4 rounded-xl border p-4 text-sm ${hasDispatchAddress ? "border-emerald-400/20 bg-emerald-400/[0.06] text-emerald-200" : "border-amber-300/20 bg-amber-300/[0.06] text-amber-100"}`}>{hasDispatchAddress ? "Dispatch address saved. TBX will keep the street address private." : <span>Add the private address the courier will collect from. <Link href="/settings/delivery" className="font-bold underline">Save dispatch address</Link></span>}</div> : null}
               <p className="mt-4 text-xs leading-5 text-white/35">
                 Delivery is currently estimated. Your final payout may change if
                 the actual courier cost differs. If you enable both methods,
                 this estimate uses the higher cost.
               </p>
+              <div className="mt-6 border-t border-white/10 pt-6">
+                <p className="text-sm font-bold text-white/70">Packed parcel size</p>
+                <p className="mt-1 text-xs leading-5 text-white/35">Choose the closest size. Courier pricing uses the packed box—not the LEGO box alone.</p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  {Object.entries(parcelPresets).map(([key, preset]) => <button key={key} type="button" onClick={() => chooseParcelPreset(key as keyof typeof parcelPresets)} className={`rounded-xl border p-4 text-left ${draft.parcelPreset === key ? "border-emerald-400/40 bg-emerald-400/[0.08]" : "border-white/10 bg-[#050912]"}`}><span className="block text-sm font-bold">{preset.label}</span><span className="mt-1 block text-xs text-white/35">{preset.detail}</span></button>)}
+                  <button type="button" onClick={() => chooseParcelPreset("custom")} className={`rounded-xl border p-4 text-left ${draft.parcelPreset === "custom" ? "border-emerald-400/40 bg-emerald-400/[0.08]" : "border-white/10 bg-[#050912]"}`}><span className="block text-sm font-bold">Custom</span><span className="mt-1 block text-xs text-white/35">Enter exact details</span></button>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  {[{ key: "parcelLengthCm", label: "Length (cm)" }, { key: "parcelWidthCm", label: "Width (cm)" }, { key: "parcelHeightCm", label: "Height (cm)" }, { key: "parcelWeightKg", label: "Packed weight (kg)" }].map((item) => <label key={item.key} className="block"><span className="text-xs font-bold text-white/45">{item.label}</span><input type="number" min="0.1" step="0.1" required value={String(draft[item.key as keyof ListingDraft] || "")} onChange={(e) => update(item.key as keyof ListingDraft, e.target.value)} className="mt-2 h-12 w-full rounded-xl border border-white/10 bg-[#050912] px-3 font-bold outline-none focus:border-emerald-400/40" /></label>)}
+                </div>
+              </div>
               {enabledShipping.length ? (
                 <div className="mt-6">
                   <label className="block">
