@@ -49,17 +49,11 @@ type JsonRecord = Record<string, unknown>;
 
 function configuration() {
   const token = process.env.SHIPLOGIC_API_TOKEN?.trim();
-  const providerId = Number(process.env.SHIPLOGIC_PROVIDER_ID);
-  const accountId = Number(process.env.SHIPLOGIC_ACCOUNT_ID);
-  if (!token || !Number.isInteger(providerId) || providerId <= 0 || !Number.isInteger(accountId) || accountId <= 0) {
-    throw new ShipLogicError("Courier integration is not configured.", 503);
-  }
+  if (!token) throw new ShipLogicError("Courier integration is not configured.", 503);
   const environment = process.env.SHIPLOGIC_ENVIRONMENT === "production" ? "production" : "sandbox";
   const configuredUrl = process.env.SHIPLOGIC_API_URL?.trim();
   return {
     token,
-    providerId,
-    accountId,
     baseUrl: (configuredUrl || (environment === "production" ? DEFAULT_PRODUCTION_URL : DEFAULT_SANDBOX_URL)).replace(/\/$/, ""),
   };
 }
@@ -138,12 +132,9 @@ function quoteRecords(payload: unknown): JsonRecord[] {
 }
 
 export async function getCourierQuotes(request: CourierQuoteRequest): Promise<CourierQuote[]> {
-  const { providerId, accountId } = configuration();
   const payload = await shipLogicFetch<unknown>("/rates", {
     method: "POST",
     body: JSON.stringify({
-      provider_id: providerId,
-      account_id: accountId,
       collection_address: apiAddress(request.collectionAddress),
       ...(request.deliveryAddress ? { delivery_address: apiAddress(request.deliveryAddress) } : {}),
       ...(request.deliveryPickupPointId ? { delivery_pickup_point_id: request.deliveryPickupPointId } : {}),
@@ -177,11 +168,7 @@ export async function getPickupPoints(lat: number, lng: number) {
 }
 
 export async function createCourierShipment(payload: JsonRecord) {
-  const { providerId, accountId } = configuration();
-  return shipLogicFetch<unknown>("/shipments", {
-    method: "POST",
-    body: JSON.stringify({ ...payload, provider_id: providerId, account_id: accountId }),
-  });
+  return shipLogicFetch<unknown>("/shipments", { method: "POST", body: JSON.stringify(payload) });
 }
 
 export async function getCourierTracking(trackingReference: string) {
@@ -195,9 +182,5 @@ export async function getCourierProofOfDelivery(trackingReference: string) {
 }
 
 export function courierIntegrationConfigured() {
-  return Boolean(
-    process.env.SHIPLOGIC_API_TOKEN?.trim()
-    && Number(process.env.SHIPLOGIC_PROVIDER_ID) > 0
-    && Number(process.env.SHIPLOGIC_ACCOUNT_ID) > 0,
-  );
+  return Boolean(process.env.SHIPLOGIC_API_TOKEN?.trim());
 }
