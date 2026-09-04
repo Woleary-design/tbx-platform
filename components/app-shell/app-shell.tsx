@@ -64,9 +64,9 @@ export function AppShell({ children, collector, isAdmin = false }: AppShellProps
             <Link href="/" aria-label="Go to Home" className="flex items-center gap-3">
               <FourDotLogo />
               <span className="leading-tight">
-                <span className="block text-[10px] font-semibold uppercase tracking-[0.32em] text-[#ffd84d]">The</span>
-                <span className="block text-lg font-semibold tracking-normal text-white">Block Exchange</span>
-                <span className="block text-xs text-white/45">Discover. Collect. Trade.</span>
+                <span className="block text-xl font-black tracking-[-0.035em] text-white">TBX</span>
+                <span className="block text-xs text-white/45">The collectors’ marketplace</span>
+                <span className="mt-0.5 block text-[10px] font-semibold uppercase tracking-[0.18em] text-[#ffd84d]">Buy. Sell. Collect.</span>
               </span>
             </Link>
           </div>

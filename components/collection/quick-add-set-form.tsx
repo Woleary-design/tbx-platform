@@ -63,9 +63,13 @@ export function QuickAddSetForm({ initialSetNumber, intent = "collect" }: { init
   }
 
   async function searchCatalogue(term: string, signal?: AbortSignal) {
-    const response = await fetch(`/api/catalogue/search?q=${encodeURIComponent(term.trim())}`, { signal });
+    const response = await fetch(`/api/catalogue/search?q=${encodeURIComponent(term.trim())}&limit=8`, {
+      signal,
+      cache: "no-store",
+    });
     const payload = await response.json();
-    return response.ok && Array.isArray(payload.results) ? payload.results as AtlasSet[] : [];
+    if (!response.ok) throw new Error(payload.error ?? "Atlas search is temporarily unavailable.");
+    return Array.isArray(payload.results) ? payload.results as AtlasSet[] : [];
   }
 
   useEffect(() => {
@@ -251,6 +255,12 @@ export function QuickAddSetForm({ initialSetNumber, intent = "collect" }: { init
             ))}
           </div>
         ) : null}
+        {query.trim().length >= 2 && !searching && matches.length === 0 && !selectedSet ? (
+          <p className="mt-2 rounded-xl border border-white/10 bg-white/[0.035] px-4 py-3 text-sm text-white/55">
+            No match found. Check the set number or name, or use “I don’t know what it is”.
+          </p>
+        ) : null}
+        {searching ? <p role="status" className="mt-2 text-sm text-white/45">Searching Atlas…</p> : null}
       </div>
 
       {selectedSet ? (

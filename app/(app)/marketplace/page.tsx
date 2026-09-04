@@ -1,5 +1,6 @@
 import { BuyLegoBrowser } from "@/components/marketplace/buy-lego-browser";
 import { createClient } from "@/lib/supabase/server";
+import { marketplaceReadiness } from "@/lib/marketplace/readiness";
 
 type MarketplacePageProps = { searchParams?: Promise<{ set?: string; published?: string }> };
 
@@ -16,7 +17,7 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
       published_at,
       value_quote,
       assets!listings_asset_id_fkey(id, set_number, set_name, theme, condition, lego_set_id),
-      collectors!listings_seller_id_fkey(display_name, username, collector_level, confidence_score, average_dispatch_days)
+      collectors!listings_seller_id_fkey(display_name, username, collector_level, confidence_score, average_dispatch_days, identity_verified, address_verified, payment_verified)
     `)
     .eq("status", "Active")
     .order("published_at", { ascending: false });
@@ -47,7 +48,6 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
       id: listing.id,
       priceZar: Number(listing.asking_price),
       condition: typeof valueQuote.condition === "string" ? valueQuote.condition : asset?.condition ?? "Used",
-      confidenceScore: seller?.confidence_score ?? 50,
       dispatchDays: Math.max(1, Math.round(Number(seller?.average_dispatch_days ?? 2))),
       setNumber: asset?.set_number ?? "Collection",
       setName: listing.title || asset?.set_name || "LEGO collection",
@@ -55,6 +55,7 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
       imageUrl: asset?.id && imageByAssetId.has(asset.id) ? imageByAssetId.get(asset.id)! : asset?.lego_set_id ? imageBySetId.get(asset.lego_set_id) ?? null : null,
       sellerName: "Private seller",
       sellerLevel: seller?.collector_level ?? "Collector",
+      sellerVerified: Boolean(seller?.identity_verified && seller?.address_verified && seller?.payment_verified),
     };
   });
 
@@ -63,6 +64,7 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
       listings={databaseListings}
       initialQuery={params?.set?.trim() ?? ""}
       publishedId={params?.published}
+      paymentsLive={marketplaceReadiness.paymentsLive}
     />
   );
 }
