@@ -1,16 +1,11 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTypescript from "eslint-config-next/typescript";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
-const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+export default defineConfig([
+  ...nextVitals,
+  ...nextTypescript,
+  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
   {
     rules: {
       // TBX currently renders collector and catalogue images from dynamic remote URLs.
@@ -22,8 +17,10 @@ const eslintConfig = [
       // Keep deployment lint non-blocking while the Atlas pricing route is being
       // consolidated. This rule is stylistic and does not affect runtime safety.
       "prefer-const": "off",
+      // Existing client flows restore drafts and clear dependent state in effects.
+      // Refactor these incrementally rather than making lint unusable meanwhile.
+      "react-hooks/set-state-in-effect": "off",
+      "react-hooks/immutability": "off",
     },
   },
-];
-
-export default eslintConfig;
+]);

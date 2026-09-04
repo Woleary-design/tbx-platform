@@ -9,7 +9,7 @@ import { getEnabledShippingMethods, shippingMethods, type CourierCode } from "@/
 
 const steps = ["Review Order", "Seller confirms", "Payment", "Courier", "Inspection", "Complete"];
 
-export function ProtectedCheckout({ listing }: { listing: MarketplaceListing }) {
+export function ProtectedCheckout({ listing, paymentsLive, courierQuotesLive }: { listing: MarketplaceListing; paymentsLive: boolean; courierQuotesLive: boolean }) {
   const router = useRouter();
   const enabledMethods = getEnabledShippingMethods(listing.shipping.enabledMethods);
   const [selectedCode, setSelectedCode] = useState<CourierCode>(enabledMethods[0].code);
@@ -66,7 +66,7 @@ export function ProtectedCheckout({ listing }: { listing: MarketplaceListing }) 
             <Truck className="h-6 w-6 text-yellow-500" />
             <div>
               <h2 className="text-xl font-semibold text-slate-950">Choose delivery</h2>
-              <p className="mt-1 text-sm text-slate-500">Choose one of the seller’s enabled methods. Delivery is included in the listed price.</p>
+              <p className="mt-1 text-sm text-slate-500">Choose one of the seller’s enabled methods. {courierQuotesLive ? "Delivery is included in the listed price." : "The displayed amount is a provisional seller-funded allowance, not a live quote."}</p>
             </div>
           </div>
           <div className="mt-5 grid gap-3">
@@ -93,7 +93,7 @@ export function ProtectedCheckout({ listing }: { listing: MarketplaceListing }) 
                   </div>
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm">
                     <span className="text-slate-500">{method.estimate}</span>
-                    <strong className="text-emerald-700">Included</strong>
+                    <strong className="text-emerald-700">{courierQuotesLive ? "Included" : "Provisional"}</strong>
                   </div>
                 </button>
               );
@@ -107,7 +107,7 @@ export function ProtectedCheckout({ listing }: { listing: MarketplaceListing }) 
         <section className="grid gap-6 md:grid-cols-2">
           <div className="rounded-[1.75rem] border border-[#eadfce] bg-white p-6 shadow-[0_18px_55px_rgba(43,30,18,0.08)]">
             <div className="flex items-center gap-3"><CreditCard className="h-6 w-6 text-yellow-500" /><h2 className="text-xl font-semibold text-slate-950">Payment</h2></div>
-            <p className="mt-5 text-sm leading-6 text-slate-600">No payment is taken when you reserve. The seller first confirms that the item is still available. Payment options will only be shown after that confirmation.</p>
+            <p className="mt-5 text-sm leading-6 text-slate-600">{paymentsLive ? "No payment is taken when you reserve. The seller first confirms that the item is still available. Payment options will only be shown after that confirmation." : "Online payment is not active during transaction testing. This flow creates a reservation request only."}</p>
           </div>
           <div className="rounded-[1.75rem] border border-[#eadfce] bg-white p-6 shadow-[0_18px_55px_rgba(43,30,18,0.08)]">
             <div className="flex items-center gap-3"><ShieldCheck className="h-6 w-6 text-yellow-500" /><h2 className="text-xl font-semibold text-slate-950">Protected delivery</h2></div>
@@ -122,7 +122,7 @@ export function ProtectedCheckout({ listing }: { listing: MarketplaceListing }) 
         <section className="rounded-[1.75rem] border border-[#eadfce] bg-white p-6 shadow-[0_18px_55px_rgba(43,30,18,0.08)]">
           <h2 className="text-2xl font-semibold text-slate-950">What happens next</h2>
           <div className="mt-6 grid gap-4">
-            {["TBX reserves the listing for you", "Seller confirms the item is still available", "Payment becomes available only after confirmation", selectedMethod.name + " delivery follows after payment", "Buyer inspection and completion follow the verified order state"].map((item) => (
+            {["TBX reserves the listing for you", "Seller confirms the item is still available", paymentsLive ? "Payment becomes available only after confirmation" : "TBX will notify you when protected payment is available", courierQuotesLive ? selectedMethod.name + " delivery follows after payment" : "A live courier quote and booking must be confirmed before payment", "Buyer inspection and completion follow the verified order state"].map((item) => (
               <div key={item} className="flex items-center gap-3 rounded-xl border border-[#eadfce] bg-white p-4"><CheckCircle2 className="h-5 w-5 text-emerald-600" /><span className="font-medium text-slate-700">{item}</span></div>
             ))}
           </div>
@@ -130,22 +130,22 @@ export function ProtectedCheckout({ listing }: { listing: MarketplaceListing }) 
       </div>
 
       <aside className="h-fit rounded-[1.75rem] border border-[#eadfce] bg-white p-6 shadow-[0_24px_80px_rgba(43,30,18,0.10)] lg:sticky lg:top-24">
-        <div className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-3 py-1.5 text-xs font-semibold text-white"><ShieldCheck className="h-3.5 w-3.5 text-yellow-300" /> TBX Secure</div>
+        <div className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-3 py-1.5 text-xs font-semibold text-white"><ShieldCheck className="h-3.5 w-3.5 text-yellow-300" /> {paymentsLive ? "TBX Secure" : "Reservation only"}</div>
         <h2 className="mt-5 text-xl font-semibold text-slate-950">Reservation Summary</h2>
         <div className="mt-5 space-y-3 text-sm text-slate-600">
           <div className="flex justify-between gap-4"><span>{listing.title}</span><strong>{formatZar(listing.priceZar)}</strong></div>
-          <div className="flex justify-between gap-4"><span>{selectedMethod.name}</span><strong className="text-emerald-700">Included</strong></div>
-          <div className="flex justify-between gap-4"><span>Insurance</span><strong>Included</strong></div>
+          <div className="flex justify-between gap-4"><span>{selectedMethod.name}</span><strong className="text-emerald-700">{courierQuotesLive ? "Included" : "Provisional"}</strong></div>
+          <div className="flex justify-between gap-4"><span>Insurance</span><strong>{courierQuotesLive ? "Included" : "To be confirmed"}</strong></div>
           <div className="flex justify-between border-t border-[#eadfce] pt-3 text-base text-slate-950"><span>Expected total</span><strong>{formatZar(listing.priceZar)}</strong></div>
         </div>
-        <p className="mt-4 text-xs leading-5 text-slate-500">The seller funds the delivery allowance from their proceeds. You will not be charged delivery on top of the listed price.</p>
+        <p className="mt-4 text-xs leading-5 text-slate-500">The seller funds the delivery allowance from their proceeds. {courierQuotesLive ? "You will not be charged delivery on top of the listed price." : "The final delivery amount must be confirmed before protected payment opens."}</p>
         {error ? <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
         <Button type="button" onClick={reservePurchase} disabled={submitting} className="mt-6 h-12 w-full rounded-xl bg-yellow-400 font-semibold text-slate-950 shadow-[0_16px_36px_rgba(245,179,1,0.25)] hover:bg-yellow-300 disabled:opacity-60">
           {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           {submitting ? "Reserving item…" : "Reserve this item"}
           {!submitting ? <ArrowRight className="h-4 w-4" /> : null}
         </Button>
-        <p className="mt-4 flex gap-2 text-sm leading-6 text-slate-500"><LockKeyhole className="mt-1 h-4 w-4 shrink-0" /> Reserving creates a real TBX purchase reservation. No payment or courier booking happens at this step.</p>
+        <p className="mt-4 flex gap-2 text-sm leading-6 text-slate-500"><LockKeyhole className="mt-1 h-4 w-4 shrink-0" /> Reserving creates a real TBX reservation request. No payment or courier booking happens at this step.</p>
       </aside>
     </div>
   );

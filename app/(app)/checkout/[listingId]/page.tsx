@@ -4,6 +4,7 @@ import { ProtectedCheckout } from "@/features/marketplace/components/protected-c
 import { getListingById, type MarketplaceListing } from "@/features/marketplace/data/marketplace.mock";
 import { type CourierCode } from "@/features/marketplace/data/shipping-options";
 import { createClient } from "@/lib/supabase/server";
+import { marketplaceReadiness } from "@/lib/marketplace/readiness";
 
 type Props = { params: Promise<{ listingId: string }> };
 
@@ -79,10 +80,10 @@ export default async function CheckoutPage({ params }: Props) {
       <Link href={"/marketplace/" + listing.id} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-950">← Back to listing</Link>
       <section className="rounded-[2rem] border border-[#eadfce] bg-white p-7 shadow-[0_24px_80px_rgba(43,30,18,0.08)]">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-600">Protected Checkout</p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950">Choose delivery with TBX Secure.</h1>
-        <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-600">Select one of the seller’s enabled delivery methods. Delivery is included in the listed price, tracking follows the order, and funds remain protected through the inspection window.</p>
+        <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950">Choose delivery and review.</h1>
+        <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-600">{marketplaceReadiness.paymentsLive ? "Select one of the seller’s enabled delivery methods. Delivery is included in the listed price, tracking follows the order, and funds remain protected through the inspection window." : "Select a seller-enabled delivery method and send a reservation request. No payment or courier booking occurs while TBX is in transaction testing."}</p>
       </section>
-      <ProtectedCheckout listing={listing} />
+      <ProtectedCheckout listing={listing} paymentsLive={marketplaceReadiness.paymentsLive} courierQuotesLive={marketplaceReadiness.courierQuotesLive} />
     </div>
   );
 }

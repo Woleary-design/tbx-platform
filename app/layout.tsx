@@ -5,8 +5,8 @@ import { MobileSellNow } from "@/components/mobile-sell-now";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "The Block Exchange",
-  description: "Trust-first collector marketplace.",
+  title: "TBX — The collectors’ marketplace",
+  description: "Buy, sell and value collectibles with TBX.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
