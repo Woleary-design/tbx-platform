@@ -6,7 +6,7 @@ function money(value: number) {
 }
 
 export default async function AdminReportsPage() {
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdmin("reports");
   const [{ data: orders }, { count: activeListings }, { count: users }] = await Promise.all([
     supabase.from("purchase_reservations").select("amount,status,created_at"),
     supabase.from("listings").select("id", { count: "exact", head: true }).eq("status", "Active"),
