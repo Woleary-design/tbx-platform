@@ -1,16 +1,36 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-export type AdminRole = "super_admin" | "admin" | "moderator" | "support";
+export type AdminRole = "super_admin" | "admin" | "moderator" | "operations" | "technical" | "support" | "finance";
+export type AdminSection = "dashboard" | "orders" | "listings" | "users" | "payouts" | "atlas" | "reports" | "settings" | "staff";
 
 const ADMIN_ROLES = new Set<AdminRole>([
   "super_admin",
   "admin",
   "moderator",
+  "operations",
+  "technical",
   "support",
+  "finance",
 ]);
 
-export async function requireAdmin() {
+const SECTION_ROLES: Record<AdminSection, ReadonlySet<AdminRole>> = {
+  dashboard: ADMIN_ROLES,
+  orders: new Set(["super_admin", "admin", "moderator", "operations", "support", "finance"]),
+  listings: new Set(["super_admin", "admin", "moderator", "operations", "support"]),
+  users: new Set(["super_admin", "admin", "moderator", "operations", "support"]),
+  payouts: new Set(["super_admin", "finance"]),
+  atlas: new Set(["super_admin", "admin", "operations", "technical"]),
+  reports: new Set(["super_admin", "admin", "operations", "finance"]),
+  settings: new Set(["super_admin", "technical"]),
+  staff: new Set(["super_admin"]),
+};
+
+export function canAccessAdminSection(role: AdminRole, section: AdminSection) {
+  return SECTION_ROLES[section].has(role);
+}
+
+export async function requireAdmin(section: AdminSection = "dashboard") {
   const supabase = await createClient();
   const {
     data: { user },
@@ -30,6 +50,10 @@ export async function requireAdmin() {
 
   if (error || !role || !ADMIN_ROLES.has(role)) {
     redirect("/");
+  }
+
+  if (!canAccessAdminSection(role, section)) {
+    redirect("/admin");
   }
 
   return { user, role, supabase };

@@ -2,7 +2,7 @@ import { ShieldCheck, Users } from "lucide-react";
 import { requireAdmin } from "@/lib/admin";
 
 export default async function AdminUsersPage() {
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdmin("users");
   const [{ data: collectors }, { count: adminCount }] = await Promise.all([
     supabase.from("collectors").select("id,tbx_id,display_name,username,city,country,identity_verified,payment_verified,completed_trades,disputes,created_at").order("created_at", { ascending: false }).limit(100),
     supabase.from("admin_users").select("id", { count: "exact", head: true }),
