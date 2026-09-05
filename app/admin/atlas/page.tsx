@@ -1,4 +1,5 @@
 import { AlertTriangle, Database, SearchCheck, Sparkles } from "lucide-react";
+import { requireAdmin } from "@/lib/admin";
 
 const cards = [
   { label: "Match confidence", value: "—", icon: SearchCheck },
@@ -7,7 +8,8 @@ const cards = [
   { label: "Valuations reviewed", value: "0", icon: Sparkles },
 ];
 
-export default function AdminAtlasPage() {
+export default async function AdminAtlasPage() {
+  await requireAdmin("atlas");
   return (
     <div className="space-y-6">
       <div>
