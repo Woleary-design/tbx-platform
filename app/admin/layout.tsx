@@ -12,21 +12,22 @@ import {
   Users,
   WalletCards,
 } from "lucide-react";
-import { requireAdmin } from "@/lib/admin";
+import { canAccessAdminSection, requireAdmin, type AdminSection } from "@/lib/admin";
 
-const navigation = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/orders", label: "Orders", icon: ListChecks },
-  { href: "/admin/marketplace", label: "Listings", icon: Boxes },
-  { href: "/admin/users", label: "Customers & sellers", icon: Users },
-  { href: "/admin/payouts", label: "Payouts", icon: WalletCards },
-  { href: "/admin/atlas", label: "Atlas", icon: Bot },
-  { href: "/admin/reports", label: "Reports", icon: ChartNoAxesCombined },
-  { href: "/admin/settings", label: "Settings", icon: Settings },
+const navigation: { href: string; label: string; icon: typeof LayoutDashboard; section: AdminSection }[] = [
+  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, section: "dashboard" },
+  { href: "/admin/orders", label: "Orders", icon: ListChecks, section: "orders" },
+  { href: "/admin/marketplace", label: "Listings", icon: Boxes, section: "listings" },
+  { href: "/admin/users", label: "Customers & sellers", icon: Users, section: "users" },
+  { href: "/admin/payouts", label: "Payouts", icon: WalletCards, section: "payouts" },
+  { href: "/admin/atlas", label: "Atlas", icon: Bot, section: "atlas" },
+  { href: "/admin/reports", label: "Reports", icon: ChartNoAxesCombined, section: "reports" },
+  { href: "/admin/settings", label: "Settings", icon: Settings, section: "settings" },
 ];
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const { user, role } = await requireAdmin();
+  const visibleNavigation = navigation.filter((item) => canAccessAdminSection(role, item.section));
   const displayName = user.user_metadata?.full_name ?? user.email?.split("@")[0] ?? "Admin";
 
   return (
@@ -44,7 +45,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           </div>
 
           <nav className="space-y-1.5">
-            {navigation.map(({ href, label, icon: Icon }) => (
+            {visibleNavigation.map(({ href, label, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}
@@ -95,7 +96,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             </div>
 
             <div className="mt-4 flex gap-2 overflow-x-auto pb-1 lg:hidden">
-              {navigation.map(({ href, label }) => (
+              {visibleNavigation.map(({ href, label }) => (
                 <Link key={href} href={href} className="shrink-0 rounded-full border border-white/10 bg-white/[0.035] px-3 py-1.5 text-xs text-slate-300">
                   {label}
                 </Link>
