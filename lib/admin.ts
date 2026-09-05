@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 export type AdminRole = "super_admin" | "admin" | "moderator" | "operations" | "technical" | "support" | "finance";
-export type AdminSection = "dashboard" | "orders" | "listings" | "users" | "payouts" | "atlas" | "reports" | "settings";
+export type AdminSection = "dashboard" | "orders" | "listings" | "users" | "payouts" | "atlas" | "reports" | "settings" | "staff";
 
 const ADMIN_ROLES = new Set<AdminRole>([
   "super_admin",
@@ -23,6 +23,7 @@ const SECTION_ROLES: Record<AdminSection, ReadonlySet<AdminRole>> = {
   atlas: new Set(["super_admin", "admin", "operations", "technical"]),
   reports: new Set(["super_admin", "admin", "operations", "finance"]),
   settings: new Set(["super_admin", "technical"]),
+  staff: new Set(["super_admin"]),
 };
 
 export function canAccessAdminSection(role: AdminRole, section: AdminSection) {
