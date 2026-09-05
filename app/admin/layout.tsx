@@ -9,6 +9,7 @@ import {
   ListChecks,
   Settings,
   ShieldCheck,
+  UserCog,
   Users,
   WalletCards,
 } from "lucide-react";
@@ -23,6 +24,7 @@ const navigation: { href: string; label: string; icon: typeof LayoutDashboard; s
   { href: "/admin/atlas", label: "Atlas", icon: Bot, section: "atlas" },
   { href: "/admin/reports", label: "Reports", icon: ChartNoAxesCombined, section: "reports" },
   { href: "/admin/settings", label: "Settings", icon: Settings, section: "settings" },
+  { href: "/admin/staff", label: "Staff & roles", icon: UserCog, section: "staff" },
 ];
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
