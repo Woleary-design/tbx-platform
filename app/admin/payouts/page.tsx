@@ -6,7 +6,7 @@ function money(value: number) {
 }
 
 export default async function AdminPayoutsPage() {
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdmin("payouts");
   const { data: orders } = await supabase.from("purchase_reservations").select("id,amount,status,paid_at,completed_at,seller_id,created_at").order("created_at", { ascending: false }).limit(100);
   const paidOrders = (orders ?? []).filter((order) => order.paid_at || order.status === "paid" || order.status === "completed");
   const sellerDue = paidOrders.reduce((sum, order) => sum + Number(order.amount || 0) * 0.9, 0);

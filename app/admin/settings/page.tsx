@@ -1,6 +1,8 @@
 import { CreditCard, Percent, Settings, Truck } from "lucide-react";
+import { requireAdmin } from "@/lib/admin";
 
-export default function AdminSettingsPage() {
+export default async function AdminSettingsPage() {
+  await requireAdmin("settings");
   const settings = [
     { label: "Marketplace fee", value: "10%", detail: "Applied to successful sales", icon: Percent },
     { label: "Buyer payments", value: "Not connected", detail: "Provider decision still pending", icon: CreditCard },

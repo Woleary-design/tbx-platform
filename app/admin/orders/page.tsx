@@ -6,7 +6,7 @@ function money(value: number) {
 }
 
 export default async function AdminOrdersPage() {
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdmin("orders");
   const { data: orders } = await supabase
     .from("purchase_reservations")
     .select("id,listing_id,amount,currency,status,created_at,seller_deadline,payment_deadline,paid_at,shipped_at,completed_at,tracking_number,carrier")

@@ -7,7 +7,7 @@ function money(value: number) {
 }
 
 export default async function AdminMarketplacePage() {
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdmin("listings");
   const { data: listings } = await supabase
     .from("listings")
     .select("id,title,asking_price,status,lifecycle_state,views,watchers,seller_id,created_at")
