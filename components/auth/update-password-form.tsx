@@ -20,40 +20,26 @@ export function UpdatePasswordForm() {
     let active = true;
 
     async function restoreSession() {
-      const code = new URLSearchParams(window.location.search).get("code");
-
-      if (code) {
-        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-        if (exchangeError && active) {
-          setError("This recovery link is invalid or has expired. Request a new password reset email.");
+      try {
+        // The browser SDK owns URL-code exchange and strips the one-use code.
+        // Calling exchangeCodeForSession again races its automatic initialization.
+        const { error: initializationError } = await supabase.auth.initialize();
+        if (initializationError) throw initializationError;
+        const { data, error: userError } = await supabase.auth.getUser();
+        if (userError || !data.user) throw userError ?? new Error("Missing session");
+        if (active) setHasSession(true);
+      } catch {
+        if (active) {
+          setHasSession(false);
+          setError("This recovery link is invalid or has expired. Request a new password reset email and open the newest link on the device you used to request it.");
         }
+      } finally {
+        if (active) setCheckingSession(false);
       }
-
-      const { data } = await supabase.auth.getSession();
-      if (!active) return;
-
-      setHasSession(Boolean(data.session));
-      if (!data.session && !error) {
-        setError("This recovery link is missing its secure session. Request a new password reset email and use the newest link.");
-      }
-      setCheckingSession(false);
     }
 
     void restoreSession();
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!active) return;
-      if (session) {
-        setHasSession(true);
-        setError(null);
-        setCheckingSession(false);
-      }
-    });
-
-    return () => {
-      active = false;
-      listener.subscription.unsubscribe();
-    };
+    return () => { active = false; };
   }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {

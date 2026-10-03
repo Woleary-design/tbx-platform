@@ -10,10 +10,7 @@ function getSiteUrl() {
   return fallbackUrl.endsWith("/") ? fallbackUrl.slice(0, -1) : fallbackUrl;
 }
 
-function safeNextPath(nextPath?: string) {
-  if (!nextPath || !nextPath.startsWith("/") || nextPath.startsWith("//")) return "/dashboard";
-  return nextPath;
-}
+import { safeNextPath } from "@/lib/auth/safe-next";
 
 export function SignInForm({ nextPath }: { nextPath?: string }) {
   const destination = safeNextPath(nextPath);
