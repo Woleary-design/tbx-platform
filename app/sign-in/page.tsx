@@ -15,13 +15,10 @@ function FourDotLogo() {
   );
 }
 
-function safeNextPath(value?: string) {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) return "/dashboard";
-  return value;
-}
+import { safeNextPath } from "@/lib/auth/safe-next";
 
 type SignInPageProps = {
-  searchParams?: Promise<{ next?: string }>;
+  searchParams?: Promise<{ next?: string; error?: string; password?: string }>;
 };
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
@@ -51,6 +48,8 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
         </p>
 
         <div className="mt-7">
+          {params?.password === "updated" ? <p role="status" className="mb-4 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">Password updated. Sign in with your new password.</p> : null}
+          {params?.error === "invalid_recovery_link" || params?.error === "recovery_link_expired" ? <p role="alert" className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">This sign-in link is invalid or has expired. Request a new link below.</p> : null}
           <SignInForm nextPath={destination} />
         </div>
 

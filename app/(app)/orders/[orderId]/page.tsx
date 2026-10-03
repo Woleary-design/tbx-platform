@@ -5,6 +5,9 @@ import { SellerConfirmationActions } from "@/components/orders/seller-confirmati
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 
+import { sandboxConfig } from "@/lib/payments/payfast";
+import { PayfastSandboxPayment } from "@/components/orders/payfast-sandbox-payment";
+
 type Props = { params: Promise<{ orderId: string }> };
 
 const statusCopy: Record<string, { title: string; body: string }> = {
@@ -76,6 +79,10 @@ export default async function OrderTimelinePage({ params }: Props) {
     title: "Purchase in progress",
     body: "This page reflects the verified state stored in TBX.",
   };
+  const sandboxEnabled = Boolean(sandboxConfig());
+  const { data: sandboxAttempt } = sandboxEnabled && isBuyer
+    ? await supabase.from("payfast_sandbox_attempts").select("status").eq("reservation_id", orderId).maybeSingle()
+    : { data: null };
   const deadline = reservation.status === "awaiting_seller" ? reservation.seller_deadline : reservation.payment_deadline;
 
   return (
@@ -113,6 +120,10 @@ export default async function OrderTimelinePage({ params }: Props) {
 
       {reservation.status === "awaiting_seller" && isSeller ? (
         <SellerConfirmationActions reservationId={reservation.id} />
+      ) : null}
+
+      {sandboxEnabled && isBuyer && (reservation.status === "awaiting_payment" || sandboxAttempt) ? (
+        <PayfastSandboxPayment reservationId={reservation.id} status={sandboxAttempt?.status} />
       ) : null}
 
       {reservation.tracking_number || reservation.carrier ? (
