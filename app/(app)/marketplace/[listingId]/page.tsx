@@ -110,7 +110,7 @@ export default async function ProductDetailPage({ params }: Props) {
           { label: "Original owner", value: asset?.original_owner ? "Yes" : "Not confirmed" },
           { label: "Receipt", value: asset?.original_receipt ? "Included" : "Not supplied" },
         ],
-        shipping: { estimate: "1–5 business days", courierIncluded: true, insuranceIncluded: true, enabledMethods: methods },
+        shipping: { estimate: "1–5 business days", courierIncluded: quote.sellerFundsShipping !== false, insuranceIncluded: true, enabledMethods: methods },
       };
     }
   }
