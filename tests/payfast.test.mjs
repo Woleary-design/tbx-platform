@@ -37,3 +37,22 @@ test('sandbox defaults to disabled', () => {
   try { assert.equal(sandboxConfig(),null); }
   finally { if (original !== undefined) process.env.TBX_PAYFAST_SANDBOX_ENABLED=original; }
 });
+test('preview callback bypass is signed and only attached to the notification URL', () => {
+  const fields = checkoutFields({ merchantId:'test', merchantKey:'key', passphrase:'secret', siteUrl:'https://tbx.example', notifyBypass:'test-bypass' }, { id:'attempt', reservation_id:'order', amount:'10' });
+  assert.equal(new URL(fields.notify_url).searchParams.get('x-vercel-protection-bypass'), 'test-bypass');
+  assert.equal(new URL(fields.return_url).searchParams.has('x-vercel-protection-bypass'), false);
+  assert.equal(new URL(fields.cancel_url).searchParams.has('x-vercel-protection-bypass'), false);
+  assert.equal(validSignature(fields,'secret'),true);
+});
+test('production config never includes the preview bypass', () => {
+  const keys = ['TBX_PAYFAST_SANDBOX_ENABLED','PAYFAST_SANDBOX_MERCHANT_ID','PAYFAST_SANDBOX_MERCHANT_KEY','PAYFAST_SANDBOX_PASSPHRASE','TBX_SITE_URL','TBX_PAYFAST_NOTIFY_BYPASS','VERCEL_ENV'];
+  const saved = Object.fromEntries(keys.map(key => [key, process.env[key]]));
+  try {
+    Object.assign(process.env, {TBX_PAYFAST_SANDBOX_ENABLED:'true',PAYFAST_SANDBOX_MERCHANT_ID:'test',PAYFAST_SANDBOX_MERCHANT_KEY:'key',PAYFAST_SANDBOX_PASSPHRASE:'secret',TBX_SITE_URL:'https://tbx.example',TBX_PAYFAST_NOTIFY_BYPASS:'test-bypass',VERCEL_ENV:'production'});
+    assert.equal(sandboxConfig().notifyBypass, undefined);
+    process.env.VERCEL_ENV='preview';
+    assert.equal(sandboxConfig().notifyBypass,'test-bypass');
+  } finally {
+    for (const key of keys) { if (saved[key] === undefined) delete process.env[key]; else process.env[key] = saved[key]; }
+  }
+});
