@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, CheckCircle2, Clock3, PackageCheck, ShoppingBag, Store } from "lucide-react";
+import { orderGuidance } from "@/lib/orders/guidance";
+import { sandboxConfig } from "@/lib/payments/payfast";
+import { marketplaceReadiness } from "@/lib/marketplace/readiness";
+import { NotificationFeed } from "@/components/notifications/notification-feed";
 import { createClient } from "@/lib/supabase/server";
 
 type Reservation = {
@@ -10,26 +14,15 @@ type Reservation = {
   amount: number | string;
   currency: string;
   status: string;
+  sandbox_status?: string | null;
   created_at: string;
   assets: { set_name: string | null; set_number: string | null } | { set_name: string | null; set_number: string | null }[] | null;
 };
 
-const statusCopy: Record<string, { label: string; detail: string }> = {
-  awaiting_seller: { label: "Seller confirmation needed", detail: "Confirm whether the item is still available." },
-  awaiting_payment: { label: "Waiting for payment", detail: "The seller confirmed the item and the buyer can continue." },
-  ready_to_ship: { label: "Ready to send", detail: "Payment is complete. Prepare the parcel for delivery." },
-  shipped: { label: "On the way", detail: "The parcel has been dispatched." },
-  completed: { label: "Completed", detail: "This purchase has been completed." },
-  seller_declined: { label: "Unavailable", detail: "The seller could not complete this sale." },
-};
-
-function OrderCard({ reservation, role }: { reservation: Reservation; role: "seller" | "buyer" }) {
+function OrderCard({ reservation, role, mode }: { reservation: Reservation; role: "seller" | "buyer"; mode: "disabled" | "sandbox" | "live" }) {
   const asset = Array.isArray(reservation.assets) ? reservation.assets[0] : reservation.assets;
-  const needsAction = role === "seller" && reservation.status === "awaiting_seller";
-  const copy = statusCopy[reservation.status] ?? {
-    label: reservation.status.replaceAll("_", " "),
-    detail: "Open this order to see its latest progress.",
-  };
+  const copy = orderGuidance(reservation.status, role, mode, reservation.sandbox_status);
+  const needsAction = copy.action;
 
   return (
     <Link
@@ -50,8 +43,8 @@ function OrderCard({ reservation, role }: { reservation: Reservation; role: "sel
           <div className="mt-4 flex items-start gap-2">
             {reservation.status === "completed" ? <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-400" /> : <Clock3 className={`mt-0.5 h-4 w-4 ${needsAction ? "text-[#ffd84d]" : "text-white/35"}`} />}
             <div>
-              <p className={`text-sm font-bold ${needsAction ? "text-[#ffd84d]" : "text-white/75"}`}>{copy.label}</p>
-              <p className="mt-0.5 text-xs leading-5 text-white/42">{copy.detail}</p>
+              <p className={`text-sm font-bold ${needsAction ? "text-[#ffd84d]" : "text-white/75"}`}>{copy.title}</p>
+              <p className="mt-0.5 text-xs leading-5 text-white/42">{copy.body}</p>
             </div>
           </div>
         </div>
@@ -62,7 +55,7 @@ function OrderCard({ reservation, role }: { reservation: Reservation; role: "sel
             <p className="mt-1 text-xs text-white/35">{new Date(reservation.created_at).toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "numeric" })}</p>
           </div>
           <span className={`inline-flex items-center gap-2 text-sm font-bold sm:mt-4 ${needsAction ? "text-[#ffd84d]" : "text-white/60"}`}>
-            {needsAction ? "Respond now" : "View order"}<ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+            {needsAction ? role === "seller" ? "Respond now" : "Continue order" : "View order"}<ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
           </span>
         </div>
       </div>
@@ -82,7 +75,7 @@ function OrderSection({ title, description, reservations, role }: { title: strin
         </div>
         <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-bold text-white/55">{reservations.length}</span>
       </div>
-      <div className="space-y-3">{reservations.map((reservation) => <OrderCard key={reservation.id} reservation={reservation} role={role} />)}</div>
+      <div className="space-y-3">{reservations.map((reservation) => <OrderCard key={reservation.id} reservation={reservation} role={role} mode={sandboxConfig() ? "sandbox" : marketplaceReadiness.paymentsLive ? "live" : "disabled"} />)}</div>
     </section>
   );
 }
@@ -98,9 +91,15 @@ export default async function OrdersPage() {
     .order("created_at", { ascending: false });
 
   const reservations = (data ?? []) as Reservation[];
+  const { data: attempts } = sandboxConfig() && reservations.length > 0
+    ? await supabase.from("payfast_sandbox_attempts").select("reservation_id,status").in("reservation_id", reservations.map(r => r.id))
+    : { data: null };
+  const attemptStates = new Map((attempts ?? []).map(a => [a.reservation_id, a.status]));
+  for (const reservation of reservations) reservation.sandbox_status = attemptStates.get(reservation.id) ?? null;
   const selling = reservations.filter((reservation) => reservation.seller_id === userData.user.id);
   const buying = reservations.filter((reservation) => reservation.buyer_id === userData.user.id);
-  const actionsRequired = selling.filter((reservation) => reservation.status === "awaiting_seller").length;
+  const mode = sandboxConfig() ? "sandbox" : marketplaceReadiness.paymentsLive ? "live" : "disabled";
+  const actionsRequired = selling.filter(r => orderGuidance(r.status, "seller", mode, r.sandbox_status).action).length + buying.filter(r => orderGuidance(r.status, "buyer", mode, r.sandbox_status).action).length;
 
   return (
     <div className="mx-auto max-w-6xl space-y-9">
@@ -121,6 +120,8 @@ export default async function OrdersPage() {
           </div>
         </div>
       </section>
+
+      <NotificationFeed refreshOrders />
 
       {reservations.length === 0 ? (
         <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.035] p-10 text-center">

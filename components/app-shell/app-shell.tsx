@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { Bell, BookOpen, ChevronDown, Heart, Home, LayoutDashboard, LibraryBig, PackageCheck, ShoppingBag, Sparkles, Tag } from "lucide-react";
+import { BookOpen, ChevronDown, Heart, Home, LayoutDashboard, LibraryBig, PackageCheck, ShoppingBag, Sparkles, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { NotificationFeed } from "@/components/notifications/notification-feed";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { CatalogueSearch } from "@/components/catalogue/catalogue-search";
 import { cn } from "@/lib/utils";
@@ -154,7 +155,7 @@ export function AppShell({ children, collector, isAdmin = false }: AppShellProps
                 </Button>
               ) : null}
               <Button asChild className="hidden rounded-full bg-[#ffd84d] px-5 font-semibold text-[#050915] hover:bg-[#ffe374] sm:inline-flex"><Link href="/sell/quick"><Tag className="h-4 w-4" /> Sell</Link></Button>
-              <Button asChild variant="outline" size="sm" className="rounded-full border-white/10 bg-white/[0.04] px-3 text-white hover:border-[#ffd84d]/30 hover:bg-[#ffd84d]/[0.06] hover:text-[#ffd84d]"><Link href="/notifications" aria-label="Notifications"><Bell className="h-4 w-4" /></Link></Button>
+              {!isGuest ? <NotificationFeed bell /> : null}
               <Button asChild variant="outline" size="sm" className="rounded-full border-white/10 bg-white/[0.04] pl-1.5 pr-3 text-white hover:border-[#ffd84d]/30 hover:bg-[#ffd84d]/[0.06]"><Link href={isGuest ? "/sign-in" : "/profile"} title={isGuest ? "Sign in" : collector.displayName}><span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-[#ffd84d] text-xs font-semibold text-[#050915]">{collector.avatarUrl ? <img src={collector.avatarUrl} alt="" className="h-full w-full object-cover" /> : collector.initials}</span><ChevronDown className="h-4 w-4" /></Link></Button>
             </div>
           </div>

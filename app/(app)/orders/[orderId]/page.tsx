@@ -6,36 +6,12 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 
 import { sandboxConfig } from "@/lib/payments/payfast";
+import { NotificationFeed } from "@/components/notifications/notification-feed";
+import { orderGuidance } from "@/lib/orders/guidance";
+import { marketplaceReadiness } from "@/lib/marketplace/readiness";
 import { PayfastSandboxPayment } from "@/components/orders/payfast-sandbox-payment";
 
 type Props = { params: Promise<{ orderId: string }> };
-
-const statusCopy: Record<string, { title: string; body: string }> = {
-  awaiting_seller: {
-    title: "Waiting for seller confirmation",
-    body: "The item is reserved while the seller confirms that it is still available. No payment is taken at this stage.",
-  },
-  awaiting_payment: {
-    title: "Seller confirmed availability",
-    body: "The item is confirmed. Payment is the next step, but TBX will not claim payment is available until a real payment integration is enabled.",
-  },
-  ready_to_ship: {
-    title: "Preparing for dispatch",
-    body: "The order is ready for the seller to dispatch.",
-  },
-  shipped: {
-    title: "Your item is on the way",
-    body: "The seller has marked the order as shipped. Tracking details are shown below when available.",
-  },
-  completed: {
-    title: "Purchase complete",
-    body: "The buyer confirmed receipt and the item has been transferred into the buyer’s TBX inventory.",
-  },
-  seller_declined: {
-    title: "Item unavailable",
-    body: "The seller could not confirm availability. No payment was taken.",
-  },
-};
 
 export default async function OrderTimelinePage({ params }: Props) {
   const { orderId } = await params;
@@ -75,15 +51,13 @@ export default async function OrderTimelinePage({ params }: Props) {
   const asset = Array.isArray(reservation.assets) ? reservation.assets[0] : reservation.assets;
   const isBuyer = reservation.buyer_id === userData.user.id;
   const isSeller = reservation.seller_id === userData.user.id;
-  const copy = statusCopy[reservation.status] ?? {
-    title: "Purchase in progress",
-    body: "This page reflects the verified state stored in TBX.",
-  };
+  if (!isBuyer && !isSeller) notFound();
   const sandboxEnabled = Boolean(sandboxConfig());
-  const { data: sandboxAttempt } = sandboxEnabled && isBuyer
+  const { data: sandboxAttempt } = sandboxEnabled && (isBuyer || isSeller)
     ? await supabase.from("payfast_sandbox_attempts").select("status").eq("reservation_id", orderId).maybeSingle()
     : { data: null };
-  const deadline = reservation.status === "awaiting_seller" ? reservation.seller_deadline : reservation.payment_deadline;
+  const copy = orderGuidance(reservation.status, isBuyer ? "buyer" : "seller", sandboxEnabled ? "sandbox" : marketplaceReadiness.paymentsLive ? "live" : "disabled", sandboxAttempt?.status);
+  const deadline = reservation.status === "awaiting_seller" ? reservation.seller_deadline : reservation.status === "awaiting_payment" && sandboxAttempt?.status !== "complete" ? reservation.payment_deadline : null;
 
   return (
     <div className="mx-auto max-w-4xl space-y-7">
@@ -96,6 +70,8 @@ export default async function OrderTimelinePage({ params }: Props) {
         <h1 className="mt-5 text-4xl font-semibold tracking-tight md:text-5xl">{copy.title}</h1>
         <p className="mt-4 max-w-2xl text-base leading-7 text-white/70">{copy.body}</p>
       </section>
+
+      <NotificationFeed orderId={orderId} refreshOrders />
 
       <section className="grid gap-5 md:grid-cols-2">
         <div className="rounded-[1.75rem] border border-[#eadfce] bg-white p-6 shadow-sm">
@@ -112,9 +88,9 @@ export default async function OrderTimelinePage({ params }: Props) {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-yellow-600">Status</p>
           <div className="mt-4 flex items-start gap-3">
             {reservation.status === "shipped" || reservation.status === "completed" ? <Truck className="mt-1 h-6 w-6 text-emerald-600" /> : <Clock3 className="mt-1 h-6 w-6 text-yellow-500" />}
-            <div><p className="font-semibold text-slate-950">{reservation.status.replaceAll("_", " ")}</p><p className="mt-1 text-sm text-slate-500">You are viewing this order as the {isBuyer ? "buyer" : "seller"}.</p></div>
+            <div><p className="font-semibold text-slate-950">{sandboxAttempt?.status === "complete" ? "Sandbox test complete" : reservation.status.replaceAll("_", " ")}</p><p className="mt-1 text-sm text-slate-500">You are viewing this order as the {isBuyer ? "buyer" : "seller"}.</p></div>
           </div>
-          {deadline ? <p className="mt-5 rounded-xl bg-[#fffaf1] p-4 text-sm text-slate-600">Current deadline: <strong>{new Date(deadline).toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short" })}</strong></p> : null}
+          {deadline ? <p className="mt-5 rounded-xl bg-[#fffaf1] p-4 text-sm text-slate-600">Current deadline: <strong>{new Date(deadline).toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short", timeZone: "Africa/Johannesburg" })}</strong> SAST</p> : null}
         </div>
       </section>
 
