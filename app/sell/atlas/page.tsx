@@ -262,7 +262,7 @@ export default function AtlasSellPage() {
   const shippingEstimate = enabledShipping.length
     ? Math.max(...enabledShipping.map((option) => option.estimate))
     : 0;
-  const payout = Math.max(0, price - fee - shippingEstimate);
+  const payout = Math.max(0, price - fee);
   const deliveryLabel =
     enabledShipping.map((option) => option.label).join(" + ") ||
     "No delivery method selected";
@@ -461,7 +461,8 @@ export default function AtlasSellPage() {
         shippingMethods: draft.shippingMethods,
         shippingAllowance: shippingEstimate,
         shippingAllowanceType: "provisional",
-        sellerFundsShipping: true,
+        sellerFundsShipping: false,
+        deliveryPayer: "buyer",
         tbxFeeRate: 0.1,
         parcel: {
           preset: draft.parcelPreset || "custom",
@@ -595,8 +596,8 @@ export default function AtlasSellPage() {
                     Set your selling price
                   </h1>
                   <p className="mt-2 text-sm text-white/45">
-                    Choose the total price the buyer will pay. Fees and delivery
-                    are deducted from this amount.
+                    Choose your item price. The buyer pays delivery separately.
+                    Only the TBX fee is deducted from your sale.
                   </p>
                 </div>
               </div>
@@ -654,7 +655,7 @@ export default function AtlasSellPage() {
                   </div>
                 </label>
                 <p className="mt-2 text-xs text-white/35">
-                  You’ll see your estimated payout after choosing delivery.
+                  Your payout is your item price less the TBX fee.
                 </p>
               </div>
               {price > 0 ? (
@@ -832,9 +833,9 @@ export default function AtlasSellPage() {
               </div>
               {signedIn ? <div className={`mt-4 rounded-xl border p-4 text-sm ${hasDispatchAddress ? "border-emerald-400/20 bg-emerald-400/[0.06] text-emerald-200" : "border-amber-300/20 bg-amber-300/[0.06] text-amber-100"}`}>{hasDispatchAddress ? "Dispatch address saved. TBX will keep the street address private." : <span>Add the private address the courier will collect from. <Link href="/settings/delivery" className="font-bold underline">Save dispatch address</Link></span>}</div> : null}
               <p className="mt-4 text-xs leading-5 text-white/35">
-                Delivery is currently estimated. Your final payout may change if
-                the actual courier cost differs. If you enable both methods,
-                this estimate uses the higher cost.
+                The buyer pays delivery at checkout. These are estimates; the
+                final courier quote must be confirmed before payment. Delivery
+                is not deducted from your payout.
               </p>
               <div className="mt-6 border-t border-white/10 pt-6">
                 <p className="text-sm font-bold text-white/70">Packed parcel size</p>
@@ -851,7 +852,7 @@ export default function AtlasSellPage() {
                 <div className="mt-6">
                   <label className="block">
                     <span className="text-sm font-bold text-white/65">
-                      Adjust buyer price
+                      Adjust item price
                     </span>
                     <div className="mt-2 flex h-14 items-center rounded-2xl border border-white/10 bg-[#050912] px-4">
                       <span className="mr-2 font-black text-white/35">R</span>
@@ -874,8 +875,8 @@ export default function AtlasSellPage() {
                     <div className="mt-4 grid gap-3 sm:grid-cols-3">
                       <Summary label="TBX fee (10%)" value={`-${money(fee)}`} />
                       <Summary
-                        label="Estimated delivery cost"
-                        value={`-${money(shippingEstimate)}`}
+                        label="Delivery paid by buyer"
+                        value="Added at checkout"
                       />
                       <Summary
                         label="Estimated payout"
@@ -1012,7 +1013,7 @@ export default function AtlasSellPage() {
               <p className="mt-2 text-white/45">{draft.condition}</p>
               <p className="mt-5 text-4xl font-black text-emerald-300">
                 {money(price)}{" "}
-                <span className="text-base text-white/35">buyer price</span>
+                <span className="text-base text-white/35">item price · delivery extra</span>
               </p>
               <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                 <Summary
@@ -1028,8 +1029,8 @@ export default function AtlasSellPage() {
                 <Summary label="Delivery" value={deliveryLabel} />
                 <Summary label="TBX fee (10%)" value={`-${money(fee)}`} />
                 <Summary
-                  label="Estimated delivery cost"
-                  value={`-${money(shippingEstimate)}`}
+                  label="Delivery paid by buyer"
+                  value="Added at checkout"
                 />
                 <Summary
                   label="Estimated payout"
