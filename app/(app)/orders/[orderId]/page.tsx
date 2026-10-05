@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { OrderMoney } from "@/components/money/order-money";
 import { notFound, redirect } from "next/navigation";
 import { Clock3, PackageCheck, ShieldCheck, Truck } from "lucide-react";
 import { SellerConfirmationActions } from "@/components/orders/seller-confirmation-actions";
@@ -62,6 +63,9 @@ export default async function OrderTimelinePage({ params }: Props) {
   const copy = buyerPaysDelivery && reservation.status === "awaiting_payment" && sandboxAttempt?.status !== "complete"
     ? { title: "Delivery quote pending", body: isBuyer ? "The seller confirmed availability. Your total will include the item and delivery. Wait for the confirmed courier cost before paying." : "Availability confirmed. The buyer will pay delivery separately. Wait for verified payment before dispatch.", action: false }
     : orderGuidance(reservation.status, isBuyer ? "buyer" : "seller", sandboxEnabled ? "sandbox" : marketplaceReadiness.paymentsLive ? "live" : "disabled", sandboxAttempt?.status);
+  const { data: ledger } = sandboxEnabled
+    ? await supabase.from("sandbox_order_ledger").select("*").eq("reservation_id", orderId).maybeSingle()
+    : { data: null };
   const deadline = reservation.status === "awaiting_seller" ? reservation.seller_deadline : reservation.status === "awaiting_payment" && sandboxAttempt?.status !== "complete" ? reservation.payment_deadline : null;
 
   return (
@@ -77,6 +81,7 @@ export default async function OrderTimelinePage({ params }: Props) {
       </section>
 
       <NotificationFeed orderId={orderId} refreshOrders />
+      {ledger ? <OrderMoney ledger={ledger} viewer={isBuyer ? "buyer" : "seller"} /> : null}
 
       <section className="grid gap-5 md:grid-cols-2">
         <div className="rounded-[1.75rem] border border-[#eadfce] bg-white p-6 shadow-sm">
