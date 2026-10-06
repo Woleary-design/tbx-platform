@@ -21,6 +21,7 @@ export function OrderMoney({ ledger, viewer, canOperate = false }: Props) {
    const response = await fetch('/api/money/sandbox', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ledgerId: ledger.id, action, costCents, note: action === 'dispute' ? reason : undefined }) });
    const payload = await response.json();
    if (!response.ok) throw new Error(payload.error || 'Action unavailable.');
+   window.dispatchEvent(new Event("tbx-notifications-read"));
    router.refresh();
   } catch (e) { setError(e instanceof Error ? e.message : 'Try again.'); }
   finally { setBusy(false); }
@@ -37,7 +38,7 @@ export function OrderMoney({ ledger, viewer, canOperate = false }: Props) {
  return <section className="rounded-[1.75rem] border border-[#eadfce] bg-white p-6 text-slate-950">
   <p className="text-xs font-bold uppercase tracking-widest text-amber-700">Sandbox · no money moves</p>
   <h2 className="mt-2 text-xl font-semibold">{viewer === 'buyer' ? 'Your payment' : 'Seller payout'}</h2>
-  <p className="mt-2 text-sm text-slate-600">{payoutLabel(ledger)}</p>
+  <p className="mt-2 text-sm text-slate-600">{viewer === 'buyer' ? ledger.status === 'refunded_test' ? 'Test refund recorded' : 'Test payment verified' : payoutLabel(ledger)}</p>
   <dl className="mt-5 space-y-3">{rows.map(([label,value]) => <div key={label} className="flex justify-between gap-4 text-sm"><dt className="text-slate-600">{label}</dt><dd className="text-right font-semibold">{value}</dd></div>)}</dl>
   {ledger.delivery_payer === 'seller' ? <p className="mt-4 text-xs text-slate-500">This earlier order keeps seller-funded delivery. New listings use buyer-paid delivery.</p> : null}
   {ledger.inspection_ends_at && ledger.status === 'delivered' && !ledger.buyer_accepted_at ? <p className="mt-4 text-sm text-slate-600">Inspection ends {new Date(ledger.inspection_ends_at).toLocaleString('en-ZA',{ dateStyle:'medium', timeStyle:'short', timeZone:'Africa/Johannesburg' })} SAST. Confirm receipt or report a problem.</p> : null}
