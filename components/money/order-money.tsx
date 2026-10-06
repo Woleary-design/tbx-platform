@@ -3,8 +3,8 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { moneyCents, payoutLabel, payoutReady, type SandboxLedger } from '@/lib/money/ledger';
 
-type Props = { ledger: SandboxLedger; viewer: 'buyer' | 'seller' | 'finance' | 'operations'; canOperate?: boolean };
-export function OrderMoney({ ledger, viewer, canOperate = false }: Props) {
+type Props = { ledger: SandboxLedger; viewer: 'buyer' | 'seller' | 'finance' | 'operations'; canOperate?: boolean; deliveryManaged?: boolean };
+export function OrderMoney({ ledger, viewer, canOperate = false, deliveryManaged = false }: Props) {
  const router = useRouter();
  const [busy, setBusy] = useState(false);
  const [error, setError] = useState('');
@@ -46,8 +46,8 @@ export function OrderMoney({ ledger, viewer, canOperate = false }: Props) {
   {!settled ? <div className="mt-5 space-y-4">
    {staff && (ledger.courier_cents === null || (viewer === 'finance' && ledger.processor_cents === null)) ? <div><label className="block text-sm font-medium" htmlFor={`cost-${ledger.id}`}>Test cost in rand</label><input id={`cost-${ledger.id}`} inputMode="decimal" value={cost} onChange={e=>setCost(e.target.value)} placeholder="100.00" className="mt-2 w-full rounded-xl border border-slate-300 p-3"/><div className="mt-3 flex flex-wrap gap-3">{ledger.courier_cents === null && ledger.status === 'pending' ? button('courier_cost','Confirm test courier cost',true) : null}{viewer === 'finance' && ledger.processor_cents === null ? button('processor_cost','Record test payment fee',true) : null}</div></div> : null}
    <div className="flex flex-wrap gap-3">
-    {(viewer === 'seller' || viewer === 'operations' || canOperate) && ledger.status === 'pending' && ledger.courier_cents !== null ? button('dispatch','Simulate dispatch') : null}
-    {(viewer === 'operations' || canOperate) && ledger.status === 'in_transit' ? button('deliver','Simulate delivery') : null}
+    {!deliveryManaged && (viewer === 'seller' || viewer === 'operations' || canOperate) && ledger.status === 'pending' && ledger.courier_cents !== null ? button('dispatch','Simulate dispatch') : null}
+    {!deliveryManaged && (viewer === 'operations' || canOperate) && ledger.status === 'in_transit' ? button('deliver','Simulate delivery') : null}
     {viewer === 'buyer' && ledger.status === 'delivered' && !ledger.buyer_accepted_at ? button('accept','Confirm test receipt') : null}
     {viewer === 'finance' && payoutReady(ledger) ? button('payout','Simulate seller payout') : null}
     {viewer === 'finance' ? button('refund','Simulate full refund') : null}

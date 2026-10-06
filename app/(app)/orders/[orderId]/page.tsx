@@ -1,3 +1,5 @@
+import { SandboxDeliveryPanel } from '@/components/shipping/sandbox-delivery';
+import { deliveryStage } from '@/lib/shipping/delivery';
 import Link from "next/link";
 import { OrderMoney } from "@/components/money/order-money";
 import { notFound, redirect } from "next/navigation";
@@ -66,6 +68,7 @@ export default async function OrderTimelinePage({ params }: Props) {
   const { data: ledger } = sandboxEnabled
     ? await supabase.from("sandbox_order_ledger").select("*").eq("reservation_id", orderId).maybeSingle()
     : { data: null };
+  const { data: delivery } = sandboxEnabled ? await supabase.from("sandbox_deliveries").select("*").eq("reservation_id", orderId).maybeSingle() : { data: null };
   if (ledger) {
     const stages: Record<string, { title: string; body: string; action: boolean }> = {
       pending: { title: "Test payment verified", body: "Delivery preparation is next. No real courier will be booked in this test.", action: false },
@@ -77,6 +80,7 @@ export default async function OrderTimelinePage({ params }: Props) {
     };
     copy = stages[ledger.status] ?? copy;
   }
+  if (delivery && ledger && ["pending","in_transit"].includes(ledger.status)) copy = { title: deliveryStage(delivery), body: delivery.status === "awaiting_collection" ? "The test parcel has arrived at the locker. Inspection starts only after collection." : delivery.status === "booked" ? "A simulated booking is prepared. Do not send a real parcel." : "Follow the delivery panel below for the next test step.", action: false };
   const deadline = reservation.status === "awaiting_seller" ? reservation.seller_deadline : reservation.status === "awaiting_payment" && sandboxAttempt?.status !== "complete" ? reservation.payment_deadline : null;
 
   return (
@@ -92,7 +96,8 @@ export default async function OrderTimelinePage({ params }: Props) {
       </section>
 
       
-      {ledger ? <OrderMoney ledger={ledger} viewer={isBuyer ? "buyer" : "seller"} /> : null}
+      {sandboxEnabled && (delivery || !ledger || ledger.status === "pending") ? <SandboxDeliveryPanel reservationId={orderId} delivery={delivery} ledger={ledger} viewer={isBuyer ? "buyer" : "seller"} canSelect={["awaiting_seller","awaiting_payment"].includes(reservation.status)} /> : null}
+      {ledger ? <OrderMoney ledger={ledger} viewer={isBuyer ? "buyer" : "seller"} deliveryManaged={Boolean(delivery)} /> : null}
 
       <section className="grid gap-5 md:grid-cols-2">
         <div className="rounded-[1.75rem] border border-[#eadfce] bg-white p-6 shadow-sm">
