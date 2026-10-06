@@ -15,13 +15,28 @@ type Reservation = {
   currency: string;
   status: string;
   sandbox_status?: string | null;
+  ledger_status?: string | null;
+  buyer_accepted_at?: string | null;
   created_at: string;
   assets: { set_name: string | null; set_number: string | null } | { set_name: string | null; set_number: string | null }[] | null;
 };
 
+function cardGuidance(reservation: Reservation, role: "buyer" | "seller", mode: "disabled" | "sandbox" | "live") {
+  switch (reservation.ledger_status) {
+    case "paid_test": return { title: "Test order complete", body: "Simulated payout recorded. No further action is needed. No bank transfer occurred.", action: false };
+    case "refunded_test": return { title: "Test order refunded", body: "Simulated refund recorded. No actual refund was issued.", action: false };
+    case "disputed": return { title: "Problem under review", body: "Seller payout is paused while the reported problem is reviewed.", action: false };
+    case "in_transit": return { title: "Test parcel dispatched", body: "Waiting for simulated delivery. No payment is needed.", action: false };
+    case "delivered": return reservation.buyer_accepted_at
+      ? { title: "Receipt confirmed", body: "Finance will review the simulated seller payout.", action: false }
+      : { title: "Test parcel delivered", body: role === "buyer" ? "Confirm receipt or report a problem on your order." : "Waiting for buyer confirmation or the inspection period to end.", action: role === "buyer" };
+    default: return orderGuidance(reservation.status, role, mode, reservation.sandbox_status);
+  }
+}
+
 function OrderCard({ reservation, role, mode }: { reservation: Reservation; role: "seller" | "buyer"; mode: "disabled" | "sandbox" | "live" }) {
   const asset = Array.isArray(reservation.assets) ? reservation.assets[0] : reservation.assets;
-  const copy = orderGuidance(reservation.status, role, mode, reservation.sandbox_status);
+  const copy = cardGuidance(reservation, role, mode);
   const needsAction = copy.action;
 
   return (
@@ -41,7 +56,7 @@ function OrderCard({ reservation, role, mode }: { reservation: Reservation; role
           </div>
           <p className="mt-1 text-sm text-white/42">{asset?.set_number ? `LEGO ${asset.set_number}` : "Collection item"}</p>
           <div className="mt-4 flex items-start gap-2">
-            {reservation.status === "completed" ? <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-400" /> : <Clock3 className={`mt-0.5 h-4 w-4 ${needsAction ? "text-[#ffd84d]" : "text-white/35"}`} />}
+            {(reservation.status === "completed" || reservation.ledger_status === "paid_test") ? <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-400" /> : <Clock3 className={`mt-0.5 h-4 w-4 ${needsAction ? "text-[#ffd84d]" : "text-white/35"}`} />}
             <div>
               <p className={`text-sm font-bold ${needsAction ? "text-[#ffd84d]" : "text-white/75"}`}>{copy.title}</p>
               <p className="mt-0.5 text-xs leading-5 text-white/42">{copy.body}</p>
@@ -96,10 +111,19 @@ export default async function OrdersPage() {
     : { data: null };
   const attemptStates = new Map((attempts ?? []).map(a => [a.reservation_id, a.status]));
   for (const reservation of reservations) reservation.sandbox_status = attemptStates.get(reservation.id) ?? null;
+  const { data: ledgers } = sandboxConfig() && reservations.length > 0
+    ? await supabase.from("sandbox_order_ledger").select("reservation_id,status,buyer_accepted_at").in("reservation_id", reservations.map(r => r.id))
+    : { data: null };
+  const ledgerStates = new Map((ledgers ?? []).map(l => [l.reservation_id, l]));
+  for (const reservation of reservations) {
+    const ledger = ledgerStates.get(reservation.id);
+    reservation.ledger_status = ledger?.status ?? null;
+    reservation.buyer_accepted_at = ledger?.buyer_accepted_at ?? null;
+  }
   const selling = reservations.filter((reservation) => reservation.seller_id === userData.user.id);
   const buying = reservations.filter((reservation) => reservation.buyer_id === userData.user.id);
   const mode = sandboxConfig() ? "sandbox" : marketplaceReadiness.paymentsLive ? "live" : "disabled";
-  const actionsRequired = selling.filter(r => orderGuidance(r.status, "seller", mode, r.sandbox_status).action).length + buying.filter(r => orderGuidance(r.status, "buyer", mode, r.sandbox_status).action).length;
+  const actionsRequired = selling.filter(r => cardGuidance(r, "seller", mode).action).length + buying.filter(r => cardGuidance(r, "buyer", mode).action).length;
 
   return (
     <div className="mx-auto max-w-6xl space-y-9">
