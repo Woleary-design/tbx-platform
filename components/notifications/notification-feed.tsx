@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Bell } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-type Notice = { id: string; title: string; body: string | null; entity_type: string | null; entity_id: string | null; read_at: string | null; created_at: string };
+type Notice = { historical?: boolean; id: string; title: string; body: string | null; entity_type: string | null; entity_id: string | null; read_at: string | null; created_at: string };
 type Feed = { notifications: Notice[]; unread: number };
 
 export function NotificationFeed({ orderId, bell = false, refreshOrders = false }: { orderId?: string; bell?: boolean; refreshOrders?: boolean }) {
@@ -58,8 +58,8 @@ export function NotificationFeed({ orderId, bell = false, refreshOrders = false 
     {error ? <p role="status" className="mt-3 text-sm text-amber-300">Could not refresh updates. <button type="button" onClick={() => void refresh()} className="underline">Try again</button></p> : null}
     {!loaded && !error ? <p className="mt-4 text-sm text-slate-400">Loading updates…</p> : null}
     {loaded && feed.notifications.length === 0 ? <p className="mt-4 text-sm text-slate-400">No updates yet.</p> : null}
-    <div className="mt-4 space-y-3">{feed.notifications.map(item => <article key={item.id} className={`rounded-xl border p-4 ${item.read_at ? "border-white/10" : "border-yellow-400/30 bg-yellow-400/5"}`}>
-      <div className="flex flex-wrap items-center gap-2"><h3 className="font-semibold">{item.title}</h3>{!item.read_at ? <span className="text-xs text-yellow-300">New</span> : null}</div>
+    <div className="mt-4 space-y-3">{feed.notifications.map(item => <article key={item.id} className={`rounded-xl border p-4 ${item.read_at || item.historical ? "border-white/10" : "border-yellow-400/30 bg-yellow-400/5"}`}>
+      <div className="flex flex-wrap items-center gap-2"><h3 className="font-semibold">{item.title}</h3>{item.historical ? <span className="text-xs text-slate-400">Past update</span> : !item.read_at ? <span className="text-xs text-yellow-300">New</span> : null}</div>
       {item.body ? <p className="mt-2 text-sm leading-6 text-slate-300">{item.body}</p> : null}
       <p className="mt-2 text-xs text-slate-400">{new Date(item.created_at).toLocaleString("en-ZA", { timeZone: "Africa/Johannesburg" })} SAST</p>
       <div className="mt-3 flex gap-4">{item.entity_type === "purchase_reservation" && item.entity_id ? <Link href={`/orders/${item.entity_id}`} className="text-sm font-semibold text-yellow-300">View order</Link> : null}{!item.read_at ? <button type="button" disabled={busy} onClick={() => void markRead([item.id])} className="text-xs text-slate-300 underline disabled:opacity-50">Mark read</button> : null}</div>
