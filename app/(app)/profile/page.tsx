@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CalendarDays, MapPin, ShieldCheck, UserRound } from "lucide-react";
 import { ProfileEditor } from "@/components/profile/profile-editor";
 import { createClient } from "@/lib/supabase/server";
@@ -94,6 +95,11 @@ export default async function ProfilePage() {
           </div>
         </div>
       </section>
+
+      <div className="flex flex-wrap gap-3">
+        <Link href="/settings" className="rounded-xl border border-white/15 px-4 py-3 text-sm font-semibold text-white hover:bg-white/10">Account settings</Link>
+        <Link href="/settings/delivery" className="rounded-xl bg-[#ffd84d] px-4 py-3 text-sm font-semibold text-[#050915] hover:bg-[#ffe374]">Manage dispatch address</Link>
+      </div>
 
       <ProfileEditor
         profile={{

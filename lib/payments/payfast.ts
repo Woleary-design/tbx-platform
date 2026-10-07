@@ -43,17 +43,21 @@ export function sandboxConfig() {
   let url: URL;
   try { url = new URL(siteUrl); } catch { return null; }
   if (url.protocol !== "https:" || url.username || url.password || url.pathname !== "/" || url.search || url.hash) return null;
-  return { merchantId, merchantKey, passphrase, siteUrl: url.origin };
+  const notifyBypass = process.env.VERCEL_ENV === "preview"
+    ? process.env.TBX_PAYFAST_NOTIFY_BYPASS?.trim() : undefined;
+  return { merchantId, merchantKey, passphrase, siteUrl: url.origin, notifyBypass };
 }
 
 export function checkoutFields(config: NonNullable<ReturnType<typeof sandboxConfig>>, attempt: { id: string; reservation_id: string; amount: string }) {
   const cents = amountCents(attempt.amount);
+  const notifyUrl = new URL("/api/payments/payfast/notify", config.siteUrl);
+  if (config.notifyBypass) notifyUrl.searchParams.set("x-vercel-protection-bypass", config.notifyBypass);
   const fields: Record<string, string> = {
     merchant_id: config.merchantId,
     merchant_key: config.merchantKey,
     return_url: `${config.siteUrl}/orders/${attempt.reservation_id}?sandbox=returned`,
     cancel_url: `${config.siteUrl}/orders/${attempt.reservation_id}?sandbox=cancelled`,
-    notify_url: `${config.siteUrl}/api/payments/payfast/notify`,
+    notify_url: notifyUrl.toString(),
     m_payment_id: attempt.id,
     amount: (cents / 100).toFixed(2),
     item_name: `TBX sandbox test ${attempt.reservation_id}`,

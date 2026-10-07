@@ -19,21 +19,35 @@ export default async function ProductDetailPage({ params }: Props) {
   const { listingId } = await params;
   if (getListingById(listingId)) notFound();
   let listing: MarketplaceListing | undefined;
+  let listingStatus = "Active";
+  let reservationId: string | null = null;
 
   if (!listing) {
     const supabase = await createClient();
     const { data } = await supabase
       .from("listings")
       .select(`
-        id, title, description, asking_price, published_at, value_quote,
+        id, title, description, asking_price, published_at, value_quote, status, seller_id,
         assets!listings_asset_id_fkey(id, set_number, set_name, theme, condition, original_owner, original_receipt, instructions_complete, minifigures_complete, lego_set_id),
         collectors!listings_seller_id_fkey(display_name, username, collector_level, confidence_score, completed_trades, average_dispatch_days, disputes, identity_verified, address_verified, payment_verified)
       `)
       .eq("id", listingId)
-      .eq("status", "Active")
+      .in("status", ["Active", "Reserved"])
       .maybeSingle();
 
     if (data) {
+      listingStatus = data.status;
+      if (data.status === "Reserved") {
+        const { data: userData } = await supabase.auth.getUser();
+        if (!userData.user) notFound();
+        const { data: reservation } = await supabase.from("purchase_reservations")
+          .select("id").eq("listing_id", listingId)
+          .in("status", ["awaiting_seller", "awaiting_payment", "ready_to_ship", "shipped"])
+          .or(`buyer_id.eq.${userData.user.id},seller_id.eq.${userData.user.id}`)
+          .order("created_at", { ascending: false }).limit(1).maybeSingle();
+        if (!reservation && data.seller_id !== userData.user.id) notFound();
+        reservationId = reservation?.id ?? null;
+      }
       const asset = Array.isArray(data.assets) ? data.assets[0] : data.assets;
       const seller = Array.isArray(data.collectors) ? data.collectors[0] : data.collectors;
       let catalogueImageUrl: string | null = null;
@@ -96,7 +110,7 @@ export default async function ProductDetailPage({ params }: Props) {
           { label: "Original owner", value: asset?.original_owner ? "Yes" : "Not confirmed" },
           { label: "Receipt", value: asset?.original_receipt ? "Included" : "Not supplied" },
         ],
-        shipping: { estimate: "1–5 business days", courierIncluded: true, insuranceIncluded: true, enabledMethods: methods },
+        shipping: { estimate: "1–5 business days", courierIncluded: quote.sellerFundsShipping !== false, insuranceIncluded: true, enabledMethods: methods },
       };
     }
   }
@@ -144,8 +158,8 @@ export default async function ProductDetailPage({ params }: Props) {
           <div className="flex items-center justify-between gap-3"><SellerProtectedLabel paymentsLive={paymentsLive} /><button aria-label="Add to watchlist" className="rounded-full border border-[#eadfce] p-2 text-slate-500 hover:text-red-500"><Heart className="h-4 w-4" /></button></div>
           <div className="mt-6 rounded-2xl bg-slate-950 p-4 text-white"><p className="text-xs uppercase tracking-[0.16em] text-yellow-300">Seller profile</p><p className="mt-2 text-2xl font-semibold">{sellerVerified ? "Verified seller" : "Verification pending"} <span className="text-sm text-white/50">· {listing.seller.level}</span></p></div>
           <p className="mt-6 text-4xl font-semibold text-slate-950">{formatZar(listing.priceZar)}</p>
-          <p className="mt-2 text-sm leading-6 text-slate-500">{paymentsLive ? "Funds are held securely until delivery and your inspection window is complete." : "Reserve the item for seller confirmation. Online payment is not active during testing."}</p>
-          <Button asChild className="mt-6 h-14 w-full rounded-xl bg-yellow-400 text-lg font-bold text-slate-950 shadow-[0_12px_30px_rgba(250,204,21,0.18)] hover:bg-yellow-300"><Link href={`/checkout/${listing.id}`}>{paymentsLive ? "Buy Protected" : "Reserve item"} <ArrowRight className="h-4 w-4" /></Link></Button>
+          <p className="mt-2 text-sm leading-6 text-slate-500">{listingStatus === "Reserved" ? "This item is reserved. Open the order to view its current status." : paymentsLive ? "Funds are held securely until delivery and your inspection window is complete." : "Reserve the item for seller confirmation. Online payment is not active during testing."}</p>
+          <Button asChild className="mt-6 h-14 w-full rounded-xl bg-yellow-400 text-lg font-bold text-slate-950 shadow-[0_12px_30px_rgba(250,204,21,0.18)] hover:bg-yellow-300"><Link href={reservationId ? `/orders/${reservationId}` : `/checkout/${listing.id}`}>{reservationId ? "View order" : paymentsLive ? "Buy Protected" : "Reserve item"} <ArrowRight className="h-4 w-4" /></Link></Button>
           <div className="mt-6 space-y-3 text-sm text-slate-600">
             <p className="flex justify-between"><span>Shipping</span><strong>{listing.shipping.estimate}</strong></p>
             <div><p className="flex justify-between"><span>Delivery</span><strong>Included · buyer chooses</strong></p><p className="mt-2 text-xs text-slate-500">{enabledShipping.map((method) => method.name).join(" · ")}</p></div>

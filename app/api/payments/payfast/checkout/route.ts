@@ -13,6 +13,16 @@ export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
   if (!data.user) return NextResponse.json({ error: "Sign in first" }, { status: 401 });
+  const { data: reservation, error: reservationError } = await supabase
+    .from("purchase_reservations")
+    .select("buyer_id,listings(value_quote)")
+    .eq("id", body.reservationId)
+    .maybeSingle();
+  if (reservationError || !reservation || reservation.buyer_id !== data.user.id) {
+    return NextResponse.json({ error: "This order is unavailable." }, { status: 409 });
+  }
+  const listing = Array.isArray(reservation.listings) ? reservation.listings[0] : reservation.listings;
+  if (!listing) return NextResponse.json({ error: "Order pricing could not be confirmed." }, { status: 409 });
   // The database checks ownership, seller confirmation, expiry, and ZAR amount.
   const { data: attempt, error } = await supabase.rpc("start_payfast_sandbox_attempt", { target_reservation_id: body.reservationId });
   if (error || !attempt) return NextResponse.json({ error: "This reservation cannot start a sandbox payment." }, { status: 409 });
