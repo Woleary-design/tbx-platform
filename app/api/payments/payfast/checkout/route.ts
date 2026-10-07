@@ -23,10 +23,6 @@ export async function POST(request: NextRequest) {
   }
   const listing = Array.isArray(reservation.listings) ? reservation.listings[0] : reservation.listings;
   if (!listing) return NextResponse.json({ error: "Order pricing could not be confirmed." }, { status: 409 });
-  // Buyer-paid orders cannot use an item-only amount while courier quotes are pending.
-  if (listing?.value_quote?.sellerFundsShipping === false) {
-    return NextResponse.json({ error: "Delivery quote pending. Your full total must be confirmed before payment." }, { status: 409 });
-  }
   // The database checks ownership, seller confirmation, expiry, and ZAR amount.
   const { data: attempt, error } = await supabase.rpc("start_payfast_sandbox_attempt", { target_reservation_id: body.reservationId });
   if (error || !attempt) return NextResponse.json({ error: "This reservation cannot start a sandbox payment." }, { status: 409 });

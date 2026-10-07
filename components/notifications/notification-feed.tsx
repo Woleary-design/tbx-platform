@@ -62,7 +62,7 @@ export function NotificationFeed({ orderId, bell = false, refreshOrders = false 
       <div className="flex flex-wrap items-center gap-2"><h3 className="font-semibold">{item.title}</h3><span className="text-xs text-slate-400">{historical ? "Past update" : !item.read_at ? "New" : "Current update"}</span></div>
       {item.body ? <p className="mt-2 text-sm leading-6 text-slate-300">{historical ? "Recorded in your order history. Open the order for its current status." : item.body}</p> : null}
       <p className="mt-2 text-xs text-slate-400">{new Date(item.created_at).toLocaleString("en-ZA", { timeZone: "Africa/Johannesburg" })} SAST</p>
-      <div className="mt-3 flex gap-4">{!historical && item.entity_type === "purchase_reservation" && item.entity_id ? <Link href={`/orders/${item.entity_id}`} className="text-sm font-semibold text-yellow-300">Open order</Link> : null}{!item.read_at ? <button type="button" disabled={busy} onClick={() => void markRead([item.id])} className="text-xs text-slate-300 underline disabled:opacity-50">Mark read</button> : null}</div>
+      <div className="mt-3 flex gap-4">{!orderId && !historical && item.entity_type === "purchase_reservation" && item.entity_id ? <Link href={`/orders/${item.entity_id}`} className="text-sm font-semibold text-yellow-300">Open order</Link> : null}{!item.read_at ? <button type="button" disabled={busy} onClick={() => void markRead([item.id])} className="text-xs text-slate-300 underline disabled:opacity-50">Mark read</button> : null}</div>
     </article>;
   }
   return <section aria-label="Order notifications" className="rounded-2xl border border-white/10 bg-[#0b1220] p-5 text-white">

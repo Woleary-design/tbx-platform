@@ -62,13 +62,16 @@ export default async function OrderTimelinePage({ params }: Props) {
     : { data: null };
   const listing = Array.isArray(reservation.listings) ? reservation.listings[0] : reservation.listings;
   const buyerPaysDelivery = listing?.value_quote?.sellerFundsShipping === false;
-  let copy = buyerPaysDelivery && reservation.status === "awaiting_payment" && sandboxAttempt?.status !== "complete"
+  const { data: delivery } = sandboxEnabled ? await supabase.from("sandbox_deliveries").select("*").eq("reservation_id", orderId).maybeSingle() : { data: null };
+  const quoteReady = delivery?.method === 'locker' && delivery.quote_cents != null;
+  const paymentAvailable = !buyerPaysDelivery || quoteReady;
+  let copy = !paymentAvailable && reservation.status === "awaiting_payment" && sandboxAttempt?.status !== "complete"
     ? { title: "Delivery quote pending", body: isBuyer ? "The seller confirmed availability. Your total will include the item and delivery. Wait for the confirmed courier cost before paying." : "Availability confirmed. The buyer will pay delivery separately. Wait for verified payment before dispatch.", action: false }
     : orderGuidance(reservation.status, isBuyer ? "buyer" : "seller", sandboxEnabled ? "sandbox" : marketplaceReadiness.paymentsLive ? "live" : "disabled", sandboxAttempt?.status);
   const { data: ledger } = sandboxEnabled
     ? await supabase.from("sandbox_order_ledger").select("*").eq("reservation_id", orderId).maybeSingle()
     : { data: null };
-  const { data: delivery } = sandboxEnabled ? await supabase.from("sandbox_deliveries").select("*").eq("reservation_id", orderId).maybeSingle() : { data: null };
+
   if (ledger) {
     const stages: Record<string, { title: string; body: string; action: boolean }> = {
       pending: { title: "Test payment verified", body: "Delivery preparation is next. No real courier will be booked in this test.", action: false },
@@ -81,7 +84,7 @@ export default async function OrderTimelinePage({ params }: Props) {
     copy = stages[ledger.status] ?? copy;
   }
   if (delivery && ledger && ["pending","in_transit"].includes(ledger.status)) copy = { title: deliveryStage(delivery), body: delivery.status === "awaiting_collection" ? "The test parcel has arrived at the locker. Inspection starts only after collection." : delivery.status === "booked" ? "A simulated booking is prepared. Do not send a real parcel." : "Follow the delivery panel below for the next test step.", action: false };
-  const deadline = reservation.status === "awaiting_seller" ? reservation.seller_deadline : reservation.status === "awaiting_payment" && sandboxAttempt?.status !== "complete" ? reservation.payment_deadline : null;
+  const deadline = reservation.status === "awaiting_seller" ? reservation.seller_deadline : reservation.status === "awaiting_payment" && paymentAvailable && sandboxAttempt?.status !== "complete" ? reservation.payment_deadline : null;
 
   return (
     <div className="mx-auto max-w-4xl space-y-7">
@@ -96,7 +99,7 @@ export default async function OrderTimelinePage({ params }: Props) {
       </section>
 
       
-      {sandboxEnabled && (delivery || !ledger || ledger.status === "pending") ? <SandboxDeliveryPanel reservationId={orderId} delivery={delivery} ledger={ledger} viewer={isBuyer ? "buyer" : "seller"} canSelect={["awaiting_seller","awaiting_payment"].includes(reservation.status)} /> : null}
+      {sandboxEnabled && (delivery || !ledger || ledger.status === "pending") ? <SandboxDeliveryPanel reservationId={orderId} delivery={delivery} ledger={ledger} viewer={isBuyer ? "buyer" : "seller"} checkoutStarted={Boolean(sandboxAttempt)} canSelect={["awaiting_seller","awaiting_payment"].includes(reservation.status)} /> : null}
       {ledger ? <OrderMoney ledger={ledger} viewer={isBuyer ? "buyer" : "seller"} deliveryManaged={Boolean(delivery)} /> : null}
 
       <section className="grid gap-5 md:grid-cols-2">
@@ -109,7 +112,7 @@ export default async function OrderTimelinePage({ params }: Props) {
             <strong className="text-xl text-slate-950">{reservation.currency} {Number(reservation.amount).toLocaleString("en-ZA")}</strong>
           </div>
           {buyerPaysDelivery && isSeller ? <div className="mt-3 space-y-2 text-sm text-slate-600"><p className="flex justify-between"><span>TBX fee (10%)</span><strong>{reservation.currency} {(Number(reservation.amount) * 0.1).toFixed(2)}</strong></p><p className="flex justify-between text-slate-950"><span>You receive (estimated)</span><strong>{reservation.currency} {(Number(reservation.amount) * 0.9).toFixed(2)}</strong></p></div> : null}
-          {buyerPaysDelivery ? <p className="mt-3 text-sm text-slate-600">{isBuyer ? "Delivery: paid by you, quote pending. Total to pay will be shown before payment." : "Delivery is paid separately by the buyer. Your estimated payout is the item price less the 10% TBX fee."}</p> : null}
+          {buyerPaysDelivery ? <p className="mt-3 text-sm text-slate-600">{isBuyer ? quoteReady ? `Sample delivery: R${(delivery.quote_cents/100).toFixed(2)} · Total ${ledger ? "paid" : "to pay"}: R${(Number(reservation.amount)+delivery.quote_cents/100).toFixed(2)}` : "Delivery: paid by you, quote pending. Total to pay will be shown before payment." : "Delivery is paid separately by the buyer. Your estimated payout is the item price less the 10% TBX fee."}</p> : null}
         </div>
 
         <div className="rounded-[1.75rem] border border-[#eadfce] bg-white p-6 shadow-sm">
@@ -126,7 +129,7 @@ export default async function OrderTimelinePage({ params }: Props) {
         <SellerConfirmationActions reservationId={reservation.id} />
       ) : null}
 
-      {sandboxEnabled && !buyerPaysDelivery && isBuyer && !ledger && sandboxAttempt?.status !== "complete" && reservation.status === "awaiting_payment" ? (
+      {sandboxEnabled && paymentAvailable && isBuyer && !ledger && sandboxAttempt?.status !== "complete" && reservation.status === "awaiting_payment" ? (
         <PayfastSandboxPayment reservationId={reservation.id} status={sandboxAttempt?.status} />
       ) : null}
 
