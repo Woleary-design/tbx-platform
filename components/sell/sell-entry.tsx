@@ -8,7 +8,7 @@ import { QuickAddSetForm } from "@/components/collection/quick-add-set-form";
 type SellMode = "search" | null;
 
 
-export function SellEntry() {
+export function SellEntry({ collectiblesEnabled = false }: { collectiblesEnabled?: boolean }) {
   const [mode, setMode] = useState<SellMode>(null);
 
   if (mode === "search") {
@@ -28,12 +28,13 @@ export function SellEntry() {
         <div className="inline-flex items-center gap-2 rounded-full border border-[#ffd84d]/20 bg-[#ffd84d]/[0.07] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-[#ffd84d]">
           <Sparkles className="h-3.5 w-3.5" /> Sell in a few simple steps
         </div>
-        <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[0.98] tracking-[-0.055em] sm:text-6xl">What LEGO have you got?</h1>
+        <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[0.98] tracking-[-0.055em] sm:text-6xl">{collectiblesEnabled ? "What would you like to sell?" : "What LEGO have you got?"}</h1>
         <p className="mt-4 max-w-2xl text-base leading-7 text-white/52">
           Choose a set, sell loose LEGO by weight, or describe what you have. Photos are added later for buyers.
         </p>
       </div>
 
+      {collectiblesEnabled ? <div className="flex flex-wrap gap-3"><span className="rounded-xl bg-yellow-400 px-5 py-3 font-bold text-slate-950">LEGO</span><Link href="/sell/collectibles" className="rounded-xl border border-white/20 px-5 py-3 font-bold">Sell Pokémon or Hot Wheels →</Link></div> : null}
       <div className="grid gap-4 md:grid-cols-3">
         <button
           type="button"

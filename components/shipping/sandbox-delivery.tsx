@@ -13,6 +13,10 @@ export function SandboxDeliveryPanel({reservationId,delivery,ledger,viewer,canOp
  const sampleQuote=method==='locker'?sandboxLockerQuote(parcel):null;
  const active = !ledger || !['disputed','paid_test','refunded_test'].includes(ledger.status);
  async function act(action:string,details:Record<string,unknown>={}) {
+  if(action==='ready'&&(typeof details.origin!=='string'||details.origin.trim().length<3)) {
+   setError(method==='locker'?'Enter a sample drop-off locker (at least 3 characters), then click Ready to send.':'Enter a sample collection address (at least 3 characters), then click Ready to send.');
+   return;
+  }
   if(busy)return; setBusy(true);setError('');
   try { const response=await fetch('/api/shipping/sandbox',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reservationId,action,details})});
    const result=await response.json();if(!response.ok)throw new Error(result.error);window.dispatchEvent(new Event('tbx-notifications-read'));router.refresh();

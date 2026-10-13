@@ -14,7 +14,7 @@ export default function QuickSellPage() {
             <Settings2 className="h-4 w-4" /> Advanced listing
           </Link>
         </div>
-        <SellEntry />
+        <SellEntry collectiblesEnabled={process.env.VERCEL_ENV === "preview"} />
         <p className="mt-8 text-center text-xs text-white/30">Simple selling first. Collector tools remain available when you need them.</p>
       </main>
     </div>
