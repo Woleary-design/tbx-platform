@@ -24,6 +24,7 @@ export default async function ProductDetailPage({ params }: Props) {
   let category = listingCategory(null);
   let reservationId: string | null = null;
   let sellerPhotos: string[] = [];
+  let catalogueSource: string | null = null;
 
   if (!listing) {
     const supabase = await createClient();
@@ -72,6 +73,8 @@ export default async function ProductDetailPage({ params }: Props) {
         ? data.value_quote as Record<string, unknown>
         : {};
       category = listingCategory(quote.category);
+      const reference = quote.catalogueReference;
+      catalogueSource = reference && typeof reference === "object" && !Array.isArray(reference) && typeof (reference as Record<string,unknown>).source === "string" ? String((reference as Record<string,unknown>).source) : null;
       const collectibleDetails = category !== "LEGO" && quote.collectibleDetails && typeof quote.collectibleDetails === "object" && !Array.isArray(quote.collectibleDetails) ? Object.entries(quote.collectibleDetails).filter((entry): entry is [string, string] => typeof entry[1] === "string") : [];
       const methods = Array.isArray(quote.shippingMethods)
         ? quote.shippingMethods.filter((method): method is CourierCode => ["courier-guy", "pudo"].includes(String(method)))
@@ -154,6 +157,7 @@ export default async function ProductDetailPage({ params }: Props) {
             <p className="mt-5 text-xs font-semibold uppercase tracking-[0.18em] text-yellow-700">{category} {listing.setNumber}</p>
             <h1 className="mt-2 text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">{listing.title}</h1>
             <p className="mt-4 text-lg text-slate-600">{listing.condition}</p>
+            {catalogueSource === "collectdb" ? <p className="mt-3 text-xs text-slate-500">Catalogue information from <a href="https://github.com/topvault/collectdb" className="underline">collectdb</a>, under <a href="https://opendatacommons.org/licenses/odbl/1-0/" className="underline">ODbL</a>. <a href="/api/atlas/hot-wheels-pilot" className="underline">Download catalogue data</a>.</p> : catalogueSource === "TCGdex" ? <p className="mt-3 text-xs text-slate-500">Catalogue identity via TCGdex. Finish, condition and grading are seller declarations.</p> : null}
           </div>
 
           <SellerTrustCard seller={listing.seller} />

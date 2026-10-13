@@ -47,7 +47,7 @@ export default function SellFromCollectionPage() {
       const quote = previousListing?.value_quote || {};
       const category = listingCategory(quote.category);
       window.localStorage.setItem("tbx-listing-draft", JSON.stringify({
-        category, subcategory: quote.subcategory, collectibleDetails: quote.collectibleDetails,
+        category, catalogueReference: quote.catalogueReference, subcategory: quote.subcategory, collectibleDetails: quote.collectibleDetails,
         setNumber: asset.set_number, theme: category !== "LEGO" ? category : undefined,
         itemKind: category === "LEGO" ? "known-set" : "collectible",
         title: `${asset.set_number} · ${asset.set_name}`,

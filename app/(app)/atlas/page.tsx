@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { BookOpen, Layers3, Sparkles } from "lucide-react";
 import { AtlasLiveSearch } from "@/components/atlas/atlas-live-search";
 import { createClient } from "@/lib/supabase/server";
@@ -71,6 +72,7 @@ export default async function AtlasDirectoryPage({ searchParams }: AtlasDirector
           </div>
         </div>
       </section>
+      {process.env.VERCEL_ENV === "preview" ? <nav aria-label="Atlas categories" className="flex gap-3"><span className="rounded-xl bg-yellow-400 px-5 py-3 font-bold text-slate-950">LEGO</span><Link href="/atlas/collectibles" className="rounded-xl border border-white/20 px-5 py-3 font-bold text-white">Pokémon and Hot Wheels catalogues →</Link></nav> : null}
       <AtlasLiveSearch initialResults={initialResults} initialQuery={initialQuery} />
     </div>
   );

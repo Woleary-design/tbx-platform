@@ -19,6 +19,7 @@ import { listingCategory, collectibleError, type Category, type CollectibleDetai
 
 type ShippingMethod = "courier-guy" | "pudo";
 type ListingDraft = {
+  catalogueReference?: import("@/lib/atlas/collectible-catalogue").CatalogueMatch | null;
   category?: Category;
   subcategory?: string;
   collectibleDetails?: CollectibleDetails;
@@ -472,7 +473,7 @@ export default function AtlasSellPage({ collectiblesEnabled = false }: { collect
       if (!assetId) throw new Error("TBX could not create the item record.");
       await uploadPhotos(supabase, authData.user.id, assetId);
       const deliveryData = {
-        category, subcategory: draft.subcategory || null, collectibleDetails: collectible ? draft.collectibleDetails : null,
+        category, catalogueReference: draft.catalogueReference || null, subcategory: draft.subcategory || null, collectibleDetails: collectible ? draft.collectibleDetails : null,
         delivery: "TBX delivery",
         shippingMethods: draft.shippingMethods,
         shippingAllowance: shippingEstimate,
@@ -628,6 +629,7 @@ export default function AtlasSellPage({ collectiblesEnabled = false }: { collect
                   {draft.condition || "Condition not specified"}
                 </p>
               </div>
+              {collectible && draft.catalogueReference ? <p className="mt-4 text-sm text-emerald-200">Atlas catalogue: {draft.catalogueReference.name} · {draft.catalogueReference.series} · {draft.catalogueReference.identifier} · {draft.catalogueReference.variant || "Finish not specified"}</p> : null}
               <div className="mt-6 border-t border-white/[0.07] pt-6">
                 <div className="flex items-center gap-2">
                   <Tag className="h-5 w-5 text-emerald-300" />
