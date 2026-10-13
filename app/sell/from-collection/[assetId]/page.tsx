@@ -26,7 +26,7 @@ export default function SellFromCollectionPage() {
 
       const { data: asset, error: assetError } = await supabase
         .from("assets")
-        .select("id, set_number, set_name, condition, estimated_value, instructions_complete, minifigures_complete, sealed, notes")
+        .select("id, set_number, set_name, condition, estimated_value, instructions_complete, minifigures_complete, sealed, notes, theme, collectible_details, catalogue_reference")
         .eq("id", assetId)
         .eq("owner_id", userData.user.id)
         .maybeSingle();
@@ -44,7 +44,12 @@ export default function SellFromCollectionPage() {
           ].filter(Boolean).join(", ") || "Collection details recorded in TBX";
 
       const { data: previousListing } = await supabase.from("listings").select("value_quote, asking_price").eq("asset_id", asset.id).eq("seller_id", userData.user.id).order("created_at", {ascending:false}).limit(1).maybeSingle();
-      const quote = previousListing?.value_quote || {};
+      const quote = previousListing?.value_quote || (asset.theme === "Pokémon" || asset.theme === "Hot Wheels" ? {
+        category: asset.theme, catalogueReference: asset.catalogue_reference,
+        collectibleDetails: asset.collectible_details,
+        subcategory: asset.theme === "Pokémon" ? (asset.collectible_details?.Grade ? "Graded cards" : "Individual cards") : "Single cars",
+        condition: asset.collectible_details?.Condition,
+      } : {});
       const category = listingCategory(quote.category);
       window.localStorage.setItem("tbx-listing-draft", JSON.stringify({
         category, catalogueReference: quote.catalogueReference, subcategory: quote.subcategory, collectibleDetails: quote.collectibleDetails,

@@ -32,3 +32,9 @@ test('Hot Wheels pilot retains variants, provenance and ODbL export metadata', (
     assert.equal('price' in row,false);
   }
 });
+
+test('card edition flags are separate from actual foil finishes', () => {
+  const card=pokemonMatch({id:'base1-4',name:'Charizard',localId:'4',variants:{firstEdition:true,holo:true,normal:false,wPromo:true}});
+  assert.deepEqual(card.variants,['holo']);
+  assert.deepEqual(card.editions,['Standard printing','First edition','W stamp promo']);
+});

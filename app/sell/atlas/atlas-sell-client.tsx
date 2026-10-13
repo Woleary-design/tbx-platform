@@ -440,11 +440,12 @@ export default function AtlasSellPage({ collectiblesEnabled = false }: { collect
           sealed: loose
             ? false
             : normaliseCondition(draft.condition) === "New Sealed",
-          estimated_value: loose ? price : (draft.atlasRecommended ?? price),
+          estimated_value: collectible ? null : loose ? price : (draft.atlasRecommended ?? price),
           passport_status: "Draft",
           is_public: true,
           lifecycle_status: "listed",
           notes: draft.description || draft.included || null,
+          ...(collectible ? {collectible_details:draft.collectibleDetails || null,catalogue_reference:draft.catalogueReference || null}:{}),
         };
         const { data: asset, error: assetError } = await supabase
           .from("assets")
@@ -461,9 +462,10 @@ export default function AtlasSellPage({ collectiblesEnabled = false }: { collect
           .from("assets")
           .update({
             condition: normaliseCondition(draft.condition),
-            estimated_value: loose ? price : (draft.atlasRecommended ?? price),
+            estimated_value: collectible ? null : loose ? price : (draft.atlasRecommended ?? price),
             is_public: true,
             lifecycle_status: "listed",
+            ...(collectible ? {collectible_details:draft.collectibleDetails || null,catalogue_reference:draft.catalogueReference || null}:{}),
           })
           .eq("id", assetId)
           .eq("owner_id", authData.user.id);

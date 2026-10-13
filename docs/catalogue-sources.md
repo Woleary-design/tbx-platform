@@ -28,3 +28,7 @@ Attribution and the downloadable derivative are shown alongside search and sourc
 ## Storage and verification
 
 No database schema or permission changes are required. Catalogue selections use the existing asset/listing lifecycle and save their provenance inside listing metadata. Unit tests cover printing identity, malformed records, finish filtering and source/variant retention. Runtime API checks cover live Pokémon search/detail and static Hot Wheels search/export. A complete signed-in listing publication test remains separate.
+
+## Pokémon browsing and personal library
+
+English set directory, filterable set cards, and exact card pages are available in preview. Set/card responses are cached for one day. Card pages support authenticated collection intake (finish, condition, optional grading) and a private wishlist. `assets.collectible_details` and `assets.catalogue_reference` retain identity independently of listings. Existing collection and sell-from-collection routes preserve it; collectible asking prices are not stored as valuations. Wishlist alerts are not yet connected for Pokémon. Reference images and market valuations remain excluded pending image permission review and reliable pricing evidence.

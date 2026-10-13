@@ -10,6 +10,7 @@ type Asset = {
   set_name: string;
   theme: string | null;
   condition: string;
+  collectible_details?: Record<string,string> | null;
   estimated_value: number | null;
   purchase_price: number | null;
   passport_status: string;
@@ -26,6 +27,7 @@ function money(value: number | null) {
 }
 
 function collectionHealth(asset: Asset) {
+  if(asset.theme === "Pokémon" || asset.theme === "Hot Wheels") return 0;
   const checks = [asset.original_receipt, asset.instructions_complete, asset.minifigures_complete, asset.original_owner, asset.sealed || asset.condition !== "New Sealed"];
   return Math.round((checks.filter(Boolean).length / checks.length) * 100);
 }
@@ -41,7 +43,7 @@ export default async function CollectionPage() {
   const { data } = userData.user
     ? await supabase
         .from("assets")
-        .select("id, asset_id, set_number, set_name, theme, condition, estimated_value, purchase_price, passport_status, original_receipt, instructions_complete, minifigures_complete, original_owner, sealed, lego_sets(image_url)")
+        .select("id, asset_id, set_number, set_name, theme, condition, estimated_value, purchase_price, passport_status, collectible_details, original_receipt, instructions_complete, minifigures_complete, original_owner, sealed, lego_sets(image_url)")
         .eq("owner_id", userData.user.id)
         .order("created_at", { ascending: false })
     : { data: [] };
@@ -59,7 +61,7 @@ export default async function CollectionPage() {
           <div className="p-7 text-white md:p-10">
             <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm font-medium text-yellow-300"><LibraryBig className="h-4 w-4" /> My Collection</p>
             <h1 className="mt-6 max-w-3xl text-4xl font-semibold leading-tight md:text-6xl">Build your collection. Track its value. Sell with confidence.</h1>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-white/70">Every set has one clear home for its condition, value and sale status.</p>
+            <p className="mt-5 max-w-2xl text-base leading-7 text-white/70">Every item has one clear home for its condition, value and sale status.</p>
             <Button asChild className="mt-8 h-12 rounded-xl bg-yellow-400 px-6 font-semibold text-slate-950 hover:bg-yellow-300"><Link href="/collection/add"><CirclePlus className="h-4 w-4" /> Add to Collection</Link></Button>
           </div>
 
@@ -99,10 +101,10 @@ export default async function CollectionPage() {
       </section>
 
       {assets.length === 0 ? (
-        <section className="rounded-[2rem] border border-dashed border-[#d9c9af] bg-white p-10 text-center"><CirclePlus className="mx-auto h-8 w-8 text-yellow-600" /><h2 className="mt-4 text-3xl font-semibold">Add your first LEGO set.</h2><p className="mt-3 text-slate-600">Search Atlas or enter the set details you know.</p><Button asChild className="mt-6 rounded-xl bg-slate-950 text-white"><Link href="/collection/add">Add to Collection <ArrowRight className="h-4 w-4" /></Link></Button></section>
+        <section className="rounded-[2rem] border border-dashed border-[#d9c9af] bg-white p-10 text-center"><CirclePlus className="mx-auto h-8 w-8 text-yellow-600" /><h2 className="mt-4 text-3xl font-semibold">Add your first collectible.</h2><p className="mt-3 text-slate-600">Search Atlas or enter the set details you know.</p><Button asChild className="mt-6 rounded-xl bg-slate-950 text-white"><Link href="/collection/add">Add to Collection <ArrowRight className="h-4 w-4" /></Link></Button></section>
       ) : (
         <section>
-          <div className="flex items-end justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Live Collection</p><h2 className="mt-2 text-3xl font-semibold text-slate-950">Your LEGO sets</h2></div><Button asChild variant="outline" className="rounded-xl"><Link href="/collection/add">Add another set</Link></Button></div>
+          <div className="flex items-end justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-600">Live Collection</p><h2 className="mt-2 text-3xl font-semibold text-slate-950">Your collection</h2></div><Button asChild variant="outline" className="rounded-xl"><Link href="/collection/add">Add another set</Link></Button></div>
           <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {assets.map((asset) => {
               const health = collectionHealth(asset);
@@ -110,12 +112,12 @@ export default async function CollectionPage() {
               return (
                 <Link key={asset.id} href={`/collection/${asset.id}`} className="group overflow-hidden rounded-[1.75rem] border border-[#eadfce] bg-white shadow-[0_24px_80px_rgba(43,30,18,0.08)] transition hover:-translate-y-1 hover:shadow-[0_30px_90px_rgba(43,30,18,0.14)]">
                   <div className="relative grid h-52 grid-cols-[1fr_42%] overflow-hidden bg-slate-950 text-white">
-                    <div className="p-5"><p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-300">LEGO {asset.set_number}</p><h3 className="mt-5 text-2xl font-semibold">{asset.set_name}</h3><p className="mt-1 text-sm text-white/60">{asset.theme || "Uncategorised"}</p><span className="absolute bottom-5 left-5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white">{health}% health</span></div>
+                    <div className="p-5"><p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-300">{asset.theme === "Pokémon" || asset.theme === "Hot Wheels" ? asset.theme : "LEGO"} {asset.set_number}</p><h3 className="mt-5 text-2xl font-semibold">{asset.set_name}</h3><p className="mt-1 text-sm text-white/60">{asset.theme || "Uncategorised"}</p><span className="absolute bottom-5 left-5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white">{asset.theme === "Pokémon" || asset.theme === "Hot Wheels" ? "Collectible" : `${health}% health`}</span></div>
                     <div className="relative flex items-center justify-center bg-gradient-to-br from-white/[0.08] to-transparent p-4">
                       {image ? <img src={image} alt={asset.set_name} className="max-h-40 w-full object-contain drop-shadow-2xl transition duration-300 group-hover:scale-105" /> : <PackageCheck className="h-9 w-9 text-white/20" />}
                     </div>
                   </div>
-                  <div className="p-5"><div className="flex items-center justify-between gap-4"><div><p className="text-sm text-slate-500">Estimated value</p><p className="mt-1 text-2xl font-semibold text-slate-950">{money(asset.estimated_value)}</p></div><span className="rounded-full bg-[#fffaf1] px-3 py-1 text-xs font-semibold text-slate-600">{asset.condition}</span></div><div className="mt-5 h-2 overflow-hidden rounded-full bg-[#fffaf1]"><div className="h-full rounded-full bg-yellow-400" style={{ width: `${health}%` }} /></div><div className="mt-5 grid grid-cols-3 gap-2 text-center text-xs text-slate-600"><div className="rounded-xl bg-slate-50 p-3"><BadgeCheck className="mx-auto mb-1 h-4 w-4 text-yellow-500" /> Owner</div><div className="rounded-xl bg-slate-50 p-3"><BookOpen className="mx-auto mb-1 h-4 w-4 text-yellow-500" /> Details</div><div className="rounded-xl bg-slate-50 p-3"><PackageCheck className="mx-auto mb-1 h-4 w-4 text-yellow-500" /> Condition</div></div><p className="mt-4 flex items-center justify-between text-xs text-slate-400"><span>{asset.asset_id}</span><span className="font-semibold text-slate-700 group-hover:text-yellow-700">View item →</span></p></div>
+                  <div className="p-5"><div className="flex items-center justify-between gap-4"><div><p className="text-sm text-slate-500">Estimated value</p><p className="mt-1 text-2xl font-semibold text-slate-950">{asset.estimated_value == null ? "Not valued" : money(asset.estimated_value)}</p></div><span className="rounded-full bg-[#fffaf1] px-3 py-1 text-xs font-semibold text-slate-600">{asset.collectible_details?.Condition || asset.condition}</span></div><div className="mt-5 h-2 overflow-hidden rounded-full bg-[#fffaf1]"><div className="h-full rounded-full bg-yellow-400" style={{ width: `${health}%` }} /></div><div className="mt-5 grid grid-cols-3 gap-2 text-center text-xs text-slate-600"><div className="rounded-xl bg-slate-50 p-3"><BadgeCheck className="mx-auto mb-1 h-4 w-4 text-yellow-500" /> Owner</div><div className="rounded-xl bg-slate-50 p-3"><BookOpen className="mx-auto mb-1 h-4 w-4 text-yellow-500" /> Details</div><div className="rounded-xl bg-slate-50 p-3"><PackageCheck className="mx-auto mb-1 h-4 w-4 text-yellow-500" /> Condition</div></div><p className="mt-4 flex items-center justify-between text-xs text-slate-400"><span>{asset.asset_id}</span><span className="font-semibold text-slate-700 group-hover:text-yellow-700">View item →</span></p></div>
                 </Link>
               );
             })}
