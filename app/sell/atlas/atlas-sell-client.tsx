@@ -249,6 +249,32 @@ export default function AtlasSellPage({ collectiblesEnabled = false }: { collect
     draft.condition,
     draft.price,
   ]);
+  const pricingSetNumber = draft.setNumber || draft.title?.match(/^\s*(\d{3,8}(?:-\d+)?)\s*[·:–-]/)?.[1];
+  useEffect(() => {
+    if (!ready || !pricingSetNumber || draft.itemKind === "minifigure" || isLooseDraft(draft) || listingCategory(draft.category) !== "LEGO") return;
+    const controller = new AbortController();
+    setPricingLoading(true);
+    setDraft(current => ({ ...current, atlasLow: null, atlasHigh: null, atlasRecommended: null, atlasEvidenceCount: null }));
+    void (async () => {
+      try {
+        const response = await fetch(`/api/value/${encodeURIComponent(pricingSetNumber)}?condition=${encodeURIComponent(normaliseCondition(draft.condition))}`, { signal: controller.signal });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (controller.signal.aborted) return;
+        const external = data.externalMarket?.status === "available" ? data.externalMarket : null;
+        const low = external?.adjustedLow ?? data.market?.lowestAsking ?? data.quote?.quick_sale ?? null;
+        const middle = external?.adjustedRecommended ?? data.quote?.recommended ?? data.quote?.estimated_value ?? null;
+        const high = external?.adjustedHigh ?? data.market?.highestAsking ?? data.quote?.premium ?? null;
+        setAtlasPrice(middle);
+        setDraft(current => ({ ...current, atlasLow: low, atlasRecommended: middle, atlasHigh: high, atlasEvidenceCount: (external?.listings?.length ?? 0) + (data.market?.activeListingCount ?? 0), price: current.price || (middle ? String(Math.round(middle)) : "") }));
+      } catch {
+        // Keep the seller's own price available if references cannot be loaded.
+      } finally {
+        if (!controller.signal.aborted) setPricingLoading(false);
+      }
+    })();
+    return () => controller.abort();
+  }, [ready, pricingSetNumber, draft.condition, draft.itemKind, draft.category]);
   const loose = isLooseDraft(draft);
   const category = listingCategory(draft.category);
   const collectible = category !== "LEGO";
@@ -654,6 +680,16 @@ export default function AtlasSellPage({ collectiblesEnabled = false }: { collect
                       . We started your listing at the R200/kg midpoint:{" "}
                       {money(bulkMid)}.
                     </p>
+                  </div>
+                ) : null}
+                {!pricingLoading && (draft.atlasLow != null || draft.atlasRecommended != null || draft.atlasHigh != null) ? (
+                  <div className="mt-5 rounded-2xl border border-emerald-400/15 bg-emerald-400/[0.04] p-4">
+                    <div className="grid grid-cols-3 gap-3">
+                      {([["Low", draft.atlasLow], ["Middle", draft.atlasRecommended], ["High", draft.atlasHigh]] as const).map(([label, value]) => (
+                        <div key={label}><p className="text-xs text-white/50">{label}</p><p className={`mt-2 text-lg font-black sm:text-2xl ${label === "Middle" ? "text-emerald-300" : "text-white"}`}>{value == null ? "—" : money(value)}</p></div>
+                      ))}
+                    </div>
+                    <p className="mt-4 text-xs leading-5 text-white/45">{draft.atlasEvidenceCount ? `${draft.atlasEvidenceCount} price reference ${draft.atlasEvidenceCount === 1 ? "point" : "points"}. ` : ""}Price guide for the selected condition; sale prices may vary.</p>
                   </div>
                 ) : null}
                 <label className="mt-5 block">
