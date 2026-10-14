@@ -44,6 +44,7 @@ export type ValueQuote = {
 };
 
 export type MarketSnapshotData = {
+  history?: import("./price-history").PriceHistory;
   identity?: CatalogueIdentity;
   quote: ValueQuote;
   market: {
