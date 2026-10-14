@@ -3,7 +3,7 @@ import { BuyLegoBrowser } from "@/components/marketplace/buy-lego-browser";
 import { createClient } from "@/lib/supabase/server";
 import { marketplaceReadiness } from "@/lib/marketplace/readiness";
 
-type MarketplacePageProps = { searchParams?: Promise<{ set?: string; published?: string }> };
+type MarketplacePageProps = { searchParams?: Promise<{ set?: string; category?: string; published?: string }> };
 
 export default async function MarketplacePage({ searchParams }: MarketplacePageProps) {
   const params = searchParams ? await searchParams : undefined;
@@ -66,6 +66,7 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
     <BuyLegoBrowser
       listings={databaseListings}
       initialQuery={params?.set?.trim() ?? ""}
+      initialCategory={params?.category === "LEGO" ? "LEGO" : "All"}
       publishedId={params?.published}
       paymentsLive={marketplaceReadiness.paymentsLive}
       collectiblesEnabled={process.env.VERCEL_ENV === "preview"}

@@ -22,8 +22,8 @@ type Listing = {
   sellerVerified: boolean;
 };
 
-export function BuyLegoBrowser({ listings, initialQuery = "", publishedId, paymentsLive = false, collectiblesEnabled = false }: { listings: Listing[]; initialQuery?: string; publishedId?: string; paymentsLive?: boolean; collectiblesEnabled?: boolean }) {
-  const [category, setCategory] = useState<Category | "All">("All");
+export function BuyLegoBrowser({ listings, initialQuery = "", initialCategory = "All", publishedId, paymentsLive = false, collectiblesEnabled = false }: { listings: Listing[]; initialQuery?: string; initialCategory?: Category | "All"; publishedId?: string; paymentsLive?: boolean; collectiblesEnabled?: boolean }) {
+  const [category, setCategory] = useState<Category | "All">(initialCategory);
   const [subcategory, setSubcategory] = useState("All");
   const [query, setQuery] = useState(initialQuery);
   const filtered = useMemo(() => {
