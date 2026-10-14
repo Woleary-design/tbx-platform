@@ -12,8 +12,8 @@ export async function POST(request: Request) {
   if(body.action==='wishlist'&&!body.wanted){const {error}=await supabase.from('collectible_wishlist').delete().eq('collector_id',auth.user.id).eq('category','Pokémon').eq('catalogue_id',body.id);return error?NextResponse.json({error:'Could not update wishlist.'},{status:500}):NextResponse.json({wishlisted:false});}
   try {
     const card=await pokemonCard(body.id);if(!card)return NextResponse.json({error:'Card not found.'},{status:404});
-    const {setId,rarity,illustrator,hp,types,...reference}=card;
-    void setId;void rarity;void illustrator;void hp;void types;
+    const {setId,rarity,illustrator,hp,types,priceReferences,...reference}=card;
+    void priceReferences;void setId;void rarity;void illustrator;void hp;void types;
     if(body.action==='wishlist') {
       const {error}=await supabase.from('collectible_wishlist').upsert({collector_id:auth.user.id,category:'Pokémon',catalogue_id:card.id,catalogue_reference:reference},{onConflict:'collector_id,category,catalogue_id'});
       return error?NextResponse.json({error:'Could not save wishlist.'},{status:500}):NextResponse.json({wishlisted:true});

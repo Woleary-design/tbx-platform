@@ -1,3 +1,4 @@
+import {pokemonImage,pokemonReferences,parseUsdZar} from './reference-media';
 import { pokemonMatch } from './collectible-catalogue';
 export type PokemonSet = { id: string; name: string; count: number; releaseDate?: string; series?: string };
 export function catalogueId(value: unknown): value is string {
@@ -26,9 +27,13 @@ export async function pokemonCard(id: string) {
   if (!match) return null;
   const card = data as Record<string,unknown>;
   const set = card.set as {id?:string} | undefined;
-  return { ...match, setId: catalogueId(set?.id) ? set.id : undefined,
+  return { ...match, imageUrl:pokemonImage(card.image,'high'),priceReferences:pokemonReferences(card), setId: catalogueId(set?.id) ? set.id : undefined,
     rarity: typeof card.rarity === 'string' ? card.rarity : 'Not recorded',
     illustrator: typeof card.illustrator === 'string' ? card.illustrator : 'Not recorded',
     hp: typeof card.hp === 'number' ? String(card.hp) : '—',
     types: Array.isArray(card.types) ? card.types.filter((v): v is string=>typeof v==='string') : [] };
+}
+
+export async function usdZarRate() {
+  try {const response=await fetch('https://api.frankfurter.dev/v2/rate/usd/zar',{next:{revalidate:86400},signal:AbortSignal.timeout(8000)});return response.ok?parseUsdZar(await response.json()):null;}catch{return null;}
 }

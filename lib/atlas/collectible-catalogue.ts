@@ -1,6 +1,7 @@
+import {pokemonImage} from './reference-media.ts';
 export type CatalogueMatch = {
   id: string; name: string; identifier: string; series: string; language: string;
-  year?: string; variant?: string; variants?: string[]; editions?: string[];
+  imageUrl?: string | null; year?: string; variant?: string; variants?: string[]; editions?: string[];
   source: 'TCGdex' | 'collectdb'; sourceUrl: string; license: string;
 };
 export function pokemonMatch(value: unknown): CatalogueMatch | null {
@@ -17,7 +18,7 @@ export function pokemonMatch(value: unknown): CatalogueMatch | null {
     return [[variant.type, variant.foil, variant.size].filter(value => typeof value === 'string').join(' · ')];
   }) : [];
   return {
-    id: card.id, name: card.name.slice(0,120), identifier: card.localId + (typeof count.official === 'number' ? `/${count.official}` : ''),
+    imageUrl:pokemonImage(card.image), id: card.id, name: card.name.slice(0,120), identifier: card.localId + (typeof count.official === 'number' ? `/${count.official}` : ''),
     series: typeof set.name === 'string' ? set.name : card.id.slice(0,card.id.lastIndexOf('-')),
     language: 'English', editions: ["Standard printing", ...(variants.firstEdition === true ? ["First edition"] : []), ...(variants.wPromo === true ? ["W stamp promo"] : [])],
     variants: detailed.length ? [...new Set(detailed)] : Object.entries(variants).filter(([name,available]) => available === true && !["firstEdition","wPromo"].includes(name)).map(([name]) => name),
