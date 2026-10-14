@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import pilot from '@/lib/atlas/hot-wheels-pilot.json';
+import { browseHotWheels, hotWheelsCar } from '@/lib/atlas/hot-wheels';
 import { pokemonMatch } from '@/lib/atlas/collectible-catalogue';
 
 export async function GET(request: NextRequest) {
@@ -10,8 +10,8 @@ export async function GET(request: NextRequest) {
   const id = params.get('id');
   if (!['pokemon','hot-wheels'].includes(category || '') || (id ? !/^[a-zA-Z0-9][a-zA-Z0-9.-]{0,79}$/.test(id) : query.length < 2 || query.length > 80)) return NextResponse.json({error:'Enter at least two characters, up to 80.'},{status:400});
   if (category === 'hot-wheels') {
-    const terms = query.toLowerCase().split(/\s+/);
-    return NextResponse.json({source:'collectdb',scope:pilot.scope,notice:pilot.notice,results:pilot.records.filter(record => id ? record.id === id : terms.every(term => [record.name,record.identifier,record.series,record.variant,record.year].join(' ').toLowerCase().includes(term))).slice(0,20)});
+    const result = id ? hotWheelsCar(id) : null;
+    return NextResponse.json(id ? {source:'collectdb',results:result?[result]:[]} : {source:'collectdb',...browseHotWheels({q:query})});
   }
   try {
     const exactId = id || (/^[a-zA-Z0-9.]+-[a-zA-Z]*[0-9][a-zA-Z0-9]*$/.test(query) ? query : null);

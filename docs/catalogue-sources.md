@@ -32,3 +32,11 @@ No database schema or permission changes are required. Catalogue selections use 
 ## Pokémon browsing and personal library
 
 English set directory, filterable set cards, and exact card pages are available in preview. Set/card responses are cached for one day. Card pages support authenticated collection intake (finish, condition, optional grading) and a private wishlist. `assets.collectible_details` and `assets.catalogue_reference` retain identity independently of listings. Existing collection and sell-from-collection routes preserve it; collectible asking prices are not stored as valuations. Wishlist alerts are not yet connected for Pokémon. Reference images and market valuations remain excluded pending image permission review and reliable pricing evidence.
+
+## Hot Wheels 2024–2026 expansion
+
+`lib/atlas/hot-wheels-catalogue.json` replaces the pilot for lookup and browsing. It contains 3,679 unique edition/variant identities from collectdb revision `27d8f2f9f58f32d251cb3dc3251aed2e78d14a4a`, with 2024–2026 series appearances. Source references resolve to canonical IDs; variant relationships inherit missing casting metadata without merging distinct identities. Packaged products are excluded. Import fails on unresolved references or conflicting IDs. No image, valuation or private user data is included.
+
+Reproduce with Python + PyYAML: `python scripts/import-hot-wheels.py /path/to/collectdb`. Use the pinned source revision to reproduce this exact export; review a later revision's diff and audit before updating. Partial upstream coverage and missing toy numbers remain explicit. Browse by year/series and search by model/toy number; pagination returns 24 unique records. Public preview export: `/api/atlas/hot-wheels?download=1`. Attribution appears on browse, item and seller-search pages and marketplace listings.
+
+Car pages save private collection copies and category-scoped wishlist entries through existing owner RLS; no schema change is required. Collection copies preserve car/packaging condition and exact catalogue identity for selling. No catalogue artwork or price claims are added.

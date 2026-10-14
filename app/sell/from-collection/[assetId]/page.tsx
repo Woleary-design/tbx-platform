@@ -47,7 +47,7 @@ export default function SellFromCollectionPage() {
       const quote = previousListing?.value_quote || (asset.theme === "Pokémon" || asset.theme === "Hot Wheels" ? {
         category: asset.theme, catalogueReference: asset.catalogue_reference,
         collectibleDetails: asset.collectible_details,
-        subcategory: asset.theme === "Pokémon" ? (asset.collectible_details?.Grade ? "Graded cards" : "Individual cards") : "Single cars",
+        subcategory: asset.theme === "Pokémon" ? (asset.collectible_details?.Grade ? "Graded cards" : "Individual cards") : (asset.catalogue_reference?.variant?.includes("Treasure Hunt") ? "Treasure Hunts" : "Single cars"),
         condition: asset.collectible_details?.Condition,
       } : {});
       const category = listingCategory(quote.category);
