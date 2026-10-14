@@ -5,8 +5,8 @@ import {catalogueFields} from '../lib/atlas/collectible-catalogue.ts';
 import pilot from '../lib/atlas/hot-wheels-pilot.json' with {type:'json'};
 import {collectibleError} from '../lib/marketplace/categories.ts';
 test('expanded catalogue preserves pilot identities and exact toy-number variants',()=>{
-  assert.equal(hotWheelsCatalogue.records.length,3679);
-  assert.equal(new Set(hotWheelsCatalogue.records.map(r=>r.id)).size,3679);
+  assert.equal(hotWheelsCatalogue.records.length,30663);
+  assert.equal(new Set(hotWheelsCatalogue.records.map(r=>r.id)).size,30663);
   for(const old of pilot.records){const car=hotWheelsCar(old.id);assert.ok(car);assert.equal(car.identifier,old.identifier);assert.equal(car.variant,old.variant);assert.ok(car.memberships.some(m=>m.series===old.series));}
   assert.deepEqual(hotWheelsCatalogue.audit.unresolvedIds,[]);
   assert.deepEqual(hotWheelsCatalogue.audit.conflictingIds,[]);
@@ -35,3 +35,10 @@ test('car collection details satisfy the existing seller requirements',()=>{
   assert.ok(hotWheelsCopyError({packaging:'fake',condition:'Good'}));
   assert.ok(hotWheelsCopyError({packaging:'Sealed',condition:'Good'}));
 });
+
+ test('historic catalogue covers all source years without inventing unknown years',()=>{
+  const earliest=browseHotWheels({year:'1968'});assert.ok(earliest.total>0);assert.equal(earliest.years.filter(y=>y!=='unknown').length,59);
+  const historical=hotWheelsCatalogue.records.filter(r=>r.memberships.some(m=>m.year==='1968'));assert.ok(historical.some(r=>r.name.includes('Camaro')));
+  const unknown=browseHotWheels({year:'unknown'});assert.equal(unknown.total,1);assert.equal(unknown.results[0].identifier,'Not recorded');
+  assert.equal(earliest.years.at(-1),'unknown');
+ });

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Normalize collectdb's 2024–2026 car identities. Requires Python + PyYAML.
+"""Normalize collectdb's available car identities. Requires Python + PyYAML.
 Usage: python scripts/import-hot-wheels.py /path/to/collectdb
 The input must be a git checkout; provenance is pinned to its HEAD.
 """
-import json, pathlib, subprocess, sys, collections
+import json, pathlib, subprocess, sys, collections, gzip, base64
 import yaml
 root = pathlib.Path(sys.argv[1]).resolve()
 revision = subprocess.check_output(['git','-C',str(root),'rev-parse','HEAD'],text=True).strip()
@@ -50,7 +50,7 @@ def resolve(identity, seen=None):
 
 selected = collections.defaultdict(list)
 for identity,year,series,source in memberships:
-    if year in ['2024','2025','2026']: selected[identity].append({'year':year,'series':series,'sourceUrl':source})
+    selected[identity].append({'year':year,'series':series,'sourceUrl':source})
 records = []; skipped_packages = 0
 for identity, member in sorted(selected.items()):
     item = resolve(identity)
@@ -74,10 +74,14 @@ for identity, member in sorted(selected.items()):
 records.sort(key=lambda r:(r['name'].lower(),r['year'],r['variant'],r['id']))
 result = {'source':'collectdb','license':'ODbL-1.0','licenseUrl':'https://opendatacommons.org/licenses/odbl/1-0/',
  'notice':'Contains information from collectdb, which is made available under the Open Database License (ODbL).',
- 'scope':'2024–2026 Hot Wheels car catalogue; partial source coverage; no images or valuations',
+ 'scope':'1968–2026 Hot Wheels car catalogue; partial source coverage; no images or valuations',
  'sourceRevision':revision,'audit':{'records':len(records),'unresolvedIds':sorted(set(missing)),
- 'conflictingIds':sorted(set(conflicts)), 'skippedPackagedItems':skipped_packages},'records':records}
+ 'conflictingIds':sorted(set(conflicts)), 'skippedPackagedItems':skipped_packages,
+ 'missingToyNumbers':sum(r['identifier']=='Not recorded' for r in records),
+ 'missingVariantLabels':sum(r['variant']=='Not recorded' for r in records),
+ 'unknownYearEntries':sum(r['year']=='unknown' for r in records)},'records':records}
 if conflicts or missing: raise ValueError(json.dumps(result['audit']))
 out = pathlib.Path(__file__).resolve().parents[1] / 'lib/atlas/hot-wheels-catalogue.json'
-out.write_text(json.dumps(result,ensure_ascii=False,separators=(',',':'))+'\n')
+packed = gzip.compress(json.dumps(result,ensure_ascii=False,separators=(',',':')).encode(),mtime=0)
+out.write_text(json.dumps({'encoding':'gzip-base64','data':base64.b64encode(packed).decode()},separators=(',',':'))+'\n')
 print(json.dumps(result['audit']))
