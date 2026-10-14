@@ -137,6 +137,8 @@ export default function AtlasSellPage({ collectiblesEnabled = false }: { collect
   const [checkingPhotos, setCheckingPhotos] = useState(false);
   const [atlasPrice, setAtlasPrice] = useState<number | null>(null);
   const [pricingLoading, setPricingLoading] = useState(false);
+  const [pricingError, setPricingError] = useState(false);
+  const [pricingRetry, setPricingRetry] = useState(0);
   const [pricingChecked, setPricingChecked] = useState(false);
   const [ready, setReady] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
@@ -255,11 +257,12 @@ export default function AtlasSellPage({ collectiblesEnabled = false }: { collect
     if (!ready || !pricingSetNumber || draft.itemKind === "minifigure" || isLoosePricingDraft || listingCategory(draft.category) !== "LEGO") return;
     const controller = new AbortController();
     setPricingLoading(true);
+    setPricingError(false);
     setDraft(current => ({ ...current, atlasLow: null, atlasHigh: null, atlasRecommended: null, atlasEvidenceCount: null }));
     void (async () => {
       try {
-        const response = await fetch(`/api/value/${encodeURIComponent(pricingSetNumber)}?condition=${encodeURIComponent(normaliseCondition(draft.condition))}`, { signal: controller.signal });
-        if (!response.ok) return;
+        const response = await fetch(`/api/value/${encodeURIComponent(pricingSetNumber)}?condition=${encodeURIComponent(normaliseCondition(draft.condition))}`, { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(20000)]) });
+        if (!response.ok) throw new Error("Pricing unavailable");
         const data = await response.json();
         if (controller.signal.aborted) return;
         const external = data.externalMarket?.status === "available" ? data.externalMarket : null;
@@ -269,13 +272,13 @@ export default function AtlasSellPage({ collectiblesEnabled = false }: { collect
         setAtlasPrice(middle);
         setDraft(current => ({ ...current, atlasLow: low, atlasRecommended: middle, atlasHigh: high, atlasEvidenceCount: (external?.listings?.length ?? 0) + (data.market?.activeListingCount ?? 0), price: current.price || (middle ? String(Math.round(middle)) : "") }));
       } catch {
-        // Keep the seller's own price available if references cannot be loaded.
+        if (!controller.signal.aborted) setPricingError(true);
       } finally {
         if (!controller.signal.aborted) setPricingLoading(false);
       }
     })();
     return () => controller.abort();
-  }, [ready, pricingSetNumber, isLoosePricingDraft, draft.condition, draft.itemKind, draft.category]);
+  }, [ready, pricingRetry, pricingSetNumber, isLoosePricingDraft, draft.condition, draft.itemKind, draft.category]);
   const loose = isLooseDraft(draft);
   const category = listingCategory(draft.category);
   const collectible = category !== "LEGO";
@@ -683,16 +686,6 @@ export default function AtlasSellPage({ collectiblesEnabled = false }: { collect
                     </p>
                   </div>
                 ) : null}
-                {!pricingLoading && (draft.atlasLow != null || draft.atlasRecommended != null || draft.atlasHigh != null) ? (
-                  <div className="mt-5 rounded-2xl border border-emerald-400/15 bg-emerald-400/[0.04] p-4">
-                    <div className="grid grid-cols-3 gap-3">
-                      {([["Low", draft.atlasLow], ["Middle", draft.atlasRecommended], ["High", draft.atlasHigh]] as const).map(([label, value]) => (
-                        <div key={label}><p className="text-xs text-white/50">{label}</p><p className={`mt-2 text-lg font-black sm:text-2xl ${label === "Middle" ? "text-emerald-300" : "text-white"}`}>{value == null ? "—" : money(value)}</p></div>
-                      ))}
-                    </div>
-                    <p className="mt-4 text-xs leading-5 text-white/45">{draft.atlasEvidenceCount ? `${draft.atlasEvidenceCount} price reference ${draft.atlasEvidenceCount === 1 ? "point" : "points"}. ` : ""}Price guide for the selected condition; sale prices may vary.</p>
-                  </div>
-                ) : null}
                 <label className="mt-5 block">
                   <span className="text-sm font-bold text-white/65">
                     Price the buyer pays
@@ -773,6 +766,16 @@ export default function AtlasSellPage({ collectiblesEnabled = false }: { collect
                     Choose a fair delivered price that works for you.
                   </p>
                 )}
+                {pricingSetNumber || draft.atlasLow != null || draft.atlasRecommended != null || draft.atlasHigh != null ? (
+                  <div className="mt-5 rounded-2xl border border-emerald-400/15 bg-emerald-400/[0.04] p-4">
+                    <div className="grid grid-cols-3 gap-3">
+                      {([["Low", draft.atlasLow], ["Middle", draft.atlasRecommended], ["High", draft.atlasHigh]] as const).map(([label, value]) => (
+                        <div key={label}><p className="text-xs text-white/50">{label}</p><p className={`mt-2 text-lg font-black sm:text-2xl ${label === "Middle" ? "text-emerald-300" : "text-white"}`}>{pricingLoading ? "…" : value == null ? "—" : money(value)}</p></div>
+                      ))}
+                    </div>
+                    {pricingError ? <p className="mt-4 text-xs text-white/50">Price references could not be loaded. <button type="button" className="font-bold text-emerald-300 underline" onClick={() => setPricingRetry(current => current + 1)}>Try again</button></p> : <p className="mt-4 text-xs leading-5 text-white/45">{draft.atlasEvidenceCount ? `${draft.atlasEvidenceCount} price reference ${draft.atlasEvidenceCount === 1 ? "point" : "points"}. ` : ""}Price guide for the selected condition; sale prices may vary.</p>}
+                  </div>
+                ) : null}
                 <label className="mt-5 block">
                   <span className="text-sm font-bold text-white/65">
                     Delivered price (ZAR)
