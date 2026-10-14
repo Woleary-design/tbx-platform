@@ -249,9 +249,10 @@ export default function AtlasSellPage({ collectiblesEnabled = false }: { collect
     draft.condition,
     draft.price,
   ]);
+  const isLoosePricingDraft = isLooseDraft(draft);
   const pricingSetNumber = draft.setNumber || draft.title?.match(/^\s*(\d{3,8}(?:-\d+)?)\s*[·:–-]/)?.[1];
   useEffect(() => {
-    if (!ready || !pricingSetNumber || draft.itemKind === "minifigure" || isLooseDraft(draft) || listingCategory(draft.category) !== "LEGO") return;
+    if (!ready || !pricingSetNumber || draft.itemKind === "minifigure" || isLoosePricingDraft || listingCategory(draft.category) !== "LEGO") return;
     const controller = new AbortController();
     setPricingLoading(true);
     setDraft(current => ({ ...current, atlasLow: null, atlasHigh: null, atlasRecommended: null, atlasEvidenceCount: null }));
@@ -274,7 +275,7 @@ export default function AtlasSellPage({ collectiblesEnabled = false }: { collect
       }
     })();
     return () => controller.abort();
-  }, [ready, pricingSetNumber, draft.condition, draft.itemKind, draft.category]);
+  }, [ready, pricingSetNumber, isLoosePricingDraft, draft.condition, draft.itemKind, draft.category]);
   const loose = isLooseDraft(draft);
   const category = listingCategory(draft.category);
   const collectible = category !== "LEGO";
