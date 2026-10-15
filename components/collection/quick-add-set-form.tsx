@@ -52,6 +52,8 @@ export function QuickAddSetForm({ initialSetNumber, intent = "collect" }: { init
   const [saving, setSaving] = useState(false);
   const [marketLoading, setMarketLoading] = useState(false);
   const [marketData, setMarketData] = useState<MarketSnapshotData | null>(null);
+  const [pricingAttempt, setPricingAttempt] = useState(0);
+  const [pricingError, setPricingError] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   function selectSet(set: AtlasSet) {
@@ -64,7 +66,7 @@ export function QuickAddSetForm({ initialSetNumber, intent = "collect" }: { init
 
   async function searchCatalogue(term: string, signal?: AbortSignal) {
     const response = await fetch(`/api/catalogue/search?q=${encodeURIComponent(term.trim())}&limit=8`, {
-      signal,
+      signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(12000)]) : AbortSignal.timeout(12000),
       cache: "no-store",
     });
     const payload = await response.json();
@@ -126,23 +128,27 @@ export function QuickAddSetForm({ initialSetNumber, intent = "collect" }: { init
     const controller = new AbortController();
     void (async () => {
       setMarketLoading(true);
+      setMarketData(null);
+      setPricingError(false);
       setError(null);
       try {
-        const response = await fetch(`/api/value/${encodeURIComponent(selectedSet.setNumber)}?condition=${encodeURIComponent(condition)}`, { signal: controller.signal });
+        const response = await fetch(`/api/value/${encodeURIComponent(selectedSet.setNumber)}?condition=${encodeURIComponent(condition)}`, { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(20000)]) });
         const payload = await response.json();
+        if (controller.signal.aborted) return;
         if (!response.ok) throw new Error(payload.error ?? "Atlas pricing is not available yet.");
         setMarketData(payload as MarketSnapshotData);
       } catch (caughtError) {
         if (!controller.signal.aborted) {
           setMarketData(null);
-          setError(caughtError instanceof Error ? caughtError.message : "Atlas pricing is not available yet.");
+          setPricingError(true);
+          setError(caughtError instanceof Error && caughtError.name === "TimeoutError" ? "Pricing is taking too long. Retry prices or continue and enter your own price." : caughtError instanceof Error ? caughtError.message : "Atlas pricing is not available yet.");
         }
       } finally {
         if (!controller.signal.aborted) setMarketLoading(false);
       }
     })();
     return () => controller.abort();
-  }, [condition, selectedSet]);
+  }, [condition, selectedSet, pricingAttempt]);
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     if (!matches.length) return;
@@ -277,6 +283,7 @@ export function QuickAddSetForm({ initialSetNumber, intent = "collect" }: { init
 
       {estimate != null ? <p className="rounded-xl border border-emerald-400/20 bg-emerald-400/[0.07] px-4 py-3 text-sm text-emerald-100">Atlas will save an estimated collection value of <strong>R{Math.round(estimate).toLocaleString("en-ZA")}</strong>. You can update it later.</p> : null}
       {error ? <p className="rounded-xl border border-red-400/20 bg-red-400/[0.08] px-4 py-3 text-sm text-red-200">{error}</p> : null}
+      {pricingError && selectedSet && !marketLoading ? <button type="button" onClick={() => setPricingAttempt((attempt) => attempt + 1)} className="text-sm font-semibold text-[#e8c86a] underline">Retry prices</button> : null}
       <Button disabled={saving || !selectedSet || marketLoading} className="h-12 w-full rounded-xl bg-[#e8c86a] font-black text-[#050912] hover:bg-[#f1d478]">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}{saving ? (intent === "sell" ? "Preparing your listing…" : "Adding to Collection…") : (intent === "sell" ? "Continue with this set" : "Add to My Collection")}{!saving ? <ArrowRight className="h-4 w-4" /> : null}</Button>
       {intent === "collect" ? <button type="button" onClick={() => setShowFullForm(true)} className="w-full text-sm font-semibold text-white/45 underline hover:text-white">Add with photos and documentation instead</button> : null}
     </form>
