@@ -1,163 +1,27 @@
-import Link from "next/link";
-import {
-  ArrowRight,
-  Boxes,
-  Check,
-  CircleDollarSign,
-  Heart,
-  Search,
-  ShieldCheck,
-  Store,
-  UserRound,
-} from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
-
-const navItems = [
-  { label: "Value", href: "/value" },
-  { label: "Atlas", href: "/atlas" },
-  { label: "Market", href: "/marketplace" },
-  { label: "Collection", href: "/collection" },
-];
-
-function Brand() {
-  return (
-    <Link href="/" className="group relative flex items-center gap-3" aria-label="TBX home">
-      <span className="absolute left-5 top-1/2 h-14 w-14 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#e8c86a]/20 blur-2xl transition group-hover:bg-[#e8c86a]/30" />
-      <span className="relative grid h-10 w-10 place-items-center rounded-xl border border-[#e8c86a]/25 bg-[#09101d] text-[#e8c86a] shadow-[0_0_32px_rgba(232,200,106,0.18)]">
-        <Boxes className="h-5 w-5" />
-      </span>
-      <span className="relative text-xl font-black tracking-[-0.055em] text-white">TBX</span>
-    </Link>
-  );
-}
-
-export default async function HomePage() {
-  const supabase = await createClient();
-  let user: { id: string } | null = null;
-
-  try {
-    user = (await supabase.auth.getUser()).data.user;
-  } catch {
-    user = null;
-  }
-
-  const accountHref = user ? "/dashboard" : "/sign-in";
-
-  return (
-    <div className="min-h-screen bg-[#050912] text-white">
-      <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#050912]/88 backdrop-blur-xl">
-        <div className="mx-auto flex h-20 max-w-[1440px] items-center justify-between px-5 lg:px-10">
-          <Brand />
-          <nav className="hidden items-center gap-8 md:flex" aria-label="Primary navigation">
-            {navItems.map(({ label, href }, index) => (
-              <Link key={href} href={href} className={index === 0 ? "text-sm font-bold text-[#e8c86a]" : "text-sm font-semibold text-white/50 transition hover:text-white"}>
-                {label}
-              </Link>
-            ))}
-          </nav>
-          <div className="flex items-center gap-3">
-            <Link href="/value" className="hidden h-10 items-center rounded-xl border border-[#e8c86a]/20 bg-[#e8c86a]/[0.06] px-4 text-sm font-bold text-[#e8c86a] transition hover:bg-[#e8c86a]/10 sm:inline-flex">
-              Value my collection
-            </Link>
-            <Link href={accountHref} className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-white/70 transition hover:border-[#e8c86a]/35 hover:text-[#e8c86a]" aria-label={user ? "Open dashboard" : "Sign in"}>
-              {user ? "W" : <UserRound className="h-4 w-4" />}
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <main>
-        <section className="relative overflow-hidden border-b border-white/[0.06]">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_24%,rgba(232,200,106,0.15),transparent_31rem)]" />
-          <div className="relative mx-auto flex min-h-[790px] max-w-[1440px] items-center px-5 py-20 lg:px-10 lg:py-28">
-            <div className="max-w-3xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#e8c86a]/20 bg-[#e8c86a]/[0.06] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-[#e8c86a]">
-                <CircleDollarSign className="h-3.5 w-3.5" /> TBX Value
-              </div>
-              <h1 className="mt-8 text-6xl font-black leading-[0.9] tracking-[-0.075em] sm:text-7xl lg:text-[6.2rem]">
-                Discover what your
-                <span className="block text-[#e8c86a]">collection is worth.</span>
-              </h1>
-              <p className="mt-8 max-w-2xl text-lg leading-8 text-white/55 sm:text-xl">
-                Start with a complete set, a mixed box, loose parts, minifigures or an unknown collection. Photos are only required when you publish an item for sale.
-              </p>
-              <div className="mt-10 grid gap-3 sm:grid-cols-2">
-                <Link href="/sell/quick" className="group inline-flex h-16 items-center justify-center gap-3 rounded-2xl bg-[#e8c86a] px-7 text-lg font-black text-[#050912] shadow-[0_16px_50px_rgba(232,200,106,0.2)] transition hover:-translate-y-0.5 hover:bg-[#f1d478]">
-                  Sell LEGO <ArrowRight className="h-5 w-5 transition group-hover:translate-x-1" />
-                </Link>
-                <Link href="/value" className="inline-flex h-16 items-center justify-center gap-3 rounded-2xl border border-[#e8c86a]/25 bg-[#e8c86a]/[0.06] px-7 text-lg font-bold text-[#e8c86a] transition hover:-translate-y-0.5 hover:bg-[#e8c86a]/10">
-                  Value my collection
-                </Link>
-              </div>
-              <div className="mt-3 grid grid-cols-2 gap-3">
-                <Link href="/collection" className="inline-flex min-h-20 items-center justify-between gap-3 rounded-2xl border border-white/12 bg-white/[0.035] px-4 font-bold text-white/85 transition hover:border-[#e8c86a]/30 hover:text-white">
-                  <span className="inline-flex items-center gap-2"><Heart className="h-5 w-5 text-[#e8c86a]" /> My Collection</span><ArrowRight className="h-4 w-4 text-white/35" />
-                </Link>
-                <Link href="/marketplace" className="inline-flex min-h-20 items-center justify-between gap-3 rounded-2xl border border-white/12 bg-white/[0.035] px-4 font-bold text-white/85 transition hover:border-[#e8c86a]/30 hover:text-white">
-                  <span className="inline-flex items-center gap-2"><Store className="h-5 w-5 text-[#e8c86a]" /> Marketplace</span><ArrowRight className="h-4 w-4 text-white/35" />
-                </Link>
-              </div>
-              <div className="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/38">
-                {["No photos needed for valuation", "No catalogue match required", "Powered by Atlas"].map((item) => (
-                  <span key={item} className="inline-flex items-center gap-2"><Check className="h-4 w-4 text-[#e8c86a]" />{item}</span>
-                ))}
-              </div>
-            </div>
-
-          </div>
-        </section>
-
-        <section className="mx-auto max-w-[1440px] px-5 py-24 lg:px-10 lg:py-32">
-          <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#e8c86a]">Powered by Atlas</p>
-          <div className="mt-5 grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
-            <div>
-              <h2 className="text-5xl font-black leading-[0.95] tracking-[-0.055em] sm:text-6xl">Every valuation needs evidence.</h2>
-              <p className="mt-6 max-w-xl text-lg leading-8 text-white/45">Atlas supplies identity, market history and pricing context. TBX shows when evidence is limited instead of inventing a number.</p>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {["Live market prices", "Sales history", "Pricing confidence", "Collection intelligence"].map((item) => (
-                <div key={item} className="flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-[#09111e] p-5"><ShieldCheck className="h-5 w-5 text-[#e8c86a]" /><span className="font-bold">{item}</span></div>
-              ))}
-            </div>
-          </div>
-          <form action="/atlas" method="get" className="mt-12 flex items-center gap-3 rounded-[1.75rem] border border-white/10 bg-[#0a111e] p-3 shadow-[0_30px_100px_rgba(0,0,0,0.28)]">
-            <Search className="ml-3 h-6 w-6 shrink-0 text-white/28" />
-            <input name="q" aria-label="Search Atlas" placeholder="Search a LEGO set or set number" className="min-w-0 flex-1 bg-transparent px-2 py-4 text-base outline-none placeholder:text-white/25" />
-            <button type="submit" className="inline-flex h-14 shrink-0 items-center gap-2 rounded-2xl bg-[#e8c86a] px-5 font-bold text-[#050912]">Search Atlas <ArrowRight className="h-5 w-5" /></button>
-          </form>
-        </section>
-
-        <section className="border-y border-white/[0.06] bg-white/[0.015]">
-          <div className="mx-auto grid max-w-[1440px] gap-6 px-5 py-24 md:grid-cols-3 lg:px-10 lg:py-28">
-            {[
-              { title: "Value", text: "Understand what you have and what the available evidence suggests.", href: "/value", icon: CircleDollarSign },
-              { title: "Market", text: "List or buy collectibles with clearer pricing context.", href: "/marketplace", icon: Store },
-              { title: "Collection", text: "Keep and track the items you are not ready to sell.", href: "/collection", icon: Heart },
-            ].map(({ title, text, href, icon: Icon }) => (
-              <Link key={title} href={href} className="group rounded-[1.75rem] border border-white/[0.07] bg-[#09111e] p-7 transition hover:-translate-y-1 hover:border-[#e8c86a]/25">
-                <Icon className="h-6 w-6 text-[#e8c86a]" />
-                <h3 className="mt-8 text-3xl font-black">{title}</h3>
-                <p className="mt-4 leading-7 text-white/42">{text}</p>
-                <span className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-[#e8c86a]">Open {title} <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" /></span>
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        <section className="px-5 py-24 lg:px-10 lg:py-32">
-          <div className="relative mx-auto max-w-[1440px] overflow-hidden rounded-[2rem] border border-[#e8c86a]/20 bg-[#0b1321] px-7 py-16 sm:px-12 lg:px-16 lg:py-20">
-            <div className="absolute right-0 top-0 h-80 w-80 rounded-full bg-[#e8c86a]/10 blur-3xl" />
-            <div className="relative grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
-              <div className="max-w-4xl">
-                <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#e8c86a]">TBX Value</p>
-                <h2 className="mt-5 text-5xl font-black leading-[0.94] tracking-[-0.06em] sm:text-7xl">Start with what you know.</h2>
-                <p className="mt-6 max-w-2xl text-lg leading-8 text-white/48">A set number is helpful, but it is not required. Mixed boxes and loose collections have a place too.</p>
-              </div>
-              <Link href="/value" className="inline-flex h-14 items-center justify-center gap-3 rounded-2xl bg-[#e8c86a] px-7 font-bold text-[#050912]">Value my collection <ArrowRight className="h-5 w-5" /></Link>
-            </div>
-          </div>
-        </section>
-      </main>
+import Link from 'next/link';
+import {ArrowRight,Boxes,BookOpen,CircleDollarSign,Heart,Search,UserRound,PackageOpen} from 'lucide-react';
+import {loadStorefront} from '@/lib/home/storefront';
+import {LegoImage} from '@/components/home/lego-image';
+const shop='/marketplace?category=LEGO';
+const nav=[{label:'Shop LEGO',href:shop},{label:'Atlas',href:'/atlas'},{label:'My collection',href:'/collection'}];
+export default async function HomePage(){
+ const {user,sets,listings,unavailable}=await loadStorefront();const featured=sets[0];
+ return <div className="min-h-screen bg-[#050912] text-white">
+  <header className="sticky top-0 z-50 border-b border-white/[0.07] bg-[#050912]/95 backdrop-blur-xl"><div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-4 px-5 lg:px-8"><Link href="/" className="flex items-center gap-3" aria-label="TBX home"><span className="grid h-10 w-10 place-items-center rounded-xl border border-[#e8c86a]/25 bg-[#0a1320] text-[#e8c86a]"><Boxes className="h-5 w-5"/></span><span className="text-2xl font-black tracking-tight">TBX</span></Link><nav aria-label="Primary navigation" className="hidden gap-7 md:flex">{nav.map(n=><Link key={n.href} href={n.href} className="text-sm font-semibold text-white/65 transition hover:text-[#e8c86a]">{n.label}</Link>)}</nav><div className="flex items-center gap-3"><Link href="/sell/quick" className="hidden rounded-xl bg-[#e8c86a] px-4 py-2.5 text-sm font-bold text-slate-950 sm:block">Sell LEGO</Link><Link href={user?'/profile':'/sign-in'} aria-label={user?'Your profile':'Sign in'} className="flex h-10 items-center gap-2 rounded-xl border border-white/15 px-3 text-sm"><UserRound className="h-4 w-4"/><span className="hidden sm:inline">{user?'My account':'Sign in'}</span></Link></div></div><nav aria-label="Mobile navigation" className="flex gap-6 overflow-x-auto border-t border-white/5 px-5 py-3 md:hidden">{nav.map(n=><Link key={n.href} href={n.href} className="whitespace-nowrap text-sm font-semibold text-white/65">{n.label}</Link>)}</nav></header>
+  <main>
+   <section className="relative overflow-hidden border-b border-white/[0.07]"><div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_85%_20%,rgba(232,200,106,0.12),transparent_65%)]"/><div className="relative mx-auto grid max-w-7xl items-center gap-10 px-5 py-10 sm:py-14 lg:grid-cols-[1.08fr_0.92fr] lg:gap-14 lg:px-8 lg:py-12">
+    <div><p className="text-xs font-bold uppercase tracking-[0.22em] text-[#e8c86a]">A new home for your LEGO</p><h1 className="mt-5 max-w-xl text-5xl font-black leading-[1.03] tracking-[-0.055em] sm:text-6xl lg:text-[4.3rem]">Buy, sell and <span className="text-[#e8c86a]">discover LEGO.</span></h1><p className="mt-5 max-w-lg text-base leading-7 text-white/60 sm:text-lg">From boxed sets to loose bricks and minifigures. Find your next build, or give yours a new home.</p>
+     <form action="/atlas" method="get" className="mt-7 flex min-w-0 items-center gap-2 rounded-2xl border border-white/15 bg-[#0d1522] p-2 focus-within:border-[#e8c86a]/60"><Search aria-hidden="true" className="ml-2 h-5 w-5 shrink-0 text-white/40"/><label className="sr-only" htmlFor="home-lego-search">Search LEGO by set name or number</label><input id="home-lego-search" name="q" maxLength={120} placeholder="Search by set name or number" className="min-w-0 flex-1 bg-transparent py-3 text-sm text-white outline-none placeholder:text-white/35 sm:text-base"/><button type="submit" aria-label="Search LEGO" className="shrink-0 rounded-xl bg-[#e8c86a] px-4 py-3 font-bold text-slate-950"><Search className="h-5 w-5 sm:hidden"/><span className="hidden sm:inline">Search</span></button></form>
+     <div className="mt-4 flex flex-wrap gap-2 text-xs text-white/50"><span className="py-1.5">Explore:</span>{['Technic','Star Wars','City'].map(theme=><Link key={theme} href={`/atlas?q=${encodeURIComponent(theme)}`} className="rounded-full border border-white/10 px-3 py-1.5 hover:border-[#e8c86a]/40 hover:text-[#e8c86a]">{theme}</Link>)}</div>
+     <div className="mt-7 grid grid-cols-2 gap-3 sm:max-w-md"><Link href={shop} className="inline-flex h-14 items-center justify-center gap-2 rounded-xl bg-[#e8c86a] px-4 py-4 font-bold text-slate-950 hover:bg-[#f1d478]">Shop LEGO <ArrowRight className="h-4 w-4"/></Link><Link href="/sell/quick" className="inline-flex items-center justify-center rounded-xl border border-white/25 px-4 py-4 font-bold hover:border-[#e8c86a]">Sell LEGO</Link></div><div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-xs text-white/40"><span>Sets &amp; minifigures</span><span>Loose bricks welcome</span><span>Prices in rand</span></div>
     </div>
-  );
+    <div className="relative hidden sm:block">{featured?<Link href={`/atlas/${encodeURIComponent(featured.set_number)}`} className="group block overflow-hidden rounded-[2rem] border border-[#e8c86a]/20 bg-[#101927] p-4 shadow-[0_28px_90px_rgba(0,0,0,0.28)]"><div className="flex items-center justify-between px-2 py-2"><span className="text-xs font-bold uppercase tracking-[0.15em] text-[#e8c86a]">Discover in Atlas</span><span className="rounded-full bg-white/5 px-3 py-1 text-xs text-white/50">Catalogue preview</span></div><div className="my-3 h-64 rounded-2xl bg-[#f1f0e9] p-5 lg:h-72"><LegoImage src={featured.image_url} alt={featured.name} hero/></div><div className="flex items-center justify-between gap-4 px-2 pb-2"><div><p className="text-xs text-white/40">LEGO {featured.set_number} · {featured.theme}</p><h2 className="mt-1 text-xl font-bold">{featured.name}</h2></div><ArrowRight className="h-5 w-5 shrink-0 text-[#e8c86a] transition group-hover:translate-x-1"/></div></Link>:<div className="grid min-h-80 place-items-center rounded-[2rem] border border-white/10 bg-[#0d1522]"><Boxes className="h-24 w-24 text-[#e8c86a]/50"/></div>}<div className="mt-4 flex items-center justify-between px-2 text-xs text-white/40"><span>Know the set. Find your next build.</span><Link href="/atlas" className="font-semibold text-[#e8c86a]">Explore Atlas →</Link></div></div>
+   </div></section>
+   <section className={`mx-auto max-w-7xl px-5 lg:px-8 ${listings.length ? "py-10 lg:py-12" : "py-6"}`} >{listings.length ? <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-[#e8c86a]">The marketplace</p><h2 className="mt-2 text-3xl font-bold tracking-tight">Find your next build</h2></div><Link href={shop} className="inline-flex items-center gap-2 text-sm font-bold text-[#e8c86a]">Shop all LEGO <ArrowRight className="h-4 w-4"/></Link></div> : null}
+    {listings.length?<div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{listings.map(item=><Link key={item.id} href={`/marketplace/${item.id}`} className="group overflow-hidden rounded-2xl border border-white/10 bg-[#0c1420] transition hover:-translate-y-1 hover:border-[#e8c86a]/40"><div className="relative h-52 bg-[#f1f0e9] p-5"><LegoImage src={item.imageUrl} alt={item.title}/><span className="absolute bottom-3 right-3 rounded-full bg-slate-950/80 px-2.5 py-1 text-[10px] text-white">{item.sellerPhoto?'Seller photo':'Catalogue image'}</span></div><div className="p-5"><p className="text-xs text-white/40">LEGO {item.setNumber}</p><h3 className="mt-2 text-lg font-bold">{item.title}</h3><div className="mt-4 flex flex-wrap items-center justify-between gap-3"><p className="text-xl font-black text-[#e8c86a]">R{item.price.toLocaleString('en-ZA',{minimumFractionDigits:2,maximumFractionDigits:2})}</p><p className="text-xs text-white/50">{item.condition}</p></div></div></Link>)}</div>:<div className="flex flex-col gap-4 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-5 py-4 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-4"><PackageOpen className="h-9 w-9 shrink-0 text-[#e8c86a]"/><div><h3 className="font-bold">{unavailable?'Latest listings are temporarily unavailable':'No LEGO listed right now'}</h3><p className="mt-1 text-sm text-white/50">{unavailable?'Open the marketplace to try again.':'Have a set ready for its next adventure? List it on TBX.'}</p></div></div><Link href={unavailable?shop:'/sell/quick'} className="inline-flex shrink-0 items-center gap-2 font-bold text-[#e8c86a]">{unavailable?'Open marketplace':'List your LEGO'} <ArrowRight className="h-4 w-4"/></Link></div>}
+   </section>
+   {sets.length>1?<section className="mx-auto max-w-7xl px-5 pb-12 lg:px-8"><div className="flex items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-[#e8c86a]">Get inspired</p><h2 className="mt-2 text-2xl font-bold">Explore the LEGO catalogue</h2><p className="mt-2 text-sm text-white/50">Identify a set, check its reference price, or add it to your wishlist.</p></div><Link href="/atlas" className="text-sm font-bold text-[#e8c86a]">View Atlas →</Link></div><div className="mt-5 grid gap-4 sm:grid-cols-3">{sets.slice(1,4).map(set=><Link key={set.set_number} href={`/atlas/${encodeURIComponent(set.set_number)}`} className="overflow-hidden rounded-2xl border border-white/10 bg-[#0c1420]"><div className="h-44 bg-[#f1f0e9] p-4"><LegoImage src={set.image_url} alt={set.name}/></div><div className="p-4"><p className="text-xs text-white/40">Catalogue · LEGO {set.set_number}</p><h3 className="mt-2 font-bold">{set.name}</h3></div></Link>)}</div></section>:null}
+   <section className="mx-auto max-w-7xl px-5 pb-12 lg:px-8"><div className="grid gap-6 rounded-[1.75rem] border border-[#e8c86a]/20 bg-[#101927] p-7 sm:p-9 lg:grid-cols-[1fr_auto] lg:items-center"><div><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[#e8c86a]"><CircleDollarSign className="h-4 w-4"/>Powered by Atlas</div><h2 className="mt-4 text-3xl font-bold tracking-tight">What’s your LEGO worth?</h2><p className="mt-3 max-w-xl text-sm leading-6 text-white/55">Check the available price references before you sell, or keep track of the sets you want to hold onto.</p></div><Link href="/value" className="inline-flex w-fit items-center justify-center gap-2 rounded-xl border border-[#e8c86a]/30 px-5 py-4 font-bold text-[#e8c86a]">Value my LEGO <ArrowRight className="h-4 w-4"/></Link></div><div className="mt-6 grid gap-4 sm:grid-cols-2">{[{title:'Your collection, in one place',text:'Keep track of the LEGO you own.',href:'/collection',icon:Heart},{title:'Find it in Atlas',text:'Search sets, minifigures and reference details.',href:'/atlas',icon:BookOpen}].map(({title,text,href,icon:Icon})=><Link key={href} href={href} className="flex items-center gap-4 rounded-2xl border border-white/10 p-5"><Icon className="h-6 w-6 shrink-0 text-[#e8c86a]"/><div><h3 className="font-bold">{title}</h3><p className="mt-1 text-sm text-white/45">{text}</p></div><ArrowRight className="ml-auto h-4 w-4 shrink-0 text-white/40"/></Link>)}</div></section>
+  </main><footer className="border-t border-white/10 px-5 py-7"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 pb-14 text-xs text-white/35 lg:px-8"><span>TBX · Buy, sell and discover LEGO.</span><Link href="/settings" className="hover:text-[#e8c86a]">Account settings</Link></div></footer>
+ </div>;
 }

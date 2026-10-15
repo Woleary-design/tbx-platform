@@ -1,8 +1,9 @@
+import { listingCategory } from "@/lib/marketplace/categories";
 import { BuyLegoBrowser } from "@/components/marketplace/buy-lego-browser";
 import { createClient } from "@/lib/supabase/server";
 import { marketplaceReadiness } from "@/lib/marketplace/readiness";
 
-type MarketplacePageProps = { searchParams?: Promise<{ set?: string; published?: string }> };
+type MarketplacePageProps = { searchParams?: Promise<{ set?: string; category?: string; published?: string }> };
 
 export default async function MarketplacePage({ searchParams }: MarketplacePageProps) {
   const params = searchParams ? await searchParams : undefined;
@@ -46,6 +47,8 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
       : {};
     return {
       id: listing.id,
+      category: listingCategory(valueQuote.category),
+      subcategory: typeof valueQuote.subcategory === "string" ? valueQuote.subcategory : null,
       priceZar: Number(listing.asking_price),
       condition: typeof valueQuote.condition === "string" ? valueQuote.condition : asset?.condition ?? "Used",
       dispatchDays: Math.max(1, Math.round(Number(seller?.average_dispatch_days ?? 2))),
@@ -63,8 +66,10 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
     <BuyLegoBrowser
       listings={databaseListings}
       initialQuery={params?.set?.trim() ?? ""}
+      initialCategory={params?.category === "LEGO" ? "LEGO" : "All"}
       publishedId={params?.published}
       paymentsLive={marketplaceReadiness.paymentsLive}
+      collectiblesEnabled={process.env.VERCEL_ENV === "preview"}
     />
   );
 }

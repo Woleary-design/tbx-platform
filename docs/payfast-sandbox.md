@@ -33,3 +33,9 @@ These end-to-end steps require a deployed preview, the development migration, sa
 The start RPC locks the reservation, checks the authenticated buyer, seller-confirmed status, deadline and ZAR amount. The notification RPC is callable only by the service role, checks the stored amount, locks the attempt and protects completed results from downgrade. Sandbox outcomes remain isolated from fulfilment, even for notifications received after reservation expiry.
 
 Reference: https://developers.payfast.co.za/docs#custom-integration
+
+## Isolated TBX preview configuration
+
+The `fix/auth-launch-checks` preview uses the separate `tbx-payfast-sandbox` Supabase project. Its browser URL and publishable keys are branch-specific overrides. `TBX_SANDBOX_SUPABASE_URL` identifies this override, and the server reads `TBX_SANDBOX_SERVICE_ROLE_KEY` only when `VERCEL_ENV=preview` and the browser URL matches it. An incomplete or mismatched override fails closed.
+
+Set `TBX_SITE_URL` to the stable preview branch origin. The callback must be reachable by PayFast without Vercel Authentication before enabling the sandbox flag. Existing production connection variables remain separate. Test users, listings and uploads must be created in the sandbox; no production user data is copied.

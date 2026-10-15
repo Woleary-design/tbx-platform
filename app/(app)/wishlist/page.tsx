@@ -16,6 +16,9 @@ export default async function WishlistPage() {
         .order("created_at", { ascending: false })
     : { data: [] };
 
+  const { data: collectibles } = user && process.env.VERCEL_ENV === "preview"
+    ? await supabase.from("collectible_wishlist").select("id, category, catalogue_id, catalogue_reference").eq("collector_id", user.id).order("created_at", {ascending:false}) : {data:[]};
+
   const setIds = (items ?? []).flatMap((item) => {
     const set = Array.isArray(item.lego_sets) ? item.lego_sets[0] : item.lego_sets;
     return set?.id ? [set.id] : [];
@@ -41,14 +44,15 @@ export default async function WishlistPage() {
     <div className="mx-auto max-w-7xl space-y-8">
       <section className="overflow-hidden rounded-[2rem] bg-slate-950 p-8 text-white shadow-[0_28px_100px_rgba(15,23,42,0.16)] md:p-10">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-300">Wishlist</p>
-        <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">Sets you would love to own one day.</h1>
-        <p className="mt-4 max-w-xl text-white/70">See live availability now, and TBX will notify you when new matching fixed-price listings appear.</p>
+        <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">Collectibles you would love to own one day.</h1>
+        <p className="mt-4 max-w-xl text-white/70">Keep your favourite catalogue records together. LEGO availability and alerts are shown below; Pokémon cards and Hot Wheels variants link to their exact Atlas records.</p>
       </section>
 
+      {collectibles?.length ? <section className="space-y-4"><h2 className="text-2xl font-bold text-slate-950">Collectible wishlist</h2><div className="grid gap-4 sm:grid-cols-3">{collectibles.map(item=><Link key={item.id} href={`${item.category === "Hot Wheels" ? "/atlas/hot-wheels/cars" : "/atlas/pokemon/cards"}/${encodeURIComponent(item.catalogue_id)}`} className="rounded-2xl border border-slate-200 bg-white p-5 text-slate-950"><p className="text-xs text-yellow-700">{item.category} · {item.catalogue_reference?.identifier}</p><h3 className="mt-2 text-xl font-bold">{item.catalogue_reference?.name}</h3><p className="mt-2 text-sm text-slate-500">{item.catalogue_reference?.series}</p><p className="mt-4 text-sm">View item or remove from wishlist →</p></Link>)}</div></section>:null}
       {!items || items.length === 0 ? (
         <section className="rounded-[2rem] border border-dashed border-slate-300 bg-white p-10 text-center">
           <Heart className="mx-auto h-11 w-11 text-yellow-500" />
-          <h2 className="mt-4 text-2xl font-semibold text-slate-950">Your Wishlist is empty</h2>
+          <h2 className="mt-4 text-2xl font-semibold text-slate-950">Your LEGO wishlist is empty</h2>
           <p className="mt-2 text-slate-500">Search the LEGO directory and add the sets you are looking for.</p>
           <Button asChild className="mt-6 rounded-xl bg-yellow-400 font-semibold text-slate-950 hover:bg-yellow-300">
             <Link href="/atlas"><Search className="h-4 w-4" /> Search LEGO Directory</Link>

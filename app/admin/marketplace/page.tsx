@@ -1,3 +1,4 @@
+import { categories, listingCategory } from "@/lib/marketplace/categories";
 import Link from "next/link";
 import { Boxes, ExternalLink } from "lucide-react";
 import { requireAdmin } from "@/lib/admin";
@@ -6,15 +7,16 @@ function money(value: number) {
   return new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR", maximumFractionDigits: 0 }).format(value || 0);
 }
 
-export default async function AdminMarketplacePage() {
+export default async function AdminMarketplacePage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
+  const selected = (await searchParams).category;
   const { supabase } = await requireAdmin("listings");
   const { data: listings } = await supabase
     .from("listings")
-    .select("id,title,asking_price,status,lifecycle_state,views,watchers,seller_id,created_at")
+    .select("id,title,asking_price,status,lifecycle_state,views,watchers,seller_id,created_at,value_quote")
     .order("created_at", { ascending: false })
     .limit(100);
 
-  const rows = listings ?? [];
+  const rows = (listings ?? []).filter(listing => !selected || listingCategory(listing.value_quote?.category) === selected);
   const statusCount = (status: string) => rows.filter((row) => String(row.status).toLowerCase() === status.toLowerCase()).length;
   const counts = [
     ["Active", statusCount("Active")],
@@ -28,6 +30,7 @@ export default async function AdminMarketplacePage() {
     <div className="space-y-6">
       <div><p className="text-sm font-semibold text-violet-300">Listings</p><h1 className="mt-2 text-3xl font-semibold">Marketplace inventory</h1><p className="mt-2 text-slate-400">Every TBX listing in one operational view.</p></div>
 
+      <nav className="flex flex-wrap gap-3" aria-label="Inventory categories"><Link href="/admin/marketplace" className="rounded-xl border border-white/20 px-4 py-3">All</Link>{categories.map(category => <Link key={category} href={`/admin/marketplace?category=${encodeURIComponent(category)}`} className="rounded-xl border border-white/20 px-4 py-3">{category}</Link>)}</nav>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         {counts.map(([label, value]) => <div key={label} className="tbx-surface rounded-2xl p-4"><p className="text-2xl font-semibold">{value}</p><p className="mt-1 text-xs text-slate-500">{label}</p></div>)}
       </div>
@@ -39,7 +42,7 @@ export default async function AdminMarketplacePage() {
             <tbody className="divide-y divide-white/10">
               {rows.length === 0 ? <tr><td colSpan={6} className="px-5 py-14 text-center text-slate-500">No listings yet.</td></tr> : rows.map((listing) => (
                 <tr key={listing.id} className="hover:bg-white/[0.025]">
-                  <td className="px-5 py-4"><div className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-violet-400/[0.08] text-violet-300"><Boxes className="h-4 w-4" /></span><div><p className="max-w-[330px] truncate font-medium text-white">{listing.title}</p><p className="mt-1 text-xs text-slate-500">{listing.id.slice(0,8).toUpperCase()}</p></div></div></td>
+                  <td className="px-5 py-4"><div className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-violet-400/[0.08] text-violet-300"><Boxes className="h-4 w-4" /></span><div><p className="max-w-[330px] truncate font-medium text-white">{listing.title}</p><p className="mt-1 text-xs text-slate-500">{listingCategory(listing.value_quote?.category)} · {listing.id.slice(0,8).toUpperCase()}</p></div></div></td>
                   <td className="px-5 py-4"><span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs">{listing.status}</span></td>
                   <td className="px-5 py-4 font-semibold">{money(Number(listing.asking_price))}</td>
                   <td className="px-5 py-4 text-slate-400">{listing.views ?? 0}</td>

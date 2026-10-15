@@ -16,6 +16,7 @@ export function ProtectedCheckout({ listing, paymentsLive, courierQuotesLive }: 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const selectedMethod = shippingMethods[selectedCode];
+  const buyerPaysDelivery = !listing.shipping.courierIncluded;
 
   async function reservePurchase() {
     if (submitting) return;
@@ -50,7 +51,7 @@ export function ProtectedCheckout({ listing, paymentsLive, courierQuotesLive }: 
     <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
       <div className="space-y-6">
         <section className="rounded-[1.75rem] border border-[#eadfce] bg-white p-6 shadow-[0_18px_55px_rgba(43,30,18,0.08)]">
-          <h2 className="text-2xl font-semibold text-slate-950">Protected purchase steps</h2>
+          <h2 className="text-2xl font-semibold text-slate-950">Your purchase</h2>
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
             {steps.map((step, index) => (
               <div key={step} className={index === 0 ? "rounded-2xl bg-yellow-400 p-4 text-slate-950 shadow" : "rounded-2xl border border-[#eadfce] bg-white p-4 text-slate-600"}>
@@ -66,7 +67,7 @@ export function ProtectedCheckout({ listing, paymentsLive, courierQuotesLive }: 
             <Truck className="h-6 w-6 text-yellow-500" />
             <div>
               <h2 className="text-xl font-semibold text-slate-950">Choose delivery</h2>
-              <p className="mt-1 text-sm text-slate-500">Choose one of the seller’s enabled methods. {courierQuotesLive ? "Delivery is included in the listed price." : "The displayed amount is a provisional seller-funded allowance, not a live quote."}</p>
+              <p className="mt-1 text-sm text-slate-500">Choose a delivery method. {buyerPaysDelivery ? "You pay delivery separately. The confirmed cost will be shown before payment." : "This listing includes a seller-funded delivery allowance."}</p>
             </div>
           </div>
           <div className="mt-5 grid gap-3">
@@ -93,7 +94,7 @@ export function ProtectedCheckout({ listing, paymentsLive, courierQuotesLive }: 
                   </div>
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm">
                     <span className="text-slate-500">{method.estimate}</span>
-                    <strong className="text-emerald-700">{courierQuotesLive ? "Included" : "Provisional"}</strong>
+                    <strong className="text-emerald-700">{buyerPaysDelivery ? "Quote pending" : "Included allowance"}</strong>
                   </div>
                 </button>
               );
@@ -134,11 +135,11 @@ export function ProtectedCheckout({ listing, paymentsLive, courierQuotesLive }: 
         <h2 className="mt-5 text-xl font-semibold text-slate-950">Reservation Summary</h2>
         <div className="mt-5 space-y-3 text-sm text-slate-600">
           <div className="flex justify-between gap-4"><span>{listing.title}</span><strong>{formatZar(listing.priceZar)}</strong></div>
-          <div className="flex justify-between gap-4"><span>{selectedMethod.name}</span><strong className="text-emerald-700">{courierQuotesLive ? "Included" : "Provisional"}</strong></div>
+          <div className="flex justify-between gap-4"><span>{selectedMethod.name}</span><strong className="text-emerald-700">{buyerPaysDelivery ? "Quote pending" : "Included allowance"}</strong></div>
           <div className="flex justify-between gap-4"><span>Insurance</span><strong>{courierQuotesLive ? "Included" : "To be confirmed"}</strong></div>
-          <div className="flex justify-between border-t border-[#eadfce] pt-3 text-base text-slate-950"><span>Expected total</span><strong>{formatZar(listing.priceZar)}</strong></div>
+          <div className="flex justify-between border-t border-[#eadfce] pt-3 text-base text-slate-950"><span>{buyerPaysDelivery ? "Item subtotal" : "Item price"}</span><strong>{formatZar(listing.priceZar)}</strong></div>
         </div>
-        <p className="mt-4 text-xs leading-5 text-slate-500">The seller funds the delivery allowance from their proceeds. {courierQuotesLive ? "You will not be charged delivery on top of the listed price." : "The final delivery amount must be confirmed before protected payment opens."}</p>
+        <p className="mt-4 text-xs leading-5 text-slate-500">{buyerPaysDelivery ? "Total to pay = item price + confirmed delivery. Your total will be shown before payment; delivery has not been quoted yet." : "Delivery is funded by the seller for this listing. The final delivery amount must be confirmed before payment."}</p>
         {error ? <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
         <Button type="button" onClick={reservePurchase} disabled={submitting} className="mt-6 h-12 w-full rounded-xl bg-yellow-400 font-semibold text-slate-950 shadow-[0_16px_36px_rgba(245,179,1,0.25)] hover:bg-yellow-300 disabled:opacity-60">
           {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}

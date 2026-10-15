@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffectEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, BookOpen, Boxes, Check, HelpCircle, Loader2, PackageOpen, Sparkles, UserRound } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -200,6 +200,8 @@ export function ManualValueClient({ flow, resume }: { flow: IntakeType; resume?:
     }
   }
 
+  const resumeComplete = useEffectEvent(complete);
+
   useEffect(() => {
     if (resume !== "collection" || resumeAttempted.current) return;
     resumeAttempted.current = true;
@@ -222,7 +224,7 @@ export function ManualValueClient({ flow, resume }: { flow: IntakeType; resume?:
       setMinifigureTheme(data.minifigureTheme || "");
       setSubmitted(false);
       setStep(3);
-      void complete("Add it to my Collection", data, false);
+      void resumeComplete("Add it to my Collection", data, false);
     } catch {
       setStep(3);
       setError("Atlas could not restore the saved item. Please review the summary and try again.");

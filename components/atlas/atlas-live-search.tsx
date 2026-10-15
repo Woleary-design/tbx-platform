@@ -33,12 +33,15 @@ export function AtlasLiveSearch({ initialResults, initialQuery = "" }: AtlasLive
   const [results, setResults] = useState(initialResults);
   const [correction, setCorrection] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [retry, setRetry] = useState(0);
 
   useEffect(() => {
     const trimmed = query.trim();
     if (trimmed.length < 2) {
       setResults(initialResults);
       setCorrection(null);
+      setError(null);
       setLoading(false);
       return;
     }
@@ -46,16 +49,19 @@ export function AtlasLiveSearch({ initialResults, initialQuery = "" }: AtlasLive
     const controller = new AbortController();
     const timer = window.setTimeout(async () => {
       setLoading(true);
+      setError(null);
       try {
-        const response = await fetch(`/api/catalogue/search?q=${encodeURIComponent(trimmed)}`, { signal: controller.signal });
+        const response = await fetch(`/api/catalogue/search?q=${encodeURIComponent(trimmed)}`, { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(12000)]) });
         if (!response.ok) throw new Error("Search failed");
         const payload = (await response.json()) as AtlasSearchPayload;
+        if (controller.signal.aborted) return;
         setResults(payload.results ?? []);
         setCorrection(payload.correctedQuery ?? null);
       } catch (error) {
-        if ((error as Error).name !== "AbortError") {
+        if (!controller.signal.aborted) {
           setResults([]);
           setCorrection(null);
+          setError((error as Error).name === "TimeoutError" ? "Search is taking too long. Please try again." : "Atlas search could not load. Please try again.");
         }
       } finally {
         if (!controller.signal.aborted) setLoading(false);
@@ -66,7 +72,7 @@ export function AtlasLiveSearch({ initialResults, initialQuery = "" }: AtlasLive
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [query, initialResults]);
+  }, [query, initialResults, retry]);
 
   return (
     <>
@@ -74,6 +80,8 @@ export function AtlasLiveSearch({ initialResults, initialQuery = "" }: AtlasLive
         <label className="relative block">
           <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#ffd84d]" />
           <input
+            aria-label="Search the LEGO catalogue"
+            enterKeyHint="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search by set number, name, theme or subtheme"
@@ -100,7 +108,7 @@ export function AtlasLiveSearch({ initialResults, initialQuery = "" }: AtlasLive
         </div>
       </div>
 
-      <section>
+      <section aria-busy={loading}>
         <div className="flex items-end justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#ffd84d]">LEGO Directory</p>
@@ -109,7 +117,7 @@ export function AtlasLiveSearch({ initialResults, initialQuery = "" }: AtlasLive
           <p className="text-sm text-slate-500">{results.length} set{results.length === 1 ? "" : "s"}</p>
         </div>
 
-        {results.length === 0 ? (
+        {error ? <div role="alert" className="mt-6 rounded-2xl border border-amber-400/30 p-6 text-white"><p>{error}</p><button type="button" onClick={() => setRetry(value => value + 1)} className="mt-4 rounded-xl bg-yellow-400 px-5 py-3 font-semibold text-slate-950">Try search again</button></div> : loading ? <p role="status" className="mt-6 flex items-center gap-3 text-white/70"><Loader2 className="h-5 w-5 animate-spin"/>Searching the LEGO catalogue…</p> : results.length === 0 ? (
           <div className="mt-6 rounded-[2rem] border border-dashed border-white/10 bg-white/[0.025] p-10 text-center">
             <Boxes className="mx-auto h-9 w-9 text-[#ffd84d]" />
             <h3 className="mt-4 text-2xl font-semibold text-white">No matching LEGO sets found.</h3>

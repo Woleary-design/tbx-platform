@@ -8,6 +8,7 @@ export function MobileSellNow() {
   const pathname = usePathname();
 
   if (
+    pathname === "/" ||
     pathname.startsWith("/sell") ||
     pathname.startsWith("/value") ||
     pathname.startsWith("/sign-in") ||

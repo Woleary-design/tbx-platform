@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ArrowUpRight, BadgeCheck, Boxes, Car, CircleDollarSign, Gem, ScanSearch, Sparkles, Watch } from "lucide-react";
+import { BadgeCheck, Car, Gem, ScanSearch, Sparkles, Watch } from "lucide-react";
 
 type FeaturedSet = {
   set_number: string;

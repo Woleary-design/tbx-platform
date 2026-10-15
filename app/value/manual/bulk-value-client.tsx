@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Check, Loader2, PackageOpen, Scale } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffectEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -114,6 +114,8 @@ export function BulkValueClient({ resume }: { resume?: string }) {
     }
   }
 
+  const resumeComplete = useEffectEvent(complete);
+
   useEffect(() => {
     if (resume !== "collection" || resumeAttempted.current) return;
     resumeAttempted.current = true;
@@ -124,7 +126,7 @@ export function BulkValueClient({ resume }: { resume?: string }) {
       setWeight(String(data.weightKg));
       setCondition(data.condition);
       setStep(2);
-      void complete("collection", data, false);
+      void resumeComplete("collection", data, false);
     } catch {
       setError("Atlas could not restore the saved loose LEGO draft.");
     }

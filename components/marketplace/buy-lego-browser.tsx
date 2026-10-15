@@ -3,10 +3,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { subcategories, categories, type Category } from "@/lib/marketplace/categories";
 import { Heart, Search, ShieldCheck, ShoppingBag } from "lucide-react";
 
 type Listing = {
   id: string;
+  category: Category;
+  subcategory: string | null;
   priceZar: number;
   condition: string;
   dispatchDays: number;
@@ -19,16 +22,17 @@ type Listing = {
   sellerVerified: boolean;
 };
 
-export function BuyLegoBrowser({ listings, initialQuery = "", publishedId, paymentsLive = false }: { listings: Listing[]; initialQuery?: string; publishedId?: string; paymentsLive?: boolean }) {
+export function BuyLegoBrowser({ listings, initialQuery = "", initialCategory = "All", publishedId, paymentsLive = false, collectiblesEnabled = false }: { listings: Listing[]; initialQuery?: string; initialCategory?: Category | "All"; publishedId?: string; paymentsLive?: boolean; collectiblesEnabled?: boolean }) {
+  const [category, setCategory] = useState<Category | "All">(initialCategory);
+  const [subcategory, setSubcategory] = useState("All");
   const [query, setQuery] = useState(initialQuery);
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
-    if (!term) return listings;
-    return listings.filter((listing) =>
-      [listing.setName, listing.setNumber, listing.theme ?? "", listing.condition]
+    return listings.filter((listing) => (category === "All" || listing.category === category) && (subcategory === "All" || listing.subcategory === subcategory)).filter((listing) => !term ||
+      [listing.setName, listing.setNumber, listing.theme ?? "", listing.condition, listing.category, listing.subcategory ?? ""]
         .some((value) => value.toLowerCase().includes(term)),
     );
-  }, [listings, query]);
+  }, [listings, query, category, subcategory]);
 
   return (
     <div className="space-y-8">
@@ -41,8 +45,8 @@ export function BuyLegoBrowser({ listings, initialQuery = "", publishedId, payme
         <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-yellow-300">
           <ShieldCheck className="h-4 w-4" /> Fixed-price marketplace
         </p>
-        <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-6xl">Buy LEGO with confidence.</h1>
-        <p className="mt-4 max-w-2xl text-white/70">Only LEGO currently listed for sale appears here, including sets and loose collections. No offers, no chat and no catalogue clutter.</p>
+        <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-6xl">{collectiblesEnabled ? "Find your next collectible." : "Buy LEGO with confidence."}</h1>
+        <p className="mt-4 max-w-2xl text-white/70">{collectiblesEnabled ? "Browse LEGO, Pokémon and Hot Wheels listed by private sellers." : "Browse LEGO sets, minifigures and loose collections listed for sale."}</p>
       </section>
 
       <section className="sticky top-20 z-10 rounded-[1.5rem] border border-[#eadfce] bg-white/95 p-4 shadow-[0_16px_50px_rgba(43,30,18,0.08)] backdrop-blur">
@@ -51,12 +55,14 @@ export function BuyLegoBrowser({ listings, initialQuery = "", publishedId, payme
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search sets, loose LEGO or collections…"
+            aria-label="Search marketplace"
+            placeholder={collectiblesEnabled ? "Search LEGO, Pokémon or Hot Wheels…" : "Search sets, loose LEGO or collections…"}
             className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-12 pr-4 text-base outline-none focus:border-slate-400 focus:bg-white"
           />
         </div>
       </section>
 
+      {collectiblesEnabled ? <div className="flex flex-wrap items-center gap-3" aria-label="Category filters">{(["All", ...categories] as const).map(value => <button key={value} type="button" aria-pressed={category === value} onClick={() => { setCategory(value); setSubcategory("All"); }} className={`rounded-xl border px-5 py-3 font-semibold ${category === value ? "border-yellow-400 bg-yellow-400 text-slate-950" : "border-slate-300 bg-white text-slate-950"}`}>{value}</button>)}{category !== "All" ? <label className="text-sm text-slate-950">Listing type<select value={subcategory} onChange={event => setSubcategory(event.target.value)} className="ml-3 rounded-xl border border-slate-300 bg-white p-3"><option>All</option>{subcategories[category].map(value => <option key={value}>{value}</option>)}</select></label> : null}</div> : null}
       <section>
         <div className="flex items-end justify-between gap-4">
           <div>
@@ -74,7 +80,7 @@ export function BuyLegoBrowser({ listings, initialQuery = "", publishedId, payme
                   <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-slate-950/30 to-transparent" />
                 </div>
                 <div className="p-5">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-yellow-600">LEGO {listing.setNumber}</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-yellow-600">{listing.category} {listing.setNumber}</p>
                   <h3 className="mt-2 text-xl font-semibold text-slate-950">{listing.setName}</h3>
                   <p className="mt-2 text-sm text-slate-500">{listing.condition}{listing.theme ? ` · ${listing.theme}` : ""}</p>
                   <p className="mt-3 text-sm font-semibold text-slate-700">{listing.sellerVerified ? "Verified seller" : "Private seller"} <span className="font-normal text-slate-400">· {listing.sellerLevel}</span></p>
@@ -92,7 +98,7 @@ export function BuyLegoBrowser({ listings, initialQuery = "", publishedId, payme
           <div className="mt-6 rounded-[2rem] border border-dashed border-[#d9c9af] bg-white p-10 text-center">
             <Heart className="mx-auto h-9 w-9 text-yellow-600" />
             <h3 className="mt-4 text-2xl font-semibold text-slate-950">No matching listings are available.</h3>
-            <p className="mt-2 text-slate-600">Try another set number, name, theme or “loose LEGO”.</p>
+            <p className="mt-2 text-slate-600">Try another item name, identifier or category.</p>
             <Link href="/wishlist" className="mt-5 inline-flex rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white">Open Wishlist</Link>
           </div>
         )}

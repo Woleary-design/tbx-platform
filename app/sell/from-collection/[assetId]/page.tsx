@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
+import { listingCategory } from "@/lib/marketplace/categories";
 import { createClient } from "@/lib/supabase/client";
 
 export default function SellFromCollectionPage() {
@@ -25,7 +26,7 @@ export default function SellFromCollectionPage() {
 
       const { data: asset, error: assetError } = await supabase
         .from("assets")
-        .select("id, set_number, set_name, condition, estimated_value, instructions_complete, minifigures_complete, sealed, notes")
+        .select("id, set_number, set_name, condition, estimated_value, instructions_complete, minifigures_complete, sealed, notes, theme, collectible_details, catalogue_reference")
         .eq("id", assetId)
         .eq("owner_id", userData.user.id)
         .maybeSingle();
@@ -42,10 +43,20 @@ export default function SellFromCollectionPage() {
             asset.minifigures_complete ? "Complete minifigures" : null,
           ].filter(Boolean).join(", ") || "Collection details recorded in TBX";
 
+      const { data: previousListing } = await supabase.from("listings").select("value_quote, asking_price").eq("asset_id", asset.id).eq("seller_id", userData.user.id).order("created_at", {ascending:false}).limit(1).maybeSingle();
+      const quote = previousListing?.value_quote || (asset.theme === "Pokémon" || asset.theme === "Hot Wheels" ? {
+        category: asset.theme, catalogueReference: asset.catalogue_reference,
+        collectibleDetails: asset.collectible_details,
+        subcategory: asset.theme === "Pokémon" ? (asset.collectible_details?.Grade ? "Graded cards" : "Individual cards") : (asset.catalogue_reference?.variant?.includes("Treasure Hunt") ? "Treasure Hunts" : "Single cars"),
+        condition: asset.collectible_details?.Condition,
+      } : {});
+      const category = listingCategory(quote.category);
       window.localStorage.setItem("tbx-listing-draft", JSON.stringify({
-        itemKind: "known-set",
+        category, catalogueReference: quote.catalogueReference, subcategory: quote.subcategory, collectibleDetails: quote.collectibleDetails,
+        setNumber: asset.set_number, theme: category !== "LEGO" ? category : undefined,
+        itemKind: category === "LEGO" ? "known-set" : "collectible",
         title: `${asset.set_number} · ${asset.set_name}`,
-        condition: asset.condition,
+        condition: quote.condition || asset.condition,
         included,
         description: asset.notes ?? "",
         weight: "",
