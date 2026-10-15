@@ -28,12 +28,12 @@ export function SandboxDeliveryPanel({reservationId,delivery,ledger,viewer,canOp
  const bookingExpired=delivery?.status==='booked'&&Boolean(delivery.dropoff_deadline&&Date.parse(delivery.dropoff_deadline)<=Date.now());
  const collectionExpired=delivery?.status==='awaiting_collection'&&Boolean(delivery.collection_deadline&&Date.parse(delivery.collection_deadline)<=Date.now());
  return <section className="rounded-[1.75rem] border border-[#eadfce] bg-white p-6 text-slate-950">
-  <p className="text-xs font-bold uppercase tracking-widest text-amber-700">Delivery simulation</p>
+  <p className="text-xs font-bold uppercase tracking-widest text-amber-700">Delivery · test order</p>
   <h2 className="mt-2 text-xl font-semibold">{delivery?deliveryStage(delivery):'Choose test delivery'}</h2>
-  <p className="mt-2 text-sm text-slate-600">No courier is booked. Use sample locations. Locker prices are samples for testing; no usable PIN or live courier quote is generated.</p>
-  {delivery?<div className="mt-4 space-y-2 text-sm"><p><strong>{delivery.method==='locker'?'Locker delivery':'Door delivery'}</strong> · {delivery.destination}</p>
-   {delivery.quote_cents!=null?<p>Confirmed sample delivery: <strong>R{(delivery.quote_cents/100).toFixed(2)}</strong> · {delivery.quote_size}</p>:null}
-   {delivery.origin?<p>From: {delivery.origin}</p>:null}
+  
+  {delivery?<div className="mt-5 space-y-4 text-base"><div className="grid gap-4 rounded-2xl bg-white/5 p-4 sm:grid-cols-2"><div><p className="text-sm text-slate-500">{delivery.method==='locker'?'Destination locker':'Delivery address'}</p><p className="mt-1 font-semibold">{delivery.destination}</p></div>{delivery.origin?<div><p className="text-sm text-slate-500">{delivery.method==='locker'?'Drop-off locker':'Collection address'}</p><p className="mt-1 font-semibold">{delivery.origin}</p></div>:null}</div>
+   {delivery.quote_cents!=null?<p>Delivery cost: <strong>R{(delivery.quote_cents/100).toFixed(2)}</strong> · {delivery.quote_size}</p>:null}
+
    {delivery.status==='booked'&&delivery.dropoff_deadline?<p>{delivery.method==='locker'?'Drop-off':'Test handover'} deadline: <strong>{date(delivery.dropoff_deadline)}</strong> · test allowance only</p>:null}
    {delivery.status==='awaiting_collection'&&delivery.collection_deadline?<p>Collection deadline: <strong>{date(delivery.collection_deadline)}</strong>. Inspection starts after collection.</p>:null}
    {delivery.status==='received'?<p>{ledger?.status==='paid_test'?'Test order complete. Receipt and simulated payout are recorded.':ledger?.status==='refunded_test'?'Test refund recorded. No further receipt confirmation is needed.':ledger?.status==='disputed'?'Receipt recorded. The reported problem is under review; payout is paused.':ledger?.buyer_accepted_at?'Receipt confirmed. Waiting for payout review.':'Parcel received. Confirm receipt or report a problem in the payment panel.'}</p>:null}
@@ -53,6 +53,7 @@ export function SandboxDeliveryPanel({reservationId,delivery,ledger,viewer,canOp
   {collectionExpired?<p className="mt-4 text-sm text-amber-700">Admin must review the uncollected parcel. Inspection and payout remain held.</p>:null}
   {!delivery&&viewer!=='buyer'?<p className="mt-4 text-sm">Waiting for the buyer to choose test delivery.</p>:null}
   {delivery?.status==='selected'&&(!ledger||ledger.courier_cents===null)?<p className="mt-4 text-sm">Waiting for verified test payment and a confirmed courier cost.</p>:null}
+  <details className="mt-5 text-sm text-slate-500"><summary className="cursor-pointer font-medium">About this test delivery</summary><p className="mt-2 leading-6">No courier is booked. Locations and locker prices are samples. No usable locker PIN is generated; do not send a real parcel.</p></details>
   {error?<p role="alert" className="mt-4 text-sm text-red-700">{error}</p>:null}
  </section>;
 }

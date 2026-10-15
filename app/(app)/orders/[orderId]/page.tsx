@@ -88,13 +88,13 @@ export default async function OrderTimelinePage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-4xl space-y-7">
-      <Link href="/marketplace" className="text-sm font-semibold text-slate-600 hover:text-slate-950">← Back to Marketplace</Link>
+      <Link href="/orders" className="text-sm font-semibold text-slate-600 hover:text-slate-950">← Back to your orders</Link>
 
-      <section className="overflow-hidden rounded-[2rem] bg-slate-950 p-7 text-white shadow-[0_28px_90px_rgba(15,23,42,0.18)] md:p-10">
+      <section className="overflow-hidden rounded-[2rem] bg-slate-950 p-6 text-white shadow-[0_28px_90px_rgba(15,23,42,0.18)] md:p-8">
         <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-yellow-300">
-          <ShieldCheck className="h-4 w-4" /> Verified TBX reservation
+          <ShieldCheck className="h-4 w-4" /> {sandboxEnabled ? "Test order" : "TBX order"}
         </div>
-        <h1 className="mt-5 text-4xl font-semibold tracking-tight md:text-5xl">{copy.title}</h1>
+        <p className="mt-5 text-sm text-white/60">{asset?.set_number ? `LEGO ${asset.set_number} · ` : ""}Order {orderId.slice(0,8).toUpperCase()} · {isBuyer ? "Buying" : "Selling"}</p><h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">{asset?.set_name || "Your order"}</h1><p className="mt-5 text-xl font-semibold text-emerald-300">{copy.title}</p>
         <p className="mt-4 max-w-2xl text-base leading-7 text-white/70">{copy.body}</p>
       </section>
 
@@ -102,7 +102,7 @@ export default async function OrderTimelinePage({ params }: Props) {
       {sandboxEnabled && (delivery || !ledger || ledger.status === "pending") ? <SandboxDeliveryPanel reservationId={orderId} delivery={delivery} ledger={ledger} viewer={isBuyer ? "buyer" : "seller"} checkoutStarted={Boolean(sandboxAttempt)} canSelect={["awaiting_seller","awaiting_payment"].includes(reservation.status)} /> : null}
       {ledger ? <OrderMoney ledger={ledger} viewer={isBuyer ? "buyer" : "seller"} deliveryManaged={Boolean(delivery)} /> : null}
 
-      <section className="grid gap-5 md:grid-cols-2">
+      <details className="rounded-2xl border border-white/10 p-5"><summary className="cursor-pointer text-base font-semibold">Item and order details</summary><section className="mt-5 grid gap-5 md:grid-cols-2">
         <div className="rounded-[1.75rem] border border-[#eadfce] bg-white p-6 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-yellow-600">Item</p>
           <h2 className="mt-3 text-2xl font-semibold text-slate-950">{asset?.set_name || "TBX item"}</h2>
@@ -123,7 +123,7 @@ export default async function OrderTimelinePage({ params }: Props) {
           </div>
           {deadline ? <p className="mt-5 rounded-xl bg-[#fffaf1] p-4 text-sm text-slate-600">Current deadline: <strong>{new Date(deadline).toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short", timeZone: "Africa/Johannesburg" })}</strong> SAST</p> : null}
         </div>
-      </section>
+      </section></details>
 
       {reservation.status === "awaiting_seller" && isSeller ? (
         <SellerConfirmationActions reservationId={reservation.id} />
