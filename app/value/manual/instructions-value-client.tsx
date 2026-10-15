@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffectEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Boxes, Check, Loader2, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -127,6 +127,8 @@ export function InstructionsValueClient({ resume }: { resume?: string }) {
     }
   }
 
+  const resumeComplete = useEffectEvent(complete);
+
   useEffect(() => {
     if (resume !== "collection" || resumed.current) return;
     resumed.current = true;
@@ -137,7 +139,7 @@ export function InstructionsValueClient({ resume }: { resume?: string }) {
       setDescription(data.description || "");
       setCondition(data.condition || "Not sure");
       setStep(2);
-      void complete("collection", data, false);
+      void resumeComplete("collection", data, false);
     } catch {
       setError("Atlas could not restore the saved item.");
     }

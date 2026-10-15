@@ -1,5 +1,17 @@
 # TBX verification — 15 October 2026
 
+## Follow-up implementation
+
+- All 11 ESLint warnings resolved; lint and TypeScript are clean. Collection-resume effects use React effect events so saved drafts resume with current callbacks without repeated saves when form state changes.
+- Sandbox reservation expiry installed and scheduled every five minutes, separately from production expiry. Verified payment attempts and any existing sandbox ledger prevent expiry. Rollback tests confirm paid-order protection, unpaid seller/payment expiry, listing reopening and repeat-run idempotency.
+- Public Atlas RPC now enforces `atlas_visibility='public'`. A rollback test temporarily hides a known public record and confirms it disappears from RPC results, then restores it.
+- Atlas search and catalogue pricing use bounded requests. Search provides a visible error/retry action; obsolete responses are ignored after navigation or query changes.
+- All 39 unit tests passed and optimized build passed after the changes. No production database changes were applied.
+- Remaining security advisor findings are not automatically resolved by these changes. Public read-only pricing/search RPCs and authenticated mutation RPCs require documented grant review; schema-extension relocation and leaked-password protection remain platform follow-up. No broad grants were added and no protection was weakened.
+- Signed-in browser/mobile walkthrough remains unverified. Browser access is separate from API/database regression evidence; no successful signed-in test or screenshot is claimed.
+
+The sections below retain the earlier audit baseline. The follow-up above supersedes the lint, sandbox-expiry and catalogue-visibility gaps listed there.
+
 Scope: LEGO website on `fix/auth-launch-checks`, sandbox database, with a read-only check of production reservation scheduling. This is a technical verification, not live-commerce launch approval.
 
 ## Confirmed

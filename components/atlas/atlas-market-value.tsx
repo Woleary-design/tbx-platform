@@ -15,6 +15,7 @@ export function AtlasMarketValue({ identity }: { identity: CatalogueIdentity }) 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const { category, identifier, name } = identity;
   useEffect(() => {
     const controller = new AbortController();
 
@@ -23,12 +24,13 @@ export function AtlasMarketValue({ identity }: { identity: CatalogueIdentity }) 
       setError(null);
       try {
         const response = await fetch(
-          `/api/value/${encodeURIComponent(identity.identifier)}?condition=${encodeURIComponent(condition)}`,
-          { signal: controller.signal },
+          `/api/value/${encodeURIComponent(identifier)}?condition=${encodeURIComponent(condition)}`,
+          { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(20000)]) },
         );
         const payload = await response.json();
+        if (controller.signal.aborted) return;
         if (!response.ok) throw new Error(payload.error ?? "Pricing is unavailable.");
-        setData({ ...(payload as MarketSnapshotData), identity });
+        setData({ ...(payload as MarketSnapshotData), identity: { category, identifier, name } });
       } catch (caughtError) {
         if (controller.signal.aborted) return;
         setData(null);
@@ -39,7 +41,7 @@ export function AtlasMarketValue({ identity }: { identity: CatalogueIdentity }) 
     })();
 
     return () => controller.abort();
-  }, [condition, identity.category, identity.identifier, identity.name]);
+  }, [condition, category, identifier, name]);
 
   return (
     <section className="space-y-4" aria-labelledby={`market-value-${identity.identifier}`}>
