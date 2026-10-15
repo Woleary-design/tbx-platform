@@ -759,7 +759,7 @@ export default function AtlasSellPage({ collectiblesEnabled = false }: { collect
                   <p className="mt-2 text-sm leading-6 text-white/45">
                     Atlas suggests{" "}
                     <strong className="text-white">{money(atlasPrice)}</strong>.
-                    Use it or choose the delivered price that works for you.
+                    Use it or choose your own item price. Delivery is added at checkout.
                   </p>
                 ) : (
                   <p className="mt-2 text-sm leading-6 text-white/45">
