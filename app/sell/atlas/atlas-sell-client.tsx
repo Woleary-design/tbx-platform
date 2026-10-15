@@ -492,6 +492,7 @@ export default function AtlasSellPage({ collectiblesEnabled = false }: { collect
           .from("assets")
           .update({
             condition: normaliseCondition(draft.condition),
+            sealed: normaliseCondition(draft.condition) === "New Sealed",
             estimated_value: collectible ? null : loose ? price : (draft.atlasRecommended ?? price),
             is_public: true,
             lifecycle_status: "listed",
@@ -815,22 +816,23 @@ export default function AtlasSellPage({ collectiblesEnabled = false }: { collect
                 Atlas already knows the item. Confirm the condition and
                 continue.
               </p>
-              <label className="mt-6 block">
-                <span className="text-sm font-bold text-white/65">
-                  Condition
-                </span>
-                <select
-                  value={normaliseCondition(draft.condition)}
-                  onChange={(e) => update("condition", e.target.value)}
-                  className="mt-2 h-14 w-full rounded-xl border border-white/10 bg-[#050912] px-4"
-                >
-                  <option value="Unknown">Not sure</option>
-                  <option value="New Sealed">New / sealed</option>
-                  <option value="New Open Box">New / open box</option>
-                  <option value="Used Complete">Complete used</option>
-                  <option value="Used Incomplete">Incomplete</option>
-                </select>
-              </label>
+              <fieldset className="mt-6">
+                <legend className="text-sm font-bold text-white/65">Condition</legend>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  {([
+                    ["New Sealed", "New, factory sealed"],
+                    ["New Open Box", "Opened box, inner bags sealed"],
+                    ["Used Complete", "Used, complete"],
+                    ["Used Incomplete", "Used, incomplete"],
+                    ["Unknown", "Not sure"],
+                  ] as const).map(([value, label]) => (
+                    <label key={value} className={`flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 focus-within:ring-2 focus-within:ring-[#e8c86a] ${normaliseCondition(draft.condition) === value ? "border-[#e8c86a] bg-[#e8c86a]/10 text-white" : "border-white/15 bg-[#050912] text-white/75"}`}>
+                      <input type="radio" name="listing-condition" value={value} checked={normaliseCondition(draft.condition) === value} onChange={(event) => update("condition", event.target.value)} className="h-5 w-5 shrink-0 accent-[#e8c86a]" />
+                      <span className="text-sm font-semibold">{label}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
             </div>
           ) : null}
           {deliveryStage ? (
