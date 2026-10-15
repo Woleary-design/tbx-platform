@@ -48,11 +48,28 @@ export default async function CollectionPage() {
         .order("created_at", { ascending: false })
     : { data: [] };
 
-  const assets = (data ?? []) as Asset[];
+  const allAssets = (data ?? []) as Asset[];
+  const sales = new Map<string, { orderId: string; simulation: boolean }>();
+  if (userData.user && allAssets.length) {
+    const { data: orders, error: orderError } = await supabase.from("purchase_reservations")
+      .select("id,asset_id,status").eq("seller_id", userData.user.id).in("asset_id", allAssets.map(asset => asset.id)).order("created_at", { ascending: false });
+    if (orderError) throw new Error("Collection sale status could not be loaded. Please try again.");
+    const { data: ledgers, error: ledgerError } = process.env.VERCEL_ENV === "preview" && orders?.length
+      ? await supabase.from("sandbox_order_ledger").select("reservation_id,status").eq("seller_id", userData.user.id).in("reservation_id", orders.map(order => order.id))
+      : { data: [], error: null };
+    if (ledgerError) throw new Error("Collection test sale status could not be loaded. Please try again.");
+    const paidTests = new Set((ledgers ?? []).filter(ledger => ledger.status === "paid_test").map(ledger => ledger.reservation_id));
+    for (const order of orders ?? []) {
+      if (!sales.has(order.asset_id) && (order.status === "completed" || paidTests.has(order.id)))
+        sales.set(order.asset_id, { orderId: order.id, simulation: paidTests.has(order.id) });
+    }
+  }
+  const assets = allAssets.filter(asset => !sales.has(asset.id));
+  const soldAssets = allAssets.filter(asset => sales.has(asset.id));
   const collectionValue = assets.reduce((sum, asset) => sum + Number(asset.estimated_value ?? 0), 0);
   const purchaseValue = assets.reduce((sum, asset) => sum + Number(asset.purchase_price ?? 0), 0);
   const averageHealth = assets.length ? Math.round(assets.reduce((sum, asset) => sum + collectionHealth(asset), 0) / assets.length) : 0;
-  const cabinetAssets = assets.filter((asset) => imageFor(asset)).slice(0, 6);
+  const cabinetAssets = assets.filter((asset) => imageFor(asset)).slice(0, 1);
 
   return (
     <div className="space-y-8">
@@ -65,31 +82,13 @@ export default async function CollectionPage() {
             <Button asChild className="mt-8 h-12 rounded-xl bg-yellow-400 px-6 font-semibold text-slate-950 hover:bg-yellow-300"><Link href="/collection/add"><CirclePlus className="h-4 w-4" /> Add to Collection</Link></Button>
           </div>
 
-          <div className="relative min-h-[340px] overflow-hidden bg-[#151922] p-5">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_10%,rgba(250,204,21,0.11),transparent_48%)]" />
-            <div className="relative grid h-full min-h-[300px] grid-cols-3 gap-3 rounded-[1.6rem] border border-white/10 bg-[#080d17] p-4 shadow-inner">
-              {Array.from({ length: 6 }).map((_, index) => {
-                const asset = cabinetAssets[index];
-                return (
-                  <div key={asset?.id ?? `empty-${index}`} className="relative flex min-h-28 items-end justify-center overflow-hidden rounded-xl border border-white/[0.07] bg-gradient-to-b from-white/[0.045] to-white/[0.015] p-2">
-                    <div className="absolute inset-x-0 bottom-0 h-px bg-[#e8c86a]/35" />
-                    {asset ? (
-                      <Link href={`/collection/${asset.id}`} className="group flex h-full w-full flex-col items-center justify-end">
-                        <img src={imageFor(asset) ?? ""} alt={asset.set_name} className="max-h-20 w-full object-contain transition duration-300 group-hover:scale-105" />
-                        <span className="mt-1 max-w-full truncate text-[10px] font-semibold text-white/60">{asset.set_number}</span>
-                      </Link>
-                    ) : (
-                      <span className="mb-7 h-1.5 w-10 rounded-full bg-white/[0.05]" />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            <div className="absolute bottom-5 left-5 right-5 rounded-2xl border border-white/10 bg-slate-950/90 p-4 text-white shadow-xl backdrop-blur">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-yellow-300">Your cabinet</p>
-              <p className="mt-1 text-xl font-semibold">{assets.length ? `${assets.length} set${assets.length === 1 ? "" : "s"} collected` : "Ready for your first set"}</p>
-              <p className="mt-1 text-sm text-white/55">New collection records appear here automatically.</p>
-            </div>
+          <div className="flex flex-col justify-center border-t border-white/10 bg-[#101725] p-6 lg:border-l lg:border-t-0">
+            {cabinetAssets[0] ? <Link href={`/collection/${cabinetAssets[0].id}`} className="group block">
+              <div className="flex h-60 items-center justify-center rounded-2xl bg-[#f1f0e9] p-6"><img src={imageFor(cabinetAssets[0]) ?? ""} alt={cabinetAssets[0].set_name} className="h-full w-full object-contain transition duration-300 group-hover:scale-105"/></div>
+              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-yellow-300">From your collection</p>
+              <h2 className="mt-2 text-xl font-semibold text-white">{cabinetAssets[0].set_name}</h2>
+              <p className="mt-1 text-sm text-white/55">{cabinetAssets[0].set_number} · View item →</p>
+            </Link> : <div className="py-12 text-center text-white/60"><LibraryBig className="mx-auto h-12 w-12 text-yellow-300"/><p className="mt-4">Your next favourite belongs here.</p></div>}
           </div>
         </div>
       </section>
@@ -124,6 +123,10 @@ export default async function CollectionPage() {
           </div>
         </section>
       )}
+      {soldAssets.length ? <section className="rounded-[1.75rem] border border-white/10 bg-slate-950 p-6 text-white">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-300">Sale history</p><h2 className="mt-2 text-2xl font-semibold">Sold items</h2><p className="mt-2 text-sm text-white/55">Excluded from your current collection count and value. Test sales are labelled; no real ownership transfer occurs.</p>
+        <div className="mt-5 divide-y divide-white/10">{soldAssets.map(asset => { const sale = sales.get(asset.id)!; return <Link key={asset.id} href={`/orders/${sale.orderId}`} className="flex flex-wrap items-center justify-between gap-3 py-4"><div><h3 className="font-semibold">{asset.set_name}</h3><p className="mt-1 text-sm text-white/50">{asset.set_number} · {sale.simulation ? "Sold — simulation" : "Sold"}</p></div><span className="text-sm font-semibold text-yellow-300">View sale history →</span></Link>; })}</div>
+      </section> : null}
     </div>
   );
 }
