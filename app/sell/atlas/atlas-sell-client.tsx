@@ -688,7 +688,7 @@ export default function AtlasSellPage({ collectiblesEnabled = false }: { collect
                 ) : null}
                 <label className="mt-5 block">
                   <span className="text-sm font-bold text-white/65">
-                    Price the buyer pays
+                    Item price (ZAR)
                   </span>
                   <div className="mt-2 flex h-16 items-center rounded-2xl border border-white/10 bg-[#050912] px-4">
                     <span className="mr-2 text-xl font-black text-white/35">
@@ -710,7 +710,7 @@ export default function AtlasSellPage({ collectiblesEnabled = false }: { collect
               </div>
               {price > 0 ? (
                 <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                  <Summary label="Buyer price" value={money(price)} />
+                  <Summary label="Item price" value={money(price)} />
                   <Summary label="TBX fee (10%)" value={`-${money(fee)}`} />
                 </div>
               ) : null}
@@ -763,7 +763,7 @@ export default function AtlasSellPage({ collectiblesEnabled = false }: { collect
                   </p>
                 ) : (
                   <p className="mt-2 text-sm leading-6 text-white/45">
-                    Choose a fair delivered price that works for you.
+                    Choose a fair item price. Delivery is added for the buyer at checkout.
                   </p>
                 )}
                 {pricingSetNumber || draft.atlasLow != null || draft.atlasRecommended != null || draft.atlasHigh != null ? (
@@ -778,7 +778,7 @@ export default function AtlasSellPage({ collectiblesEnabled = false }: { collect
                 ) : null}
                 <label className="mt-5 block">
                   <span className="text-sm font-bold text-white/65">
-                    Delivered price (ZAR)
+                    Item price (ZAR)
                   </span>
                   <div className="mt-2 flex h-16 items-center rounded-2xl border border-white/10 bg-[#050912] px-4">
                     <span className="mr-2 text-xl font-black text-white/35">
@@ -797,10 +797,10 @@ export default function AtlasSellPage({ collectiblesEnabled = false }: { collect
               </div>
               {price > 0 ? (
                 <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                  <Summary label="Buyer price" value={money(price)} />
+                  <Summary label="Item price" value={money(price)} />
                   <Summary label="TBX fee (10%)" value={`-${money(fee)}`} />
                   <Summary
-                    label="Before shipping"
+                    label="Seller receives"
                     value={money(price - fee)}
                     highlight
                   />

@@ -43,3 +43,19 @@ Scope: LEGO website on `fix/auth-launch-checks`, sandbox database, with a read-o
 7. **Regression coverage:** the legacy seller-funded ledger fixture was not rerun; current buyer-paid locker checkout and payout were exercised. Existing lint warnings remain.
 
 Security reference: [Supabase password protection](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection), [public-schema extensions](https://supabase.com/docs/guides/database/database-linter?lint=0014_extension_in_public), [anonymous security-definer grants](https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable), [authenticated security-definer grants](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable).
+
+## Signed-in follow-up — 15 October, afternoon SAST
+
+This section updates the earlier gaps; it does not certify a launch.
+
+- Vercel access and TBX account sign-in succeeded in the cloud browser. The dashboard visibly identified the collector and offered Sign out.
+- Homepage `CAT` search reached Atlas and displayed 40 matching records. Seller search `42110` selected Land Rover Defender.
+- The seller valuation displayed four references, Low/Middle/High, and one dated observation with no invented historic line. Slow pricing exposed a missing recovery path in QuickAddSetForm; commit `21c7084` added bounded requests, retry and stale-response protection and deployed to preview.
+- The collection excludes the simulated sold White Ninja from current holdings and retains its order link. Seller order displayed R562.50 proceeds from R625 item price and R69 buyer-paid delivery. The earlier buyer order displayed R414 paid and retained its seller-funded delivery model. Both completed test orders showed no further action.
+- Existing Dobby collection record carried identity and condition into listing. Condition and parcel steps worked; choosing Medium populated dimensions and enabled the photo step. No listing was published. The photo step required an actual current item photo and disabled Review listing without one.
+- Removed non-LEGO links from the main Atlas and selling entry points and limited Marketplace to LEGO, including preview. Saved non-LEGO records and pilot implementation remain intact.
+- Corrected listing confirmation copy from delivered price / before shipping to item price / seller receives. Buyer pays delivery separately at checkout.
+- Responsive source review: sidebar hides below the large breakpoint, mobile navigation scrolls, forms use single columns before larger breakpoints. Increased mobile navigation targets to at least 44 pixels high. A physical-phone or emulated-width browser check was not completed; this browser API does not expose viewport resizing.
+- Earlier technical follow-up installed a sandbox-specific five-minute expiry routine with verified-payment exclusions and added public visibility enforcement to Atlas search. SQL rollback regressions are in `tests/sql/sandbox-expiry.sql` and `tests/sql/atlas-visibility.sql`. Security advisory settings and live provider integrations remain outstanding.
+
+Remaining browser coverage: actual item-photo upload, fresh listing publication, a second buyer session and fresh checkout, physical-phone layout and touch interaction. No real payment, courier booking or payout was performed.

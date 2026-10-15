@@ -64,12 +64,11 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
 
   return (
     <BuyLegoBrowser
-      listings={databaseListings}
+      listings={databaseListings.filter((listing) => listing.category === "LEGO")}
       initialQuery={params?.set?.trim() ?? ""}
-      initialCategory={params?.category === "LEGO" ? "LEGO" : "All"}
+      initialCategory="LEGO"
       publishedId={params?.published}
       paymentsLive={marketplaceReadiness.paymentsLive}
-      collectiblesEnabled={process.env.VERCEL_ENV === "preview"}
     />
   );
 }

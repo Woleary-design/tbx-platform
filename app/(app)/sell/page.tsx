@@ -45,7 +45,6 @@ export default async function SellPage() {
         </div>
       </section>
 
-      {process.env.VERCEL_ENV === "preview" ? <Link href="/sell/collectibles" className="inline-flex rounded-xl bg-yellow-400 px-5 py-3 font-bold text-slate-950">Sell Pokémon or Hot Wheels</Link> : null}
       {assets.length === 0 ? (
         <section className="rounded-[2rem] border border-dashed border-white/15 bg-[#09111f] p-10 text-center text-white">
           <LibraryBig className="mx-auto h-10 w-10 text-[#e8c86a]" />
