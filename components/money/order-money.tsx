@@ -8,12 +8,16 @@ export function OrderMoney({ ledger, viewer, canOperate = false, deliveryManaged
  const router = useRouter();
  const [busy, setBusy] = useState(false);
  const [error, setError] = useState('');
- const [cost, setCost] = useState('');
+ const [courierCost, setCourierCost] = useState('');
+ const [processorCost, setProcessorCost] = useState('');
+ const [feeConfirmed, setFeeConfirmed] = useState(false);
  const [reason, setReason] = useState('');
  const staff = viewer === 'finance' || viewer === 'operations';
  const settled = ['paid_test','refunded_test'].includes(ledger.status);
  async function act(action: string, withCost = false) {
   if (busy) return;
+  const cost = action === 'processor_cost' ? processorCost : courierCost;
+  if (action === 'processor_cost' && Number(cost) * 100 >= ledger.fee_cents && !feeConfirmed) { setError('Confirm the payment fee: it uses all or more of TBX’s commission.'); return; }
   const costCents = withCost ? Math.round(Number(cost) * 100) : undefined;
   if (withCost && (!/^\d+(\.\d{1,2})?$/.test(cost) || !Number.isSafeInteger(costCents))) { setError('Enter a rand amount, for example 100.00.'); return; }
   setBusy(true); setError('');
@@ -44,7 +48,8 @@ export function OrderMoney({ ledger, viewer, canOperate = false, deliveryManaged
   {ledger.inspection_ends_at && ledger.status === 'delivered' && !ledger.buyer_accepted_at ? <p className="mt-4 text-sm text-slate-600">Inspection ends {new Date(ledger.inspection_ends_at).toLocaleString('en-ZA',{ dateStyle:'medium', timeStyle:'short', timeZone:'Africa/Johannesburg' })} SAST. Confirm receipt or report a problem.</p> : null}
   <p className="mt-4 text-sm text-slate-600">These controls simulate delivery, payout and refunds. Do not dispatch the actual item. No courier booking or bank transfer occurs.</p>
   {!settled ? <div className="mt-5 space-y-4">
-   {staff && (ledger.courier_cents === null || (viewer === 'finance' && ledger.processor_cents === null)) ? <div><label className="block text-sm font-medium" htmlFor={`cost-${ledger.id}`}>Test cost in rand</label><input id={`cost-${ledger.id}`} inputMode="decimal" value={cost} onChange={e=>setCost(e.target.value)} placeholder="100.00" className="mt-2 w-full rounded-xl border border-slate-300 p-3"/><div className="mt-3 flex flex-wrap gap-3">{ledger.courier_cents === null && ledger.status === 'pending' ? button('courier_cost','Confirm test courier cost',true) : null}{viewer === 'finance' && ledger.processor_cents === null ? button('processor_cost','Record test payment fee',true) : null}</div></div> : null}
+   {staff && ledger.courier_cents === null && ledger.status === 'pending' ? <div><label className="block text-sm font-medium" htmlFor={`courier-cost-${ledger.id}`}>Test courier cost (rand)</label><input id={`courier-cost-${ledger.id}`} inputMode="decimal" value={courierCost} onChange={e=>setCourierCost(e.target.value)} placeholder="69.00" className="mt-2 w-full rounded-xl border border-slate-300 p-3"/><div className="mt-3">{button('courier_cost','Confirm test courier cost',true)}</div></div> : null}
+   {viewer === 'finance' && ledger.processor_cents === null ? <div><label className="block text-sm font-medium" htmlFor={`processor-cost-${ledger.id}`}>Payment-processing fee charged by the provider (rand)</label><p className="mt-1 text-xs text-slate-500">Enter only the provider’s fee, not the seller payout. This cost is covered by TBX.</p><input id={`processor-cost-${ledger.id}`} inputMode="decimal" value={processorCost} onChange={e=>{setProcessorCost(e.target.value);setFeeConfirmed(false);}} placeholder="Enter verified test fee" className="mt-2 w-full rounded-xl border border-slate-300 p-3"/>{processorCost && Number(processorCost)*100 >= ledger.fee_cents ? <label className="mt-3 flex items-start gap-2 text-sm text-amber-700"><input type="checkbox" checked={feeConfirmed} onChange={e=>setFeeConfirmed(e.target.checked)}/>This fee uses all or more of TBX’s {moneyCents(ledger.fee_cents)} commission. I have checked the amount.</label> : null}<div className="mt-3">{button('processor_cost','Record test payment-processing fee',true)}</div></div> : null}
    <div className="flex flex-wrap gap-3">
     {!deliveryManaged && (viewer === 'seller' || viewer === 'operations' || canOperate) && ledger.status === 'pending' && ledger.courier_cents !== null ? button('dispatch','Simulate dispatch') : null}
     {!deliveryManaged && (viewer === 'operations' || canOperate) && ledger.status === 'in_transit' ? button('deliver','Simulate delivery') : null}

@@ -36,7 +36,7 @@ export function SandboxDeliveryPanel({reservationId,delivery,ledger,viewer,canOp
    {delivery.origin?<p>From: {delivery.origin}</p>:null}
    {delivery.status==='booked'&&delivery.dropoff_deadline?<p>{delivery.method==='locker'?'Drop-off':'Test handover'} deadline: <strong>{date(delivery.dropoff_deadline)}</strong> · test allowance only</p>:null}
    {delivery.status==='awaiting_collection'&&delivery.collection_deadline?<p>Collection deadline: <strong>{date(delivery.collection_deadline)}</strong>. Inspection starts after collection.</p>:null}
-   {delivery.status==='received'?<p>Receipt recorded. Confirm receipt or report a problem in the payment panel.</p>:null}
+   {delivery.status==='received'?<p>{ledger?.status==='paid_test'?'Test order complete. Receipt and simulated payout are recorded.':ledger?.status==='refunded_test'?'Test refund recorded. No further receipt confirmation is needed.':ledger?.status==='disputed'?'Receipt recorded. The reported problem is under review; payout is paused.':ledger?.buyer_accepted_at?'Receipt confirmed. Waiting for payout review.':'Parcel received. Confirm receipt or report a problem in the payment panel.'}</p>:null}
    {delivery.booking_reference?<details><summary className="cursor-pointer">Test booking details</summary><p className="mt-2 break-all">{delivery.booking_reference}</p><p>This reference cannot open a locker. Packed parcel: {delivery.parcel.lengthCm} × {delivery.parcel.widthCm} × {delivery.parcel.heightCm} cm · {delivery.parcel.weightKg} kg</p></details>:null}
   </div>:null}
   {active&&viewer==='buyer'&&canSelect&&!checkoutStarted&&(!delivery||delivery.status==='selected')?<div className="mt-5 space-y-3">
