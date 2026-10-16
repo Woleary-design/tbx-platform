@@ -59,3 +59,11 @@ This section updates the earlier gaps; it does not certify a launch.
 - Earlier technical follow-up installed a sandbox-specific five-minute expiry routine with verified-payment exclusions and added public visibility enforcement to Atlas search. SQL rollback regressions are in `tests/sql/sandbox-expiry.sql` and `tests/sql/atlas-visibility.sql`. Security advisory settings and live provider integrations remain outstanding.
 
 Remaining browser coverage: actual item-photo upload, fresh listing publication, a second buyer session and fresh checkout, physical-phone layout and touch interaction. No real payment, courier booking or payout was performed.
+
+## Browser follow-up — 16 October SAST
+
+- Browser access recovered with the existing TBX sign-in. Exact-set search selected Dobby the House-Elf 76421, matching the supplied photo (the earlier 76469 record is a different model and was not overwritten).
+- Condition radio choices responded, with Used Complete selected for the actual item. The correct-set valuation showed three references: Low R503, Middle R607, High R778 at the time of the check. The seller price remained R607.
+- Supplied image.png passed photo validation and enabled listing review. With user instruction to list for sale, published listing `3e2f161c-bacd-4009-aaa1-fbcad520b1b4` in the isolated preview. Marketplace showed one live listing at R607. Medium parcel preset (45 × 35 × 20 cm, 3 kg) is test data, not measured packaging.
+- Fresh publication exposed two display defects: the seller image optimizer returned HTTP 400 because next.config.ts allowed only production storage; the detail sidebar hardcoded delivery as included. Added the exact sandbox Asset-images host/path, displayed delivery from the stored payer model, and contained the portrait photo to show the whole item.
+- No real payment, courier booking or payout occurred. Second-buyer reservation/checkout and phone interaction remain outstanding.
