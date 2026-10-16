@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { ArrowRight, Boxes, CircleAlert, ListChecks, TrendingUp, Users, WalletCards } from "lucide-react";
+import { sandboxOrderGuidance } from "@/lib/orders/sandbox-guidance";
+import { sandboxConfig } from "@/lib/payments/payfast";
+import { marketplaceReadiness } from "@/lib/marketplace/readiness";
 import { requireAdmin } from "@/lib/admin";
 
 function money(value: number) {
@@ -7,22 +10,39 @@ function money(value: number) {
 }
 
 export default async function AdminDashboardPage() {
-  const { supabase, user } = await requireAdmin();
+  const { supabase, user, role } = await requireAdmin();
 
-  const [usersRes, listingsRes, activeRes, ordersRes, recentOrdersRes, recentListingsRes] = await Promise.all([
+  const sandbox = Boolean(sandboxConfig());
+  const canReadLedger = ['super_admin', 'finance', 'operations', 'support'].includes(role);
+  const [usersRes, listingsRes, activeRes, ordersRes, recentOrdersRes, recentListingsRes, ledgerRes, deliveryRes] = await Promise.all([
     supabase.from("collectors").select("id", { count: "exact", head: true }),
     supabase.from("listings").select("id", { count: "exact", head: true }),
     supabase.from("listings").select("id", { count: "exact", head: true }).eq("status", "Active"),
-    supabase.from("purchase_reservations").select("amount,status,created_at"),
+    supabase.from("purchase_reservations").select("id,amount,status,created_at"),
     supabase.from("purchase_reservations").select("id,amount,status,created_at").order("created_at", { ascending: false }).limit(5),
     supabase.from("listings").select("id,title,asking_price,status,created_at").order("created_at", { ascending: false }).limit(5),
+    sandbox && canReadLedger ? supabase.from("sandbox_order_ledger").select("reservation_id,status,buyer_accepted_at") : Promise.resolve({ data: null, error: null }),
+    sandbox && canReadLedger ? supabase.from("sandbox_deliveries").select("reservation_id,status,dropoff_deadline,collection_deadline") : Promise.resolve({ data: null, error: null }),
   ]);
 
   const orders = ordersRes.data ?? [];
-  const completed = orders.filter((order) => order.status === "completed" || order.status === "paid");
+  const ledgers = new Map((ledgerRes.data ?? []).map(item => [item.reservation_id, item]));
+  const deliveries = new Map((deliveryRes.data ?? []).map(item => [item.reservation_id, item]));
+  // Sandbox activity must never inflate live sales metrics.
+  const completed = sandbox ? [] : orders.filter(order => order.status === 'completed' || order.status === 'paid');
+  // eslint-disable-next-line react-hooks/purity
+  const checkedAt = Date.now();
+  const statusLabel = (order: { id: string; status: string }) => {
+    const ledger = ledgers.get(order.id);
+    if (ledger) return sandboxOrderGuidance(ledger, deliveries.get(order.id) ?? null, 'buyer', checkedAt).title;
+    return order.status.replaceAll('_', ' ');
+  };
   const gmv = completed.reduce((sum, order) => sum + Number(order.amount || 0), 0);
   const tbxFees = gmv * 0.1;
-  const openOrders = orders.filter((order) => !["completed", "cancelled", "expired"].includes(order.status || "")).length;
+  const openOrders = orders.filter(order => {
+    const ledger = ledgers.get(order.id);
+    return ledger ? !['paid_test', 'refunded_test'].includes(ledger.status) : !['completed', 'cancelled', 'expired', 'payment_expired', 'seller_expired', 'seller_declined'].includes(order.status || '');
+  }).length;
   const name = user.user_metadata?.full_name ?? user.email?.split("@")[0] ?? "Admin";
 
   const metrics = [
@@ -48,6 +68,8 @@ export default async function AdminDashboardPage() {
         </div>
       </section>
 
+      {sandbox ? <p className="rounded-xl border border-amber-300/20 p-4 text-sm text-amber-200">Test environment: simulated payments and payouts are excluded from live sales totals.</p> : null}
+      {ordersRes.error || recentOrdersRes.error || ledgerRes.error || deliveryRes.error ? <p role="alert" className="text-amber-200">Some order statuses could not be loaded. Open the order and refresh before taking action.</p> : null}
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {metrics.map(([label, value, detail, Icon]) => (
           <article key={label} className="tbx-surface rounded-2xl p-5">
@@ -75,7 +97,7 @@ export default async function AdminDashboardPage() {
             ) : (recentOrdersRes.data ?? []).map((order) => (
               <Link key={order.id} href={`/admin/orders?order=${order.id}`} className="flex items-center gap-4 px-5 py-4 hover:bg-white/[0.03]">
                 <ListChecks className="h-4 w-4 text-violet-300" />
-                <div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{order.id.slice(0, 8).toUpperCase()}</p><p className="mt-1 text-xs capitalize text-slate-500">{String(order.status).replaceAll("_", " ")}</p></div>
+                <div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{order.id.slice(0, 8).toUpperCase()}</p><p className="mt-1 text-xs capitalize text-slate-500">{statusLabel(order)}</p></div>
                 <p className="text-sm font-semibold">{money(Number(order.amount))}</p>
               </Link>
             ))}
@@ -102,7 +124,7 @@ export default async function AdminDashboardPage() {
       </section>
 
       <section className="rounded-2xl border border-amber-300/15 bg-amber-300/[0.04] p-5">
-        <div className="flex items-start gap-3"><CircleAlert className="mt-0.5 h-5 w-5 text-amber-300" /><div><h2 className="font-semibold">Payment provider not connected yet</h2><p className="mt-1 text-sm leading-6 text-slate-400">Orders and seller reservations are live. Payments and payouts will plug into this admin once the provider is selected, without changing the seller flow.</p><Link href="/admin/payouts" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-amber-200">Open payout workspace <ArrowRight className="h-4 w-4" /></Link></div></div>
+        <div className="flex items-start gap-3"><CircleAlert className="mt-0.5 h-5 w-5 text-amber-300" /><div><h2 className="font-semibold">{sandbox ? "PayFast sandbox connected" : marketplaceReadiness.paymentsLive ? "Live payments enabled" : "Live payments not enabled"}</h2><p className="mt-1 text-sm leading-6 text-slate-400">{sandbox ? "Review verified test payments, delivery progress and simulated seller payouts in the order workspace. No real money moves." : marketplaceReadiness.paymentsLive ? "Review payment and seller payout status in the order workspace." : "Reservations can be reviewed here. Live payment collection and seller payouts are not enabled."}</p><Link href="/admin/payouts" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-amber-200">Open payout workspace <ArrowRight className="h-4 w-4" /></Link></div></div>
       </section>
     </div>
   );

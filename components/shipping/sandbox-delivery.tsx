@@ -4,12 +4,12 @@ import { useRouter } from 'next/navigation';
 import { deliveryStage, lockerFits, sandboxLockerQuote, type SandboxDelivery } from '@/lib/shipping/delivery';
 import type { SandboxLedger } from '@/lib/money/ledger';
 
-type Props = { reservationId:string; delivery:SandboxDelivery|null; ledger:SandboxLedger|null; viewer:'buyer'|'seller'|'staff'; canOperate?:boolean; canSelect?:boolean; checkoutStarted?:boolean };
-export function SandboxDeliveryPanel({reservationId,delivery,ledger,viewer,canOperate=false,canSelect=false,checkoutStarted=false}:Props) {
+type Props = { reservationId:string; listingParcel?:SandboxDelivery['parcel']; delivery:SandboxDelivery|null; ledger:SandboxLedger|null; viewer:'buyer'|'seller'|'staff'; canOperate?:boolean; canSelect?:boolean; checkoutStarted?:boolean };
+export function SandboxDeliveryPanel({reservationId,delivery,ledger,viewer,canOperate=false,canSelect=false,checkoutStarted=false,listingParcel}:Props) {
  const router=useRouter(); const [busy,setBusy]=useState(false); const [error,setError]=useState('');
  const [method,setMethod]=useState<'locker'|'door'>(delivery?.method??'locker');
  const [destination,setDestination]=useState(delivery?.destination??''); const [origin,setOrigin]=useState(delivery?.origin??'');
- const [parcel,setParcel]=useState(delivery?.parcel??{lengthCm:30,widthCm:20,heightCm:10,weightKg:1});
+ const [parcel,setParcel]=useState(delivery?.parcel??listingParcel??{lengthCm:0,widthCm:0,heightCm:0,weightKg:0});
  const sampleQuote=method==='locker'?sandboxLockerQuote(parcel):null;
  const active = !ledger || !['disputed','paid_test','refunded_test'].includes(ledger.status);
  async function act(action:string,details:Record<string,unknown>={}) {

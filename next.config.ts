@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "cdn.rebrickable.com", pathname: "/media/sets/**" },
       { protocol: "https", hostname: "ksszeyuexjevsvbiubvy.supabase.co", pathname: "/storage/v1/object/public/Asset-images/**" },
+      { protocol: "https", hostname: "ggrrvyxwoodtrfrvgsma.supabase.co", pathname: "/storage/v1/object/public/Asset-images/**" },
     ],
   },
   async redirects() {

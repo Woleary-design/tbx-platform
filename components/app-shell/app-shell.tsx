@@ -164,7 +164,7 @@ export function AppShell({ children, collector, isAdmin = false }: AppShellProps
           <nav className="flex gap-1 overflow-x-auto border-t border-white/[0.06] px-3 py-2 lg:hidden">
             {visibleNavigation.map((item) => {
               const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(`${item.href}/`));
-              return <Link key={item.href} href={item.href} className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium", item.href === "/admin" ? "border border-[#ffd84d]/20 bg-[#ffd84d]/[0.06] text-[#ffd84d]" : isActive ? "bg-[#ffd84d] text-[#050915]" : "text-white/55 hover:bg-white/[0.05] hover:text-white")}>{item.label}</Link>;
+              return <Link key={item.href} href={item.href} className={cn("inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium", item.href === "/admin" ? "border border-[#ffd84d]/20 bg-[#ffd84d]/[0.06] text-[#ffd84d]" : isActive ? "bg-[#ffd84d] text-[#050915]" : "text-white/55 hover:bg-white/[0.05] hover:text-white")}>{item.label}</Link>;
             })}
           </nav>
         </header>
