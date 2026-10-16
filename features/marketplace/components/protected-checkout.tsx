@@ -115,7 +115,7 @@ export function ProtectedCheckout({ listing, paymentsLive, courierQuotesLive }: 
             <div className="mt-5 space-y-3 text-sm text-slate-600">
               <p className="rounded-xl border border-[#eadfce] bg-white p-4">Courier: <strong>{selectedMethod.name}</strong></p>
               <p className="rounded-xl border border-[#eadfce] bg-white p-4">Estimated delivery: <strong>{selectedMethod.estimate}</strong></p>
-              <p className="rounded-xl border border-[#eadfce] bg-white p-4">Insurance: <strong>{listing.shipping.insuranceIncluded ? "Included" : "Not included"}</strong></p>
+              <p className="rounded-xl border border-[#eadfce] bg-white p-4">Insurance: <strong>{courierQuotesLive ? listing.shipping.insuranceIncluded ? "Included" : "Not included" : "To be confirmed"}</strong></p>
             </div>
           </div>
         </section>

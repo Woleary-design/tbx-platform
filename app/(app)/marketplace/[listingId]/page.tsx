@@ -174,7 +174,7 @@ export default async function ProductDetailPage({ params }: Props) {
           <div className="mt-6 space-y-3 text-sm text-slate-600">
             <p className="flex justify-between"><span>Shipping</span><strong>{listing.shipping.estimate}</strong></p>
             <div><p className="flex justify-between gap-3"><span>Delivery</span><strong className="text-right">{listing.shipping.courierIncluded ? "Included · buyer chooses" : "Buyer pays at checkout"}</strong></p><p className="mt-2 text-xs text-slate-500">{enabledShipping.map((method) => method.name).join(" · ")}</p></div>
-            <p className="flex justify-between"><span>Insurance</span><strong>{listing.shipping.insuranceIncluded ? "Included" : "Not included"}</strong></p>
+            <p className="flex justify-between"><span>Insurance</span><strong>{marketplaceReadiness.courierQuotesLive ? listing.shipping.insuranceIncluded ? "Included" : "Not included" : "To be confirmed"}</strong></p>
             <p className="flex justify-between"><span>Dispatch</span><strong>{listing.dispatchDays} day{listing.dispatchDays === 1 ? "" : "s"}</strong></p>
           </div>
           <div className="mt-6 flex gap-2 rounded-2xl border border-[#eadfce] bg-white p-4 text-sm leading-6 text-slate-600"><ShieldCheck className="mt-1 h-4 w-4 shrink-0 text-emerald-700" /><span><strong className="text-slate-950">{paymentsLive ? "TBX Secure:" : "TBX testing:"}</strong> {paymentsLive ? "the seller is paid only after delivery and buyer inspection." : "this step creates a reservation only; it does not take payment or book a courier."} TBX has not physically inspected this item.</span></div>
