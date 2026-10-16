@@ -68,3 +68,15 @@ Remaining browser coverage: actual item-photo upload, fresh listing publication,
 - Fresh publication exposed two display defects: the seller image optimizer returned HTTP 400 because next.config.ts allowed only production storage; the detail sidebar hardcoded delivery as included. Added the exact sandbox Asset-images host/path, displayed delivery from the stored payer model, and contained the portrait photo to show the whole item.
 - No real payment, courier booking or payout occurred. Second-buyer reservation/checkout and phone interaction remain outstanding.
 - Deployed image fix verified in browser: seller photo loaded with nonzero natural dimensions, and detail copy read Buyer pays at checkout. Own-seller reservation attempt returned You cannot buy your own listing; no reservation was created. Checkout correctly showed item subtotal and delivery quote pending. Aligned remaining insurance text to To be confirmed while live courier quoting is disconnected.
+
+## 16 October: Dobby transaction and flow polish
+
+- Separate buyer Doogz reserved listing 3e2f161c-bacd-4009-aaa1-fbcad520b1b4; seller confirmed availability. Order 688d809f-51a6-4d31-86d0-a5a67ab7550c.
+- Seller parcel preset (45 × 35 × 20 cm, 3 kg; still requires measurement before real fulfilment) now carries into the delivery form. Sample locker quote R89; item R607; total R696.
+- PayFast sandbox payment completed and TBX visibly verified payment. Seller fee R60.70 and simulated seller proceeds R546.30.
+- Seller prepared a simulated booking. Admin simulated handover, locker arrival and buyer collection. Inspection began after collection; Doogz confirmed test receipt. Finance payout remains pending. No live payment, real courier booking or bank payout occurred.
+- Sandbox Auth Site URL was localhost with an empty redirect allowlist. Updated sandbox-only default to the established branch preview origin and allowed paths on that exact host. New buyer login subsequently succeeded. Production Auth settings were not changed.
+- Flow polish: order header names the next actor/action, verified payment remains explicit during parcel preparation, and item/delivery/full total appear before payment without expanding details. Seller availability controls are above secondary details.
+- Admin dashboard and orders use shared verified sandbox stage guidance; completed/refunded tests stop counting as open actions, and sandbox transactions are excluded from live sales metrics. Provider banner correctly identifies sandbox mode.
+- Switching between sign-in and registration clears old feedback; tabs are disabled during an in-flight authentication request. Notification feed already groups one current update with collapsed history and was retained.
+- Validation: targeted ESLint, all automated Node tests (including new paid/delivery/receipt/dispute/settlement guidance cases), and production build with TypeScript passed. Browser verification of this preview update is recorded separately below if performed.

@@ -116,8 +116,8 @@ export function SignInForm({ nextPath }: { nextPath?: string }) {
   return (
     <div>
       <div className="flex rounded-xl bg-slate-100 p-1">
-        <button type="button" onClick={() => setMode("sign-in")} className={`flex-1 rounded-lg px-4 py-2 text-sm font-semibold transition ${mode === "sign-in" ? "bg-white text-slate-950 shadow-sm" : "text-slate-500"}`}>Sign in</button>
-        <button type="button" onClick={() => setMode("sign-up")} className={`flex-1 rounded-lg px-4 py-2 text-sm font-semibold transition ${mode === "sign-up" ? "bg-white text-slate-950 shadow-sm" : "text-slate-500"}`}>Create account</button>
+        <button type="button" disabled={loading} onClick={() => { setMode("sign-in"); setError(null); setMessage(null); }} className={`flex-1 rounded-lg px-4 py-2 text-sm font-semibold transition ${mode === "sign-in" ? "bg-white text-slate-950 shadow-sm" : "text-slate-500"}`}>Sign in</button>
+        <button type="button" disabled={loading} onClick={() => { setMode("sign-up"); setError(null); setMessage(null); }} className={`flex-1 rounded-lg px-4 py-2 text-sm font-semibold transition ${mode === "sign-up" ? "bg-white text-slate-950 shadow-sm" : "text-slate-500"}`}>Create account</button>
       </div>
 
       <form className="mt-6 space-y-4" onSubmit={handleSubmit}>

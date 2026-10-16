@@ -1,5 +1,5 @@
 import { SandboxDeliveryPanel } from '@/components/shipping/sandbox-delivery';
-import { deliveryStage } from '@/lib/shipping/delivery';
+import { sandboxOrderGuidance } from '@/lib/orders/sandbox-guidance';
 import Link from "next/link";
 import { OrderMoney } from "@/components/money/order-money";
 import { notFound, redirect } from "next/navigation";
@@ -76,18 +76,13 @@ export default async function OrderTimelinePage({ params }: Props) {
     ? await supabase.from("sandbox_order_ledger").select("*").eq("reservation_id", orderId).maybeSingle()
     : { data: null };
 
-  if (ledger) {
-    const stages: Record<string, { title: string; body: string; action: boolean }> = {
-      pending: { title: "Test payment verified", body: "Delivery preparation is next. No real courier will be booked in this test.", action: false },
-      in_transit: { title: "Test parcel dispatched", body: "Wait for simulated delivery. You do not need to pay again.", action: false },
-      delivered: { title: ledger.buyer_accepted_at ? "Receipt confirmed" : "Test parcel delivered", body: ledger.buyer_accepted_at ? "The buyer has confirmed receipt. Finance will review the simulated seller payout." : isBuyer ? "Confirm receipt below, or report a problem to pause the seller payout." : "Waiting for the buyer to confirm receipt or for the inspection period to end.", action: isBuyer && !ledger.buyer_accepted_at },
-      disputed: { title: "Problem under review", body: "Seller payout is paused while the reported problem is reviewed.", action: false },
-      paid_test: { title: "Test order complete", body: "Receipt and simulated seller payout are complete. No bank transfer occurred. No further action is needed.", action: false },
-      refunded_test: { title: "Test order refunded", body: "A simulated refund was recorded. No actual refund was issued.", action: false },
-    };
-    copy = stages[ledger.status] ?? copy;
-  }
-  if (delivery && ledger && ["pending","in_transit"].includes(ledger.status)) copy = { title: deliveryStage(delivery), body: delivery.status === "awaiting_collection" ? "The test parcel has arrived at the locker. Inspection starts only after collection." : delivery.status === "booked" ? "A simulated booking is prepared. Do not send a real parcel." : "Follow the delivery panel below for the next test step.", action: false };
+  // eslint-disable-next-line react-hooks/purity
+  const checkedAt = Date.now();
+  if (ledger) copy = sandboxOrderGuidance(ledger, delivery, isBuyer ? 'buyer' : 'seller', checkedAt);
+  const nextStep = ledger ? sandboxOrderGuidance(ledger, delivery, isBuyer ? 'buyer' : 'seller', checkedAt).next
+    : reservation.status === 'awaiting_seller' ? isBuyer ? 'The seller confirms availability.' : 'Confirm availability or decline below.'
+    : reservation.status === 'awaiting_payment' ? isBuyer ? !paymentAvailable ? 'Choose delivery and confirm its price below.' : copy.action ? 'Complete payment below.' : copy.body : 'The buyer completes payment. Wait before preparing dispatch.'
+    : copy.body;
   const deadline = reservation.status === "awaiting_seller" ? reservation.seller_deadline : reservation.status === "awaiting_payment" && paymentAvailable && sandboxAttempt?.status !== "complete" ? reservation.payment_deadline : null;
 
   return (
@@ -99,10 +94,14 @@ export default async function OrderTimelinePage({ params }: Props) {
           <ShieldCheck className="h-4 w-4" /> {sandboxEnabled ? "Test order" : "TBX order"}
         </div>
         <p className="mt-5 text-sm text-white/60">{asset?.set_number ? `LEGO ${asset.set_number} · ` : ""}Order {orderId.slice(0,8).toUpperCase()} · {isBuyer ? "Buying" : "Selling"}</p><h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">{asset?.set_name || "Your order"}</h1><p className="mt-5 text-xl font-semibold text-emerald-300">{copy.title}</p>
-        <p className="mt-4 max-w-2xl text-base leading-7 text-white/70">{copy.body}</p>
+        <p className="mt-4 max-w-2xl text-base leading-7 text-white/70">{copy.body}</p><div className="mt-5 rounded-xl border border-white/15 bg-white/5 p-4"><p className="text-xs font-semibold uppercase tracking-wider text-yellow-300">Next step</p><p className="mt-2 text-sm leading-6">{nextStep}</p></div>
       </section>
 
       
+      {reservation.status === "awaiting_seller" && isSeller ? (
+        <SellerConfirmationActions reservationId={reservation.id} />
+      ) : null}
+      {isBuyer && !ledger ? <section aria-label="Order total" className="rounded-2xl border border-[#eadfce] bg-white p-5 text-slate-950"><h2 className="font-semibold">Your order total</h2><dl className="mt-3 space-y-2 text-sm"><div className="flex justify-between"><dt>Item price</dt><dd>R{Number(reservation.amount).toFixed(2)}</dd></div><div className="flex justify-between"><dt>{buyerPaysDelivery ? 'Delivery (you pay)' : 'Delivery (seller pays)'}</dt><dd>{!buyerPaysDelivery ? 'Included' : quoteReady ? `R${(delivery.quote_cents / 100).toFixed(2)} · sample` : 'Quote pending'}</dd></div><div className="flex justify-between border-t pt-3 font-semibold"><dt>Total to pay</dt><dd>{!buyerPaysDelivery ? `R${Number(reservation.amount).toFixed(2)}` : quoteReady ? `R${(Number(reservation.amount) + delivery.quote_cents / 100).toFixed(2)}` : 'Awaiting delivery quote'}</dd></div></dl></section> : null}
       {sandboxEnabled && (delivery || !ledger || ledger.status === "pending") ? <SandboxDeliveryPanel reservationId={orderId} listingParcel={listingParcel} delivery={delivery} ledger={ledger} viewer={isBuyer ? "buyer" : "seller"} checkoutStarted={Boolean(sandboxAttempt)} canSelect={["awaiting_seller","awaiting_payment"].includes(reservation.status)} /> : null}
       {ledger ? <OrderMoney ledger={ledger} viewer={isBuyer ? "buyer" : "seller"} deliveryManaged={Boolean(delivery)} /> : null}
 
@@ -129,9 +128,7 @@ export default async function OrderTimelinePage({ params }: Props) {
         </div>
       </section></details>
 
-      {reservation.status === "awaiting_seller" && isSeller ? (
-        <SellerConfirmationActions reservationId={reservation.id} />
-      ) : null}
+
 
       {sandboxEnabled && paymentAvailable && isBuyer && !ledger && sandboxAttempt?.status !== "complete" && reservation.status === "awaiting_payment" ? (
         <PayfastSandboxPayment reservationId={reservation.id} status={sandboxAttempt?.status} />
