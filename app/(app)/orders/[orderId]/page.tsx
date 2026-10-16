@@ -61,6 +61,10 @@ export default async function OrderTimelinePage({ params }: Props) {
     ? await supabase.from("payfast_sandbox_attempts").select("status").eq("reservation_id", orderId).maybeSingle()
     : { data: null };
   const listing = Array.isArray(reservation.listings) ? reservation.listings[0] : reservation.listings;
+  const candidateParcel = listing?.value_quote?.parcel;
+  const listingParcel = candidateParcel && ['lengthCm','widthCm','heightCm','weightKg'].every(
+    key => typeof candidateParcel[key] === 'number' && Number.isFinite(candidateParcel[key]) && candidateParcel[key] > 0
+  ) ? { lengthCm: candidateParcel.lengthCm, widthCm: candidateParcel.widthCm, heightCm: candidateParcel.heightCm, weightKg: candidateParcel.weightKg } : undefined;
   const buyerPaysDelivery = listing?.value_quote?.sellerFundsShipping === false;
   const { data: delivery } = sandboxEnabled ? await supabase.from("sandbox_deliveries").select("*").eq("reservation_id", orderId).maybeSingle() : { data: null };
   const quoteReady = delivery?.method === 'locker' && delivery.quote_cents != null;
@@ -99,7 +103,7 @@ export default async function OrderTimelinePage({ params }: Props) {
       </section>
 
       
-      {sandboxEnabled && (delivery || !ledger || ledger.status === "pending") ? <SandboxDeliveryPanel reservationId={orderId} delivery={delivery} ledger={ledger} viewer={isBuyer ? "buyer" : "seller"} checkoutStarted={Boolean(sandboxAttempt)} canSelect={["awaiting_seller","awaiting_payment"].includes(reservation.status)} /> : null}
+      {sandboxEnabled && (delivery || !ledger || ledger.status === "pending") ? <SandboxDeliveryPanel reservationId={orderId} listingParcel={listingParcel} delivery={delivery} ledger={ledger} viewer={isBuyer ? "buyer" : "seller"} checkoutStarted={Boolean(sandboxAttempt)} canSelect={["awaiting_seller","awaiting_payment"].includes(reservation.status)} /> : null}
       {ledger ? <OrderMoney ledger={ledger} viewer={isBuyer ? "buyer" : "seller"} deliveryManaged={Boolean(delivery)} /> : null}
 
       <details className="rounded-2xl border border-white/10 p-5"><summary className="cursor-pointer text-base font-semibold">Item and order details</summary><section className="mt-5 grid gap-5 md:grid-cols-2">
